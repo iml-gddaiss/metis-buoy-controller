@@ -1,0 +1,59 @@
+' adcp related code
+
+Dim RawADCP(31) As String * 100
+
+Dim ADCPHeader(3) As String : Alias ADCPHeader = ADCPDate, ADCPTime, ADCPSmpNbr
+Dim ADCPBin1(11) As Float : Alias ADCPBin1 = Bin, ADCPDir, ADCPMag, EW, NS, Vert, Err, Echo1, Echo2, Echo3, Echo4
+
+DataTable(FileADCP,1,-1)
+  DataInterval(0,0,Sec,10)
+  Sample(1,RawADCP(1),String)
+  Sample(1,RawADCP(2),String)
+  Sample(1,RawADCP(3),String)
+  Sample(1,RawADCP(4),String)
+  Sample(1,RawADCP(5),String)
+  Sample(1,RawADCP(6),String)
+  Sample(1,RawADCP(7),String)
+  Sample(1,RawADCP(8),String)
+  Sample(1,RawADCP(9),String)
+  Sample(1,RawADCP(10),String)
+  Sample(1,RawADCP(11),String)
+  Sample(1,RawADCP(12),String)
+  Sample(1,RawADCP(13),String)
+  Sample(1,RawADCP(14),String)
+  Sample(1,RawADCP(15),String)
+  Sample(1,RawADCP(16),String)
+  Sample(1,RawADCP(17),String)
+  Sample(1,RawADCP(18),String)
+  Sample(1,RawADCP(19),String)
+  Sample(1,RawADCP(20),String)
+  Sample(1,RawADCP(21),String)
+  Sample(1,RawADCP(22),String)
+  Sample(1,RawADCP(23),String)
+  Sample(1,RawADCP(24),String)
+  Sample(1,RawADCP(25),String)
+  Sample(1,RawADCP(26),String)
+  Sample(1,RawADCP(27),String)
+  Sample(1,RawADCP(28),String)
+  Sample(1,RawADCP(29),String)
+  Sample(1,RawADCP(30),String)
+  Sample(1,RawADCP(31),String)
+EndTable
+
+
+Sub SampleADCP
+    For X = 1 To 31 Step 1
+        SerialIn(RawADCP(X),SerialADCP,10,10,100)
+        If X > 3 Then
+            RawADCP(X) = Replace(RawADCP(X),"  "," ")
+            RawADCP(X) = Replace(RawADCP(X),"  "," ")
+            RawADCP(X) = Replace(RawADCP(X),"  "," ")
+            RawADCP(X) = Replace(RawADCP(X),"  "," ")
+            RawADCP(X) = LTrim(RawADCP(X))
+            RawADCP(X) = Replace(RawADCP(X)," ",",")
+        EndIf
+    Next X
+    
+    SplitStr(ADCPHeader,RawADCP(1)," ",3,5)
+    SplitStr(ADCPBin1,RawADCP(5),",",11,5)
+EndSub
