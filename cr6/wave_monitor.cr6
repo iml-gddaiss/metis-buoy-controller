@@ -1,0 +1,18 @@
+Dim RawWave As String * 80
+Dim Wave(6) As String : Alias Wave = Wave_Date, Wave_Time, Wave_Period, Wave_Hm0, Wave_H13, Wave_Hmax
+
+Units Wave_Period = Sec
+Units Wave_Hm0 = m
+Units Wave_H13 = m
+Units Wave_Hmax = m
+
+DataTable(FileWave,1,-1)
+  DataInterval(0,0,Sec,10)
+  Sample (1,Wave_Date,String)
+  Sample (1,Wave_Time,String)
+  Sample (1,Wave_Period,IEEE4)
+  Sample (1,Wave_Hm0,IEEE4)
+  Sample (1,Wave_H13,IEEE4)
+  Sample (1,Wave_Hmax,IEEE4)
+ EndTable
+

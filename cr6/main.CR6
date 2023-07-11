@@ -47,10 +47,10 @@ Dim SerialPort
 
 'COMPort Tower
 Const SerialTower = 32 'RS485 As WMT700(A), WXT536(2) & Compass(1)
-Const SerialPAR = 33 'RS232
-Const SerialOCRI = 34
-'Const Available = 35
-Const SerialGPS = 16 'U11-U12 (trouble with GPS on SDM)
+' Const SerialPAR = 33 'RS232
+' Const SerialOCRI = 34
+' Const Available = 35
+' Const SerialGPS = 16 'U11-U12 (trouble with GPS on SDM)
 
 'COMPort Well
 Const SerialSBE37 = 36 'RS232
@@ -58,7 +58,7 @@ Const SerialTriplet = 37 'RS232
 Const SerialSeafet = 38 'RS232
 Const SerialOCRR = 39 'RS232
 Const SerialPCO2 = 40 'RS232
-Const SerialSUNA = 41 'RS232
+'Const SerialSUNA = 41 'RS232
 'Const Available = 42
 'Const Available = 43
 'Const SerialFlow = 14 'U7-U8
@@ -66,17 +66,16 @@ Const SerialSUNA = 41 'RS232
 
 'COMPort Miscellaneous
 'Const Available = 44
-Const SerialPower = 45 'RS485
-Const SerialWave = 46 'RS232
-Const WD_Channel = U1 'Voltage reading
-Const SerialADCP = 12 'U3-U4
-Const SerialWinch = 13 'U5-U6
+' Const SerialPower = 45 'RS485
+' Const SerialWave = 46 'RS232
+' Const WD_Channel = U1 'Voltage reading
+' Const SerialADCP = 12 'U3-U4 ' Move to adcp.CR6
+' Const SerialWinch = 13 'U5-U6
 
 Const Yes = True
 Const No = False
 
 'Instruments state
-
 
 ConstTable (Buoy_Config,0)
 Const Buoy_Name = "PMZA-RIKI" 
@@ -116,444 +115,30 @@ EndConstTable
 Public Manual_Tower_Switch = false
 Public Manual_Well_Switch = false
 
-'#T1 Declare WMT700 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Dim RawWMT700 As String * 80
-Dim WMT700(6) As Float : Alias WMT700 = Dir_Min1, Dir_Ave1, Dir_Max1, Spd_Min1, Spd_Ave1, Spd_Max1
-Units Dir_Min1 = °
-Units Dir_Ave1 = °
-Units Dir_Max1 = °
-Units Spd_Min1 = Kn
-Units Spd_Ave1 = Kn
-Units Spd_Max1 = Kn
-
-DataTable (FileWMT700,1,-1)
-	DataInterval (0,0,Sec,10)
-  Sample (1,Dir_Min1,IEEE4)
-  Sample (1,Dir_Ave1,IEEE4)
-  Sample (1,Dir_Max1,IEEE4)
-  Sample (1,Spd_Min1,IEEE4)
-  Sample (1,Spd_Ave1,IEEE4)
-  Sample (1,Spd_Max1,IEEE4)
-EndTable
-
-
-'#T2 Declare WMT536 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Dim RawR1_Wind As String * 80
-Dim RawR2_Weather As String * 45
-Dim RawR3_Rain As String * 75
-
-Dim WXT536_Weather(3) As Float : Alias WXT536_Weather = Air_Temp, Air_Humidity, Air_Pressure
-'The wind is Dim because it depends on the presence of WMT700
-Dim WXT536_Wind(6) As Float : Alias WXT536_Wind = Dir_Min2, Dir_Ave2, Dir_Max2, Spd_Min2, Spd_Ave2, Spd_Max2
-Dim WXT536_Rain(6) As Float : Alias WXT536_Rain = Rain_Total, Rain_Duration, Rain_Intensity, Hail_Total, Hail_Duration, Hail_Intensity
-
-Units Air_Temp = °C
-Units Air_Humidity = %
-Units Air_Pressure = hPa
-Units Dir_Min2 = °
-Units Dir_Ave2 = °
-Units Dir_Max2 = °
-Units Spd_Min2 = Kn
-Units Spd_Ave2 = Kn
-Units Spd_Max2 = Kn
-Units Rain_Total = mm
-Units Rain_Duration = sec
-Units Rain_Intensity = mm/h
-Units Hail_Total = mm
-Units Hail_Duration = sec
-Units Hail_Intensity = mm/h
-
-DataTable (FileWXT536,1,-1) 'Set table size to # of records, or -1 to autoallocate.
-	DataInterval (0,0,Sec,10)
-  Sample (1,Air_Temp,IEEE4)
-  Sample (1,Air_Humidity,IEEE4)
-  Sample (1,Air_Pressure,IEEE4)
-  Sample (1,Dir_Min2,IEEE4)
-  Sample (1,Dir_Ave2,IEEE4)
-  Sample (1,Dir_Max2,IEEE4)
-  Sample (1,Spd_Min2,IEEE4)
-  Sample (1,Spd_Ave2,IEEE4)
-  Sample (1,Spd_Max2,IEEE4)
-  Sample (1,Rain_Total,IEEE4)
-  Sample (1,Rain_Duration,IEEE4)
-  Sample (1,Rain_Intensity,IEEE4)
-  Sample (1,Hail_Total,IEEE4)
-  Sample (1,Hail_Duration,IEEE4)
-  Sample (1,Hail_Intensity,IEEE4)
-EndTable
-
-
-'#T3 Declare Compass %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Dim X, Y
-Dim ASCIIString As String * 100
-Dim RawCompass(9) As String
-Dim Heading_Vec(2) As Float : Alias Heading_Vec = Heading_x, Heading_y
-Public Compass(3) As Float : Alias Compass = Heading, Pitch, Roll
-Units Heading = °
-Units Pitch = °
-Units Roll = °
-
-DataTable (FileCompass,1,-1)
-  DataInterval(0,0,Sec,10)
-  Sample (1,Heading,String)
-  Sample (1,Pitch,String)
-  Sample (1,Roll,String)
-EndTable
-
-
-'#T4 Declare GPS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Dim RawGPS As String * 100
-Dim HVS(13) As String : Alias HVS = GPS_Header,GPS_Time,GPS_Status,Lat,Lat_Hem,Lon,Lon_Hem,Speed_Over_Ground,Course_Over_Ground,GPS_Date,Magnetic_Variation,Mag_Var_Dir,Check_GPS
-Dim GPS_Vector_X As Float, GPS_Vector_Y As Float
-
-Public Latitude As String,Longitude As String, SOG As Float, COG As Float, Mag_Var As Float
-Dim UTC_Date_Hyphen As String, UTC_Date_Slash As String, UTC_Date_Short As String, UTC_Time_Short As String, UTC_Time_DDot As String
-
-Units SOG = Kn
-Units COG = °
-Units Mag_Var = °
-
-DataTable (FileGPS,1,-1)
-  DataInterval(0,0,Sec,10)
-  Sample (1,UTC_Date_Slash,String)
-  Sample (1,UTC_Time_DDot,String)
-  Sample (1,Latitude,String)
-  Sample (1,Longitude,String)  
-  Sample (1,SOG,IEEE4)
-  Sample (1,COG,IEEE4)
-  Sample (1,Mag_Var,IEEE4)
-EndTable
-
-
-'#T5 Declare PAR %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Dim RawPAR As String * 60
-Dim PARSensor(5) String : Alias PARSensor = PAR_Timer, PAR, PAR_Pitch, PAR_Roll, PAR_Int_Temp
-
-DataTable (FilePAR,1,-1)
-  DataInterval(0,0,Sec,10)
-  Sample (1,PAR_Timer,IEEE4)
-  Sample (1,PAR,IEEE4)
-  Sample (1,PAR_Pitch,IEEE4)
-  Sample (1,PAR_Roll,IEEE4)
-  Sample (1,PAR_Int_Temp,IEEE4)
-EndTable
-
-
-'#T6 Declare HyperOCR_I %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Public RawOCRI As String * 500
-Public StringOCRI As String * 1000
-
-
-'#W1 Declare CTD SBE37 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Dim RawSBE37_SalinityTest As String * 40
-Dim RawSBE37 As String * 40
-
-Public SBE37(4) As Float : Alias SBE37 = Water_Temp,Conductivity,Salinity,Density
-
-Units Water_Temp = °C
-Units Conductivity = S/m
-Units Salinity = PSU
-Units Density = Kg/m³
-
-DataTable (FileSBE37,1,-1) 
-	DataInterval (0,0,Sec,10)
-  Sample (1,Water_Temp,IEEE4)
-  Sample (1,Conductivity,IEEE4)
-  Sample (1,Salinity,IEEE4)
-  Sample (1,Density,IEEE4)
-EndTable
-
-
-'#W2 Declare ECO-Triplet &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-Dim RawTriplet As String * 200
-
-Dim Triplet(11) As String : Alias Triplet = Triplet_Date, Triplet_Hour, Sct_wl, Raw_Sct, Sct_Value, Chl_wl, Raw_Chl, Chl_Value, FDOM_wl, Raw_FDOM, FDOM_Value
-Public Triplet_Value(3) As Float : Alias Triplet_Value = Scattering, Chlorophyll, FDOM
-
-DataTable (FileTriplet,1,-1)
-  DataInterval(0,0,Sec,10)
-  Sample (1,Raw_Sct,String)
-  Sample (1,Sct_Value,String)
-  Sample (1,Raw_Chl,String)
-  Sample (1,Chl_Value,String)
-  Sample (1,Raw_FDOM,String)
-  Sample (1,FDOM_Value,String)
-EndTable
-  
-
-'#W3 Declare Seafet %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Public RawSeafet As String * 120
-Public Seafet_Value(10) As String : Alias Seafet_Value = Date_Time_Seafet, Sample_Number, Error_Flag, Ext_pH_Value, Int_pH_Value, Volt_Ext_pH, Volt_Int_pH, pH_Temp, Seafet_Rel_Hum, Seafet_Int_Temp
-Public Seafet(2) As Float : Alias Seafet = Int_pH, Ext_pH
-Public Seafet_Pro(2) As Float : Alias Seafet_Pro = Ext_pH_P, Int_pH_P
-
-
-'Constant to auto-proceed the pH value with Temp and Sal from CTD
-Const R = 8.3144621 'Universal Gas constant in J/Kmol
-Const F = 96485.365 'Faraday constant
-Const Kelvin = 273.15
-
-Public Coeff_Exp(4) As String : Alias Coeff_Exp = K0_Int_Exp, K2_Int_Exp, K0_Ext_Exp, K2_Ext_Exp
-Public Coeff_Raw As String * 300
-Public K0_Int, K2_Int, K0_Ext, K2_Ext As Float
-Dim Snernst, Clt, log_yHClT, St, Water_Temp_K, I, Adh
-Dim Ks_Tab(6) : Alias Ks_Tab = Ks1, Ks2, Ks3, Ks4, Ks5, Ks
-
-
-DataTable (FileSeafet,1,-1)
-	DataInterval (0,0,Sec,10)
-  Sample (1,Ext_pH,IEEE4)
-  Sample (1,Int_pH,IEEE4)
-  Sample (1,Error_Flag,FP2)
-  Sample (1,Volt_Ext_pH,IEEE4)
-  Sample (1,Volt_Int_pH,IEEE4)
-  Sample (1,pH_Temp,IEEE4)
-EndTable
-
-DataTable (FileSeafet_Pro,1,-1)
-  DataInterval (0,0,Sec,10)
-  Sample (1,Ext_pH_P,IEEE4).
-  Sample (1,Int_pH_P,IEEE4)
-  Sample (1,Water_Temp,IEEE4)
-  Sample (1,Salinity,IEEE4)
-  Sample (1,K0_Int,IEEE4)
-  Sample (1,K2_Int,IEEE4)
-  Sample (1,K0_Ext,IEEE4)
-  Sample (1,K2_Ext,IEEE4)
-EndTable
-
-
-'#W4 Declare SUNA &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-Dim RawSUNADark As String * 80
-Dim RawSUNALight As String * 80
-
-Dim SUNADark(8) As Float : Alias SUNADark = SUNA_Dark_Date, SUNA_Dark_Time, Dark_Nitrate, Dark_Nitrogen_in_Nitrate, Dark_254nm, Dark_300nm, Dark_Bromide, SUNA_Dark_RMSE
-Dim SUNALight(8) As Float : Alias SUNALight = SUNA_Light_Date, SUNA_Light_Time, Light_Nitrate, Light_Nitrogen_in_Nitrate, Light_254nm, Light_300nm, Light_Bromide, SUNA_Light_RMSE
-
-Units Dark_Nitrate = µM
-Units Light_Nitrate = µM
-Units Dark_Nitrogen_in_Nitrate = mgN/L
-Units Light_Nitrogen_in_Nitrate = mgN/L
-Units Dark_Bromide = mg/L
-Units Light_Bromide = mg/L
-
-DataTable(FileSUNA_Dark,1,-1)
-  DataInterval(0,0,Sec,10)
-  Sample (1,Dark_Nitrate,IEEE4)
-  Sample (1,Dark_Nitrogen_in_Nitrate,IEEE4)
-  Sample (1,Dark_254nm,IEEE4)
-  Sample (1,Dark_300nm,IEEE4)
-  Sample (1,Dark_Bromide,IEEE4)
- EndTable
- 
-DataTable(FileSUNA_Light,1,-1)
-  DataInterval(0,0,Sec,10)
-  Sample (1,Light_Nitrate,IEEE4)
-  Sample (1,Light_Nitrogen_in_Nitrate,IEEE4)
-  Sample (1,Light_254nm,IEEE4)
-  Sample (1,Light_300nm,IEEE4)
-  Sample (1,Light_Bromide,IEEE4)
- EndTable
-
- 
-'#W5 PCO2 &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-Dim RawPCO2 As String * 1000
-Dim RawPCO2_Air As String * 100
-Dim RawPCO2_Water As String * 100
-
-Public PCO2_Last_Sample As Long
-Dim Buoy_TimeStamp_1990 As Long
-Public PCO2_Sampling As Boolean
-
-Dim PCO2WStart
-Dim PCO2WEnd
-Dim PCO2AStart
-Dim PCO2AEnd
-
-
-Dim PCO2(14) As String : Alias PCO2 = PCO2_Year, PCO2_Month, PCO2_Day, PCO2_Hour, PCO2_Minute, PCO2_Second, PCO2_Zero, PCO2_AD, CO2, Ave_IRGA, PCO2_Humidity, PCO2_Temp, PCO2_Gaz_Pressure, PCO2_Voltage
-Dim CO2_Water = "#.#", PCO2_Gaz_Pressure_Water, PCO2W_Humidity, CO2_Air = "#.#", PCO2_Gaz_Pressure_Air
-Dim PCO2_Date As String, PCO2_Time As String, PCO2_Type As String
-
-
-Units CO2_Water = ppm
-Units CO2_Air = ppm
-Units PCO2_Gaz_Pressure_Water = mbar
-Units PCO2_Gaz_Pressure_Air = mbar
-Units PCO2W_Humidity = %
-
-DataTable(FilePCO2W,1,-1)
-  DataInterval(0,0,Sec,10)
-  Sample (1,PCO2_Type,String)
-  Sample (1,PCO2_Date,String)
-  Sample (1,PCO2_Time,String)
-  Sample (1,PCO2_Zero,IEEE4)
-  Sample (1,PCO2_AD,IEEE4)
-  Sample (1,CO2_Water,String)
-  Sample (1,Ave_IRGA,IEEE4)
-  Sample (1,PCO2_Humidity,IEEE4)
-  Sample (1,PCO2_Temp,IEEE4)
-  Sample (1,PCO2_Gaz_Pressure,IEEE4)
-  Sample (1,PCO2_Voltage,IEEE4)
-  Sample (1,RawPCO2,String)
-  Sample (1,RawPCO2_Water,String)
-EndTable
-
-DataTable(FilePCO2A,1,-1)
-  DataInterval(0,0,Sec,10)
-  Sample (1,PCO2_Type,String)
-  Sample (1,PCO2_Date,String)
-  Sample (1,PCO2_Time,String)
-  Sample (1,PCO2_Zero,IEEE4)
-  Sample (1,PCO2_AD,IEEE4)
-  Sample (1,CO2_Air,String)
-  Sample (1,Ave_IRGA,IEEE4)
-  Sample (1,PCO2_Humidity,IEEE4)
-  Sample (1,PCO2_Temp,IEEE4)
-  Sample (1,PCO2_Gaz_Pressure,IEEE4)
-  Sample (1,PCO2_Voltage,IEEE4)
-  Sample (1,RawPCO2,String)
-  Sample (1,RawPCO2_Air,String)
-EndTable
-
-
-
-'#W6 Flowmeter &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
-
-'#W7 HyperOCR_R &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-Public RawOCRR As String * 500
-Public BytesBuffer As String
-Public StringOCRR As String * 1000
-
-DataTable(FileHyperOCR,1,-1)
-  DataInterval(0,0,Sec,10)
-  Sample(1,StringOCRR,String)
-  Sample(1,StringOCRI,String)
-EndTable
-
-'#M1 Wave_Monitor &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-Dim RawWave As String * 80
-Dim Wave(6) As String : Alias Wave = Wave_Date, Wave_Time, Wave_Period, Wave_Hm0, Wave_H13, Wave_Hmax
-
-Units Wave_Period = Sec
-Units Wave_Hm0 = m
-Units Wave_H13 = m
-Units Wave_Hmax = m
-
-DataTable(FileWave,1,-1)
-  DataInterval(0,0,Sec,10)
-  Sample (1,Wave_Date,String)
-  Sample (1,Wave_Time,String)
-  Sample (1,Wave_Period,IEEE4)
-  Sample (1,Wave_Hm0,IEEE4)
-  Sample (1,Wave_H13,IEEE4)
-  Sample (1,Wave_Hmax,IEEE4)
- EndTable
-
-
-'#M2 Water_Detection_Main &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-Public Water_Detection_Main 
-
-
-'#M3 Power Controller &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-Dim RawPower As String * 150
-Dim Power(11) As Float : Alias Power = VBatt1, ABatt1, VBatt2, ABatt2, VSolar, ASolar, AMain, ATurbine, AWinch, PM_RH, Relay_State
-Dim PowerString(11) As String
-Dim VBatt_to_SD
-
-DataTable(FilePower,1,-1)
-  DataInterval(0,0,Sec,10)
-  Sample (1,VBatt1,IEEE4)
-  Sample (1,ABatt1,IEEE4)
-  Sample (1,VBatt2,IEEE4)
-  Sample (1,ABatt2,IEEE4)
-  Sample (1,VSolar,IEEE4)
-  Sample (1,ASolar,IEEE4)
-  Sample (1,AMain,IEEE4)
-  Sample (1,ATurbine,IEEE4)
-  Sample (1,AWinch,IEEE4)
-  Sample (1,PM_RH,IEEE4)
-  Sample (1,PowerString(11),String)
- EndTable
-
-
-'#M4 ADCP &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 Public Send_Break_to_ADCP = false
-Include "CPU:adcp.cr6"
-' Dim RawADCP(31) As String * 100
 
-' Dim ADCPHeader(3) As String : Alias ADCPHeader = ADCPDate, ADCPTime, ADCPSmpNbr
-' Dim ADCPBin1(11) As Float : Alias ADCPBin1 = Bin, ADCPDir, ADCPMag, EW, NS, Vert, Err, Echo1, Echo2, Echo3, Echo4
+'###### DECLARING INSUTRMENTS #####
 
-' DataTable(FileADCP,1,-1)
-'   DataInterval(0,0,Sec,10)
-'   Sample(1,RawADCP(1),String)
-'   Sample(1,RawADCP(2),String)
-'   Sample(1,RawADCP(3),String)
-'   Sample(1,RawADCP(4),String)
-'   Sample(1,RawADCP(5),String)
-'   Sample(1,RawADCP(6),String)
-'   Sample(1,RawADCP(7),String)
-'   Sample(1,RawADCP(8),String)
-'   Sample(1,RawADCP(9),String)
-'   Sample(1,RawADCP(10),String)
-'   Sample(1,RawADCP(11),String)
-'   Sample(1,RawADCP(12),String)
-'   Sample(1,RawADCP(13),String)
-'   Sample(1,RawADCP(14),String)
-'   Sample(1,RawADCP(15),String)
-'   Sample(1,RawADCP(16),String)
-'   Sample(1,RawADCP(17),String)
-'   Sample(1,RawADCP(18),String)
-'   Sample(1,RawADCP(19),String)
-'   Sample(1,RawADCP(20),String)
-'   Sample(1,RawADCP(21),String)
-'   Sample(1,RawADCP(22),String)
-'   Sample(1,RawADCP(23),String)
-'   Sample(1,RawADCP(24),String)
-'   Sample(1,RawADCP(25),String)
-'   Sample(1,RawADCP(26),String)
-'   Sample(1,RawADCP(27),String)
-'   Sample(1,RawADCP(28),String)
-'   Sample(1,RawADCP(29),String)
-'   Sample(1,RawADCP(30),String)
-'   Sample(1,RawADCP(31),String)
-' EndTable
+Include "CPU:wmt700.cr6"                    '#T1 Declare WMT700
+Include "CPU:wtx536.cr6"                    '#T2 Declare WMT536
+Include "CPU:compass.cr6"                   '#T3 Declare Compass
+Include "CPU:gps.cr6"                       '#T4 Declare GPS
+Include "CPU:par.cr6"                       '#T5 Declare PAR
+Include "CPU:ocri.cr6"                      '#T6 Declare HyperOCR_I 
+Include "CPU:sbe37.cr6"                     '#W1 Declare CTD SBE37 
+Include "CPU:eco_triplet.cr6"               '#W2 Declare ECO-Triplet
+Include "CPU:seafet.cr6"                    '#W3 Declare Seafet 
+Include "CPU:suna.cr6"                      '#W4 Declare SUNA 
+Include "CPU:pco2.cr6"                      '#W5 PCO2
+'#W6 Flowmeter Todo ? Useless ?
+Include "CPU:hyper_ocr_r.cr6"               '#W7 HyperOCR_R 
+Include "CPU:wave_monitor.cr6"              '#M1 Wave_Monitor 
+Include "CPU:water_detection_main.cr6"      '#M2 Water_Detection_Main 
+Include "CPU:power_controller.cr6"          '#M3 Power Controller
+Include "CPU:adcp.cr6"                      '#M4 ADCP 
+Include "CPU:winch.cr6"                     '#M5 Winch 
 
-
-
-'#M5 Winch &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
-Const Min_Air_Temp_for_Winch = 1
-Const Max_Wave_H13_for_Winch = 2
-Const Min_Wave_Period_for_Winch = 6
-Const Max_Flow_for_Winch = 1
-Const Max_Buoy_Speed_for_Winch = 1
-Const Min_Voltage_for_Winch = 12.2
-
-Public OnWhichBattery
-Public WinchMessage As String * 50
-Public MissingCondition As Long
-Public Winch_Voltage As Float
-Public Winch_Last_Sample As Long
-Public Winch_Sampling As Boolean
-Public WinchString As String * 50
-Public WinchFileName As String * 50
-
-Dim Winch_Date_Hyphen As String
-Dim Winch_Date_Slash As String
-Dim Winch_Time_Short As String
-Dim Winch_Time_DDot As String
-Dim Winch_Lat As String
-Dim Winch_Long As String
-
-
-'
-' Different processing past this point
-'
-
-
+'####### Different processing past this point #######
 
 'Wind compensation by Compass and GPS
 
@@ -614,52 +199,7 @@ DataTable (Raw,1,-1)
   Sample (1,RawPCO2_Air,String)
   Sample (1,WinchMessage,String)
 EndTable
-
-'
-'DataTable(SD,1,-1)
-'  DataInterval(0,0,Sec,10)
-'    Sample(1,Buoy_Name,String)
-'    Sample(1,UTC_Date_Hyphen,String)
-'    Sample(1,UTC_Time_DDot,String)
-'    Sample(1," "&Mid(Lat,1,2)&" "&Mid(Lat,3,5)&Lat_Hem,String)
-'    Sample(1,Mid(Lon,1,3)&" "&Mid(Lon,4,5)&Lon_Hem,String)
-'    Sample(1,Round(Wind_Spd_Ave,0),String)
-'    Sample(1,Round(Wind_Spd_Max,0),String)
-'    Sample(1,Round(Wind_Dir_Ave,0),String)
-'    Sample(1,Round(Air_Temp,1),String)
-'    Sample(1,Round(Air_Humidity,1),String)
-'    Sample(1,Air_Pressure,String)
-'    Sample(1,Round(Water_Temp,2),String)
-'    Sample(1,Round(Salinity,2),String)
-'    Sample(1,Round(Density,2),String)
-'    Sample(1,Round(Scattering,6),String)
-'    Sample(1,Round(Chlorophyll,3),String)
-'    Sample(1,Round(FDOM,3),String)
-'    Sample(1,Round(PAR,0),String)
-'    Sample(1,Round(CO2_Water,1),String)
-'    Sample(1,Round(CO2_Air,1),String)
-'    Sample(1,Round(Ext_pH_P,4),String)
-'    Sample(1,Round(Wave_Period,1),String)
-'    Sample(1,Round(Wave_H13,1),String)
-'    Sample(1,Round(Wave_Hmax,1),String)
-'    Sample(1,Round(VBatt_to_SD,1),String)
-'    Sample(1,Round(ASolar,1),String)
-'    Sample(1,Round(ATurbine,1),String)
-'    Sample(1,Round(AMain+AWinch,1),String)
-'    Sample(1,Round(Pitch,0),String)
-'    Sample(1,Round(Roll,0),String)
-'    Sample(1,"#.#",String) 'Flowmeter Round(X,1)
-'    Sample(1,Round(Heading,0),String)
-'    Sample(1,Round(SOG,1),String)
-'    Sample(1,Round(COG,0),String)
-'    Sample(1,Rain_Total,String)
-'    Sample(1,"#.##",String) 'ADCP m/s Round(X,2)
-'    Sample(1,"#",String) 'ADCP heading Round (X,0)
-'    Sample(1,Water_Detection_Main,String)
-'    Sample(1,Mid(PowerString(11),8,1),String)
-'    Sample(1,"#",String) 'Water Detection in Winch   
-'EndTable
-'    
+ 
 
 '------------------------------------------------------------------------------
 '----------------------------- Main Program -----------------------------------
@@ -703,215 +243,54 @@ BeginProg
   'This is turning the Wifi Off
   SetSetting("WIFIconfig",4)
 
+  Call CloseCR6SerialPorts
+      
+  Call CloseSDM4SerialPorts
+
+  Call StartADCP        
   
-'Close all serial port on CR6 if still open
-    For SerialPort = 11 To 16 Step 1
-      If SerialPort = 12 Then
-        'Do not close the ADCP port
-      Else
-        SerialClose(SerialPort)
-      EndIf
-    Next SerialPort
+  Scan(Buoy_Interval,Min,0,0)
+  ScanDateTime = Public.TimeStamp(4,0)
+  WhereAmI = "Initializing instrument"
+    
+  Call StartWaterDetectionSensor
       
-'Close all serial port on SDM4, except for PCO2 (40) which must stays on is PCO2 is sampling
-    For SerialPort = 32 To 47 Step 1
-      If SerialPort = 40 AND PCO2_Sampling = true Then
-      'Do not close the port
-      Else
-        SerialClose(SerialPort)
-      EndIf
-    Next SerialPort
-        
-    If With_ADCP <> 0 Then
-      SerialOpen(SerialADCP,115200,3,0,3000)
-    EndIf
-    
-  Scan (Buoy_Interval,Min,0,0)
-    ScanDateTime = Public.TimeStamp(4,0)
-    WhereAmI = "Initializing instrument"
-    
-'5V to the Water Detection sensor, sample taked at the end --------------------
-    If With_WD_Main <> 0 Then
-      PortSet(C4,1)
-      EndIf
-      
-    
-'Starting the weather instrument as soon as possible to stabilize the OCR, start the PAR sample and initialize the WMT700
-    If With_PAR <> 0 OR With_WMT700 <> 0 OR With_Compass <> 0 OR With_OCR_I <> 0 Then  
-      SW12(SW12_1,1)
-      Tower_Switch = True
-      Tower_Timer = Timer(7,Sec,0)
-    EndIf
-    
-      
-   'Open the RS485 port if there's one of the intruments
-    If With_WXT536 <> 0 OR With_WMT700 <> 0 OR With_Compass <> 0 Then
-     'Opening SDM and PAR (T5) voltage. 1sec before communication  
-      SerialOpen(SerialTower,19200,51,20,500) 'for 2R! test
-    EndIf
-    
-    'Open the PAR port if present, sending the data as soon as it's ready
-    If With_PAR <> 0 Then
-      SerialOpen(SerialPAR,19200,3,20,100)
-    End If
+  'Starting the weather instrument as soon as possible to stabilize the OCR, start the PAR sample and initialize the WMT700
+  Call StartWeatherInstruments
 
-     
-
+    
 'GPS (T4) --------------------------------------------------------------------
-'    HVS() = "NAN"
-'    RawGPS = "NAN"
-    WhereAmI = "Start GPS"
-'    If With_GPS <> 0 Then
-'      SerialOpen(SerialGPS,19200,3,20,1000)
-'      SerialFlush(SerialGPS)
-'      Timer(2,Sec,0) 'Timer to make sure the buoy doesn't search for GPS string for eternity
-'      Do
-'      SerialInRecord(SerialGPS,RawGPS,&H432C,0,&H0D0A,NBR,01)  ' Looking for "C," and ending by <CR><LF>
-'      'SerialIn(RawGPS,SerialGPS,150,CHR(13),80)
-'      SplitStr(HVS(),RawGPS,",",12,5)
-'      If Mid(GPS_Time,1,2) >= 0 AND Mid(GPS_Time,1,2) < 24 Then
-'        ExitDo 
-'        EndIf
-'      Loop While Timer(2,Sec,4) < 5
-'      Timer(2,Sec,1)
-'      GPS_Timer = Timer(2,Sec,4)
-'      Timer(2,Sec,3)
-'      
-'      'Loop While RawGPS = "NAN" AND Timer(2,Sec,4) < 5 '4 second timeout before processing further
-'      'Timer_Value(2) = Timer(2,Sec,4)
-'      'Timer(2,Sec,3)  ' Making a stop and reset on the Timer#2
-'      SerialClose(SerialGPS)
-'     
-'     'If no GPS string found, all Array is NAN except for SOG and COG
-'      If RawGPS = "NAN" Then
-'        HVS() = "NAN"
-'        HVS(7) = 0
-'        HVS(8) = 0
-'        
-'        Else 'The RawGPS will be split and proceed
-'          'RawGPS = "RMC"&RawGPS    'Putting an header to the GPS String
-'          SplitStr(HVS(),RawGPS,",",12,5)
-'          
-'         'Processing Date/Time
-'          UTC_Date_Hyphen = "20"&Mid(GPS_Date,5,2)&"-"&Mid(GPS_Date,3,2)&"-"&Mid(GPS_Date,1,2)
-'          UTC_Date_Slash = "20"&Mid(GPS_Date,5,2)&"/"&Mid(GPS_Date,3,2)&"/"&Mid(GPS_Date,1,2)
-'          UTC_Date_Short = "20"&Mid(GPS_Date,5,2)&Mid(GPS_Date,3,2)&Mid(GPS_Date,1,2)
-'          
-'          UTC_Time_DDot = Mid(GPS_Time,1,2)&":"&Mid(GPS_Time,3,2)&":"&Mid(GPS_Time,5,2)
-'          UTC_Time_Short = Mid(GPS_Time,1,2)&Mid(GPS_Time,3,2)&"00"
-'          ClockSet (UTC_Date_Hyphen&" "&UTC_Time_DDOt)
-'          
-'         'Putting the start of the Data Collection
-'            UTC_Time_DDot = Mid(GPS_Time,1,2)&":"&Mid(GPS_Time,3,2)&":00"
-'            UTC_Time_Short = Mid(GPS_Time,1,4)&"00"
+  WhereAmI = "Start GPS"
+  If With_GPS <> 0 Then
+    
+    Call SampleGPS
 
-
-
-    If With_GPS <> 0 Then
-      SerialOpen(SerialGPS,19200,3,20,1000)
-      SerialFlush(SerialGPS)
-      SerialIn(RawGPS,SerialGPS,150,10,80)
-      HVS() = 0 'HVS = GPS_Header, GPS_Time, GPS_Status, Lat, Lat_Hem, Lon, Lon_Hem, Speed_Over_Ground, Course_Over_Ground, GPS_Date, Magnetic_Variation, Mag_Var_Dir, Check_GPS
-      GPS_Vector_X = 0
-      GPS_Vector_Y = 0
-      SOG = 0
-      COG = 0
-      For X = 1 To 10 Step 1
-        SerialIn(RawGPS,SerialGPS,150,10,80)
-        SplitStr(HVS(),RawGPS,",",13,5)
-        If Speed_Over_Ground = "" Then
-          COG = 0
-          SOG = 0
-        Else
-        COG = Course_Over_Ground
-        SOG = Speed_Over_Ground
-        EndIf
-        
-        GPS_Vector_X = GPS_Vector_X + (SOG * COS(COG))
-    	  GPS_Vector_Y = GPS_Vector_Y + (SOG * SIN(COG))
-    	Next
-    	
-    	SerialClose(SerialGPS)
-    	
-      'Putting the CR6 at GPS Date/Time
-    	UTC_Time_DDot = Mid(GPS_Time,1,2)&":"&Mid(GPS_Time,3,2)&":"&Mid(GPS_Time,5,2)
-      UTC_Date_Hyphen = "20"&Mid(GPS_Date,5,2)&"-"&Mid(GPS_Date,3,2)&"-"&Mid(GPS_Date,1,2)
-      ClockSet (UTC_Date_Hyphen&" "&UTC_Time_DDOt)
-      
-      'Creating variables with different formats
-      UTC_Time_Short = Mid(ScanDateTime,12,2)&Mid(ScanDateTime,15,2)&Mid(ScanDateTime,18,2)
-      UTC_Time_DDot = Mid(ScanDateTime,12,8)
-      
-      UTC_Date_Slash = Mid(ScanDateTime,1,4)&"/"&Mid(ScanDateTime,6,2)&"/"&Mid(ScanDateTime,9,2)
-      UTC_Date_Hyphen = Mid(ScanDateTime,1,10)
-      UTC_Date_Short = Mid(ScanDateTime,1,4)&Mid(ScanDateTime,6,2)&Mid(ScanDateTime,9,2)
-     
-     'Processing COG and SOG
-      SOG = Round(SQR(PWR(GPS_Vector_X,2)+PWR(GPS_Vector_Y,2))/10,2)
-      COG = Round(ATN2(GPS_Vector_Y,GPS_Vector_X),1)
-      If COG < 0 Then
-        COG = 360 + COG
-      EndIf        
-
-     'Processing Lat/Long & Magnetic Variation                  
-      Latitude = Mid(Lat,1,2)&"°"&Mid(Lat,3,6)&"'"&Lat_Hem
-      Longitude = Mid(Lon,1,3)&"°"&Mid(Lon,4,6)&"'"&Lon_Hem
-
-    ' Converting Magnetic Variation to decimal
-      If Mid(Mag_Var_Dir,1,1) = "W" Then
-        Magnetic_Variation = "-"&Mid(Magnetic_Variation,2,5)
-      Else
-        Magnetic_Variation = "+"&Mid(Magnetic_Variation,2,5)
-      EndIf
+    CallTable FileGPS  
   
-     'Processing Buoy's Speed&Direction 
-      If Speed_Over_Ground = "" Then
-        Speed_Over_Ground = 0
-      EndIf
-      If Course_Over_Ground = "" Then
-        Course_Over_Ground = 0
-      EndIf
-       
-     'Putting the String value in Float or Long variables 
-      Mag_Var = Magnetic_Variation  
-          
-
-      CallTable(FileGPS)
-      EndIf  'With_GPS
-
-    WhereAmI = "EndGPS, start Start Tower"
+  EndIf
+  WhereAmI = "EndGPS, start Start Tower"
 
 
 'WXT536 (T2) Start sampling ---------------------------------------------------
-    If With_WXT536 <> 0 Then
-	    RealTime(Buoy_Time) 'Collecting buoy time to see if it's time to reset the rain/hail accumulation
-	    'Timer(6,Hr,0) 'Start the timer if it isn't started
-	    RainReset_Timer = Timer(6,Hr,4)
-	    
-     'Reset Rain if 00:00 or active for more than 24h
-	    If UTC_Time_DDot = "00:00:00" OR RainReset_Timer >= 24 Then
-	      SerialOut(SerialTower,CHR(13)&CHR(10)&"2XZRU"&CHR(13)&CHR(10),"",1,0)
-	      SerialOut(SerialTower,CHR(13)&CHR(10)&"2XZRI"&CHR(13)&CHR(10),"",1,0)
-	      Timer(6,Hr,2) 'Timer #6 Reset&Start
-	    EndIf	
-	    
-      'Reset wind & weather measurements    
-	    SerialOut(SerialTower,CHR(13)&CHR(10)&"2XZM"&CHR(13)&CHR(10),"",1,0)    
-	  EndIf 'With_WXT536
+  If With_WXT536 <> 0 Then
+    
+    Call SampleWXT536
+  
+  EndIf 'With_WXT536
 
 
-	  If With_WMT700 <> 0 Then
-      Tower_Timer = Timer(7,Sec,4)
-      If Tower_Timer < 8 Then
-        Delay(1,8-Tower_Timer,Sec)
-      EndIf
-	    SerialOut(SerialTower,"$Ameas,1"&CHR(10),"",1,0)
-	  EndIf
-	    
-   'Start Timer#1 to collect data in 61sec
-	  If With_WXT536 <> 0 OR With_WMT700 <> 0 OR With_PAR <> 0 Then
-	    Timer(1,Sec,0)
-	  EndIf
+  If With_WMT700 <> 0 Then
+    Tower_Timer = Timer(7,Sec,4)
+    If Tower_Timer < 8 Then
+      Delay(1,8-Tower_Timer,Sec)
+    EndIf
+    SerialOut(SerialTower,"$Ameas,1"&CHR(10),"",1,0)
+  EndIf
+    
+  'Start Timer#1 to collect data in 61sec
+  If With_WXT536 <> 0 OR With_WMT700 <> 0 OR With_PAR <> 0 Then
+    Timer(1,Sec,0)
+  EndIf
 
 
 
@@ -1060,8 +439,7 @@ BeginProg
     ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & UTC_Date_Short & UTC_Time_Short & ".dat","a",-1)
     TAGFile = FileOpen("CRD:" & Buoy_Name & "_TAGFile.txt","a",-1)
     
-    FileWrite(TAGFile,TAGString & CHR(10),0)
-    FileWrite(ToTransmit,TAGString & CHR(10),0)
+    Call WriteTagString
   
 'Power (M3) -------------------------------------------------------------------
     If With_Power <> 0 Then
@@ -1103,8 +481,7 @@ BeginProg
       CallTable FilePower
       
       TAGString = "[POWR]" & VBatt1 & "," & ABatt1 & "," & VBatt2 & "," & ABatt2 & "," & VSolar & "," & ASolar & "," & AMain & "," & ATurbine & "," & AWinch & "," & PM_RH & "," & PowerString(11)
-      FileWrite(TAGFile,TAGString & CHR(10),0)
-      FileWrite(ToTransmit,TAGString & CHR(10),0)
+      Call WriteTagString
     
     EndIf
 
@@ -1128,8 +505,7 @@ BeginProg
       CallTable FileTriplet
       
       TAGString = "[TRP1]" & Scattering & "," & Chlorophyll & "," & FDOM
-      FileWrite(TAGFile,TAGString & CHR(10),0)
-      FileWrite(ToTransmit,TAGString & CHR(10),0)
+      Call WriteTagString
       
       EndIf 'With_Triplet
       
@@ -1264,8 +640,7 @@ BeginProg
       CallTable FileSBE37
       
       TAGString = "[CTD]" & Water_Temp & "," & Conductivity & "," & Salinity & "," & Density
-      FileWrite(TAGFile,TAGString & CHR(10),0)
-      FileWrite(ToTransmit,TAGString & CHR(10),0)
+      Call WriteTagString
       
      EndIf
     WhereAmI = "CTD's finished"
@@ -1420,8 +795,7 @@ BeginProg
       
       CallTable FileSeafet
       
-      FileWrite(TAGFile,TAGString & CHR(10),0)
-      FileWrite(ToTransmit,TAGString & CHR(10),0)
+      Call WriteTagString
       
     EndIf 'With_Seafet
 
@@ -1453,9 +827,9 @@ BeginProg
         CallTable FileSUNA_Light
         
         TAGString = "[SUNA]" & Dark_Nitrate & "," & Light_Nitrate & "," & Dark_Nitrogen_in_Nitrate & "," & Light_Nitrogen_in_Nitrate & "," & Dark_Bromide & "," & Light_Bromide
-        FileWrite(TAGFile,TAGString & CHR(10),0)
-        FileWrite(ToTransmit,TAGString & CHR(10),0)
-       EndIf
+        Call WriteTagString
+      
+      EndIf
     EndIf
 
 'Pumped sensor are done, close pump -------------------------------------------
@@ -1651,12 +1025,10 @@ BeginProg
       CallTable Weather
       
       TAGString = WindTAG & Wind_Dir_Min & "," & Wind_Dir_Ave & "," & Wind_Dir_Max & "," & Wind_Spd_Min & "," & Wind_Spd_Ave & "," & Wind_Spd_Max
-      FileWrite(TAGFile,TAGString & CHR(10),0)
-      FileWrite(ToTransmit,TAGString & CHR(10),0)
+      Call WriteTagString
       
       TAGString = "[ATMS]" & Air_Temp & "," & Air_Humidity & "," & Air_Pressure & "," & PAR & "," & Rain_Total & "," & Rain_Duration & "," & Rain_Intensity
-      FileWrite(TAGFile,TAGString & CHR(10),0)
-      FileWrite(ToTransmit,TAGString & CHR(10),0)
+      Call WriteTagString
       
     EndIf 'Creating weather file
       
@@ -1690,27 +1062,13 @@ BeginProg
 
     If With_ADCP <> 0 Then
       Call SampleADCP
-      ' For X = 1 To 31 Step 1
-      '   SerialIn(RawADCP(X),SerialADCP,10,10,100)
-      '   If X > 3 Then
-      '     RawADCP(X) = Replace(RawADCP(X),"  "," ")
-      '     RawADCP(X) = Replace(RawADCP(X),"  "," ")
-      '     RawADCP(X) = Replace(RawADCP(X),"  "," ")
-      '     RawADCP(X) = Replace(RawADCP(X),"  "," ")
-      '     RawADCP(X) = LTrim(RawADCP(X))
-      '     RawADCP(X) = Replace(RawADCP(X)," ",",")
-      '   EndIf
-      ' Next X
-      SerialFlush(SerialADCP)
       
-      ' SplitStr(ADCPHeader,RawADCP(1)," ",3,5)
-      ' SplitStr(ADCPBin1,RawADCP(5),",",11,5)
+      TAGString = ADCPTagString()
       
-      TAGString = "[RDI]" & ADCPDate & "," & ADCPTime & "," & ADCPDir & "," & ADCPMag
-      FileWrite(ToTransmit,TAGString & CHR(10),0)
-      FileWrite(TAGFile,TAGString & CHR(10),0)
+      Call WriteTagString
 
-    CallTable FileADCP
+      CallTable FileADCP
+    
     EndIf
       
 
@@ -1795,8 +1153,9 @@ BeginProg
             CallTable FilePCO2A
               
             TAGString = "[PCO2]" & CO2_Water & "," & CO2_Air & "," & PCO2_Gaz_Pressure_Water & "," & PCO2_Gaz_Pressure_Air & "," & PCO2_Humidity
-            FileWrite(TAGFile,TAGString & CHR(10),0)
-            FileWrite(ToTransmit,TAGString & CHR(10),0)
+            
+            Call WriteTagString
+          
           EndIf 'If there's a water and an air string
         EndIf 'If Else Watchdog
       EndIf 'If PCO2_Sampling is True
@@ -1922,8 +1281,7 @@ BeginProg
       EndIf  
       
     TAGString = "[WNCH]" + WinchMessage
-    FileWrite(TAGFile,TAGString & CHR(10),0)
-    FileWrite(ToTransmit,TAGString & CHR(10),0)
+    Call WriteTagString
     
     EndIf
 
@@ -1962,11 +1320,11 @@ BeginProg
     EndIf
     
     TAGString = "[END]"
-    FileWrite(TAGFile,TAGString & CHR(10),0)
-    FileWrite(ToTransmit,TAGString & CHR(10),0)
+    Call WriteTagString
+    
     TAGString = ""
-    FileWrite(TAGFile,TAGString & CHR(10),0)
-    FileWrite(ToTransmit,TAGString & CHR(10),0)
+    Call WriteTagString
+    
     FileClose(TAGFile)
     FileClose(ToTransmit)
     
@@ -2002,3 +1360,68 @@ BeginProg
     NextScan
 EndProg
 
+
+Sub WriteTagString
+  FileWrite(TAGFile,TAGString & CHR(10),0)
+  FileWrite(ToTransmit,TAGString & CHR(10),0)
+EndSub
+
+
+Sub CloseCR6SerialPorts
+  'Close all serial port on CR6 if still open except ADCP
+  For SerialPort = 11 To 16 Step 1
+    If SerialPort = SerialADCP Then
+      'Do not close the ADCP port
+    Else
+      SerialClose(SerialPort)
+    EndIf
+  Next SerialPort
+EndSub
+
+
+Sub CloseSDM4SerialPorts
+'Close all serial port on SDM4, except for PCO2 (40) which must stays on is PCO2 is sampling
+  For SerialPort = 32 To 47 Step 1
+    If SerialPort = SerialPCO2 AND PCO2_Sampling = true Then
+    'Do not close the port
+    Else
+      SerialClose(SerialPort)
+    EndIf
+  Next SerialPort
+EndSub
+
+
+Sub StartADCP
+  If With_ADCP <> 0 Then
+      SerialOpen(SerialADCP,115200,3,0,3000)
+    EndIf
+EndSub
+
+
+Sub StartWaterDetectionSensor
+ '5V to the Water Detection sensor, sample taked at the end --------------------
+  If With_WD_Main <> 0 Then
+    PortSet(C4,1)
+  EndIf
+EndSub
+
+
+Sub StartWeatherInstruments
+' Weather instrument include WXT536, WMT700, OCR, Compas
+  If With_PAR <> 0 OR With_WMT700 <> 0 OR With_Compass <> 0 OR With_OCR_I <> 0 Then  
+      SW12(SW12_1,1)
+      Tower_Switch = True
+      Tower_Timer = Timer(7,Sec,0)
+    EndIf
+    
+  'Open the RS485 port if there's one of the intruments
+  If With_WXT536 <> 0 OR With_WMT700 <> 0 OR With_Compass <> 0 Then
+    'Opening SDM and PAR (T5) voltage. 1sec before communication  
+    SerialOpen(SerialTower,19200,51,20,500) 'for 2R! test
+  EndIf
+  
+  'Open the PAR port if present, sending the data as soon as it's ready
+  If With_PAR <> 0 Then
+    SerialOpen(SerialPAR,19200,3,20,100)
+  EndIf
+EndSub

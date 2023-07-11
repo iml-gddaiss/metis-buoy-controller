@@ -1,0 +1,32 @@
+Const SerialPower = 45 'RS485
+
+Dim RawSUNADark As String * 80
+Dim RawSUNALight As String * 80
+
+Dim SUNADark(8) As Float : Alias SUNADark = SUNA_Dark_Date, SUNA_Dark_Time, Dark_Nitrate, Dark_Nitrogen_in_Nitrate, Dark_254nm, Dark_300nm, Dark_Bromide, SUNA_Dark_RMSE
+Dim SUNALight(8) As Float : Alias SUNALight = SUNA_Light_Date, SUNA_Light_Time, Light_Nitrate, Light_Nitrogen_in_Nitrate, Light_254nm, Light_300nm, Light_Bromide, SUNA_Light_RMSE
+
+Units Dark_Nitrate = µM
+Units Light_Nitrate = µM
+Units Dark_Nitrogen_in_Nitrate = mgN/L
+Units Light_Nitrogen_in_Nitrate = mgN/L
+Units Dark_Bromide = mg/L
+Units Light_Bromide = mg/L
+
+DataTable(FileSUNA_Dark,1,-1)
+  DataInterval(0,0,Sec,10)
+  Sample (1,Dark_Nitrate,IEEE4)
+  Sample (1,Dark_Nitrogen_in_Nitrate,IEEE4)
+  Sample (1,Dark_254nm,IEEE4)
+  Sample (1,Dark_300nm,IEEE4)
+  Sample (1,Dark_Bromide,IEEE4)
+ EndTable
+ 
+DataTable(FileSUNA_Light,1,-1)
+  DataInterval(0,0,Sec,10)
+  Sample (1,Light_Nitrate,IEEE4)
+  Sample (1,Light_Nitrogen_in_Nitrate,IEEE4)
+  Sample (1,Light_254nm,IEEE4)
+  Sample (1,Light_300nm,IEEE4)
+  Sample (1,Light_Bromide,IEEE4)
+ EndTable

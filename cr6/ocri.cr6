@@ -1,0 +1,4 @@
+Const SerialOCRI = 34
+
+Public RawOCRI As String * 500
+Public StringOCRI As String * 1000

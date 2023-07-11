@@ -1,0 +1,21 @@
+Const SerialPower = 45 'RS485
+
+Dim RawPower As String * 150
+Dim Power(11) As Float : Alias Power = VBatt1, ABatt1, VBatt2, ABatt2, VSolar, ASolar, AMain, ATurbine, AWinch, PM_RH, Relay_State
+Dim PowerString(11) As String
+Dim VBatt_to_SD
+
+DataTable(FilePower,1,-1)
+  DataInterval(0,0,Sec,10)
+  Sample (1,VBatt1,IEEE4)
+  Sample (1,ABatt1,IEEE4)
+  Sample (1,VBatt2,IEEE4)
+  Sample (1,ABatt2,IEEE4)
+  Sample (1,VSolar,IEEE4)
+  Sample (1,ASolar,IEEE4)
+  Sample (1,AMain,IEEE4)
+  Sample (1,ATurbine,IEEE4)
+  Sample (1,AWinch,IEEE4)
+  Sample (1,PM_RH,IEEE4)
+  Sample (1,PowerString(11),String)
+ EndTable

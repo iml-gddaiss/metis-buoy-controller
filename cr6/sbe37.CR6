@@ -1,0 +1,17 @@
+Dim RawSBE37_SalinityTest As String * 40
+Dim RawSBE37 As String * 40
+
+Public SBE37(4) As Float : Alias SBE37 = Water_Temp,Conductivity,Salinity,Density
+
+Units Water_Temp = °C
+Units Conductivity = S/m
+Units Salinity = PSU
+Units Density = Kg/m³
+
+DataTable (FileSBE37,1,-1) 
+	DataInterval (0,0,Sec,10)
+  Sample (1,Water_Temp,IEEE4)
+  Sample (1,Conductivity,IEEE4)
+  Sample (1,Salinity,IEEE4)
+  Sample (1,Density,IEEE4)
+EndTable

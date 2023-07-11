@@ -1,0 +1,23 @@
+
+Const Min_Air_Temp_for_Winch = 1
+Const Max_Wave_H13_for_Winch = 2
+Const Min_Wave_Period_for_Winch = 6
+Const Max_Flow_for_Winch = 1
+Const Max_Buoy_Speed_for_Winch = 1
+Const Min_Voltage_for_Winch = 12.2
+
+Public OnWhichBattery
+Public WinchMessage As String * 50
+Public MissingCondition As Long
+Public Winch_Voltage As Float
+Public Winch_Last_Sample As Long
+Public Winch_Sampling As Boolean
+Public WinchString As String * 50
+Public WinchFileName As String * 50
+
+Dim Winch_Date_Hyphen As String
+Dim Winch_Date_Slash As String
+Dim Winch_Time_Short As String
+Dim Winch_Time_DDot As String
+Dim Winch_Lat As String
+Dim Winch_Long As String

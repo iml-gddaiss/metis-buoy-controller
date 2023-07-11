@@ -1,0 +1,13 @@
+Const SerialPAR = 33 'RS232
+
+Dim RawPAR As String * 60
+Dim PARSensor(5) String : Alias PARSensor = PAR_Timer, PAR, PAR_Pitch, PAR_Roll, PAR_Int_Temp
+
+DataTable (FilePAR,1,-1)
+  DataInterval(0,0,Sec,10)
+  Sample (1,PAR_Timer,IEEE4)
+  Sample (1,PAR,IEEE4)
+  Sample (1,PAR_Pitch,IEEE4)
+  Sample (1,PAR_Roll,IEEE4)
+  Sample (1,PAR_Int_Temp,IEEE4)
+EndTable

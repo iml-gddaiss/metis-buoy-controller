@@ -1,0 +1,9 @@
+Public RawOCRR As String * 500
+Public BytesBuffer As String
+Public StringOCRR As String * 1000
+
+DataTable(FileHyperOCR,1,-1)
+  DataInterval(0,0,Sec,10)
+  Sample(1,StringOCRR,String)
+  Sample(1,StringOCRI,String)
+EndTable

@@ -1,0 +1,15 @@
+Dim X, Y
+Dim ASCIIString As String * 100
+Dim RawCompass(9) As String
+Dim Heading_Vec(2) As Float : Alias Heading_Vec = Heading_x, Heading_y
+Public Compass(3) As Float : Alias Compass = Heading, Pitch, Roll
+Units Heading = °
+Units Pitch = °
+Units Roll = °
+
+DataTable (FileCompass,1,-1)
+  DataInterval(0,0,Sec,10)
+  Sample (1,Heading,String)
+  Sample (1,Pitch,String)
+  Sample (1,Roll,String)
+EndTable

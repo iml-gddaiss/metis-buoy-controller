@@ -1,0 +1,60 @@
+Const SerialPCO2 = 40 'RS232
+
+Dim RawPCO2 As String * 1000
+Dim RawPCO2_Air As String * 100
+Dim RawPCO2_Water As String * 100
+
+Public PCO2_Last_Sample As Long
+Dim Buoy_TimeStamp_1990 As Long
+Public PCO2_Sampling As Boolean
+
+Dim PCO2WStart
+Dim PCO2WEnd
+Dim PCO2AStart
+Dim PCO2AEnd
+
+
+Dim PCO2(14) As String : Alias PCO2 = PCO2_Year, PCO2_Month, PCO2_Day, PCO2_Hour, PCO2_Minute, PCO2_Second, PCO2_Zero, PCO2_AD, CO2, Ave_IRGA, PCO2_Humidity, PCO2_Temp, PCO2_Gaz_Pressure, PCO2_Voltage
+Dim CO2_Water = "#.#", PCO2_Gaz_Pressure_Water, PCO2W_Humidity, CO2_Air = "#.#", PCO2_Gaz_Pressure_Air
+Dim PCO2_Date As String, PCO2_Time As String, PCO2_Type As String
+
+
+Units CO2_Water = ppm
+Units CO2_Air = ppm
+Units PCO2_Gaz_Pressure_Water = mbar
+Units PCO2_Gaz_Pressure_Air = mbar
+Units PCO2W_Humidity = %
+
+DataTable(FilePCO2W,1,-1)
+  DataInterval(0,0,Sec,10)
+  Sample (1,PCO2_Type,String)
+  Sample (1,PCO2_Date,String)
+  Sample (1,PCO2_Time,String)
+  Sample (1,PCO2_Zero,IEEE4)
+  Sample (1,PCO2_AD,IEEE4)
+  Sample (1,CO2_Water,String)
+  Sample (1,Ave_IRGA,IEEE4)
+  Sample (1,PCO2_Humidity,IEEE4)
+  Sample (1,PCO2_Temp,IEEE4)
+  Sample (1,PCO2_Gaz_Pressure,IEEE4)
+  Sample (1,PCO2_Voltage,IEEE4)
+  Sample (1,RawPCO2,String)
+  Sample (1,RawPCO2_Water,String)
+EndTable
+
+DataTable(FilePCO2A,1,-1)
+  DataInterval(0,0,Sec,10)
+  Sample (1,PCO2_Type,String)
+  Sample (1,PCO2_Date,String)
+  Sample (1,PCO2_Time,String)
+  Sample (1,PCO2_Zero,IEEE4)
+  Sample (1,PCO2_AD,IEEE4)
+  Sample (1,CO2_Air,String)
+  Sample (1,Ave_IRGA,IEEE4)
+  Sample (1,PCO2_Humidity,IEEE4)
+  Sample (1,PCO2_Temp,IEEE4)
+  Sample (1,PCO2_Gaz_Pressure,IEEE4)
+  Sample (1,PCO2_Voltage,IEEE4)
+  Sample (1,RawPCO2,String)
+  Sample (1,RawPCO2_Air,String)
+EndTable

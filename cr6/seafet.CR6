@@ -1,0 +1,39 @@
+Public RawSeafet As String * 120
+Public Seafet_Value(10) As String : Alias Seafet_Value = Date_Time_Seafet, Sample_Number, Error_Flag, Ext_pH_Value, Int_pH_Value, Volt_Ext_pH, Volt_Int_pH, pH_Temp, Seafet_Rel_Hum, Seafet_Int_Temp
+Public Seafet(2) As Float : Alias Seafet = Int_pH, Ext_pH
+Public Seafet_Pro(2) As Float : Alias Seafet_Pro = Ext_pH_P, Int_pH_P
+
+
+'Constant to auto-proceed the pH value with Temp and Sal from CTD
+Const R = 8.3144621 'Universal Gas constant in J/Kmol
+Const F = 96485.365 'Faraday constant
+Const Kelvin = 273.15
+
+Public Coeff_Exp(4) As String : Alias Coeff_Exp = K0_Int_Exp, K2_Int_Exp, K0_Ext_Exp, K2_Ext_Exp
+Public Coeff_Raw As String * 300
+Public K0_Int, K2_Int, K0_Ext, K2_Ext As Float
+Dim Snernst, Clt, log_yHClT, St, Water_Temp_K, I, Adh
+Dim Ks_Tab(6) : Alias Ks_Tab = Ks1, Ks2, Ks3, Ks4, Ks5, Ks
+
+
+DataTable (FileSeafet,1,-1)
+	DataInterval (0,0,Sec,10)
+  Sample (1,Ext_pH,IEEE4)
+  Sample (1,Int_pH,IEEE4)
+  Sample (1,Error_Flag,FP2)
+  Sample (1,Volt_Ext_pH,IEEE4)
+  Sample (1,Volt_Int_pH,IEEE4)
+  Sample (1,pH_Temp,IEEE4)
+EndTable
+
+DataTable (FileSeafet_Pro,1,-1)
+  DataInterval (0,0,Sec,10)
+  Sample (1,Ext_pH_P,IEEE4).
+  Sample (1,Int_pH_P,IEEE4)
+  Sample (1,Water_Temp,IEEE4)
+  Sample (1,Salinity,IEEE4)
+  Sample (1,K0_Int,IEEE4)
+  Sample (1,K2_Int,IEEE4)
+  Sample (1,K0_Ext,IEEE4)
+  Sample (1,K2_Ext,IEEE4)
+EndTable
