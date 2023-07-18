@@ -1,7 +1,9 @@
 ' GPS related code
-
+'### Serial Port ###
 Const SerialGPS = 16 'U11-U12 (trouble with GPS on SDM)
 
+
+'### Data Variables ###
 Dim RawGPS As String * 100
 Dim HVS(13) As String : Alias HVS = GPS_Header, GPS_Time, GPS_Status, Lat, Lat_Hem, Lon, Lon_Hem, Speed_Over_Ground, Course_Over_Ground, GPS_Date, Magnetic_Variation,Mag_Var_Dir, Check_GPS
 Dim GPS_Vector_X As Float, GPS_Vector_Y As Float
@@ -9,10 +11,14 @@ Dim GPS_Vector_X As Float, GPS_Vector_Y As Float
 Public Latitude As String,Longitude As String, SOG As Float, COG As Float, Mag_Var As Float
 Dim UTC_Date_Hyphen As String, UTC_Date_Slash As String, UTC_Date_Short As String, UTC_Time_Short As String, UTC_Time_DDot As String
 
+
+'### Units ###
 Units SOG = Kn
 Units COG = °
 Units Mag_Var = °
 
+
+'### Tables ###
 DataTable(FileGPS,1,-1)
     DataInterval(0,0,Sec,10)
     Sample(1,UTC_Date_Slash,String)
@@ -25,6 +31,7 @@ DataTable(FileGPS,1,-1)
 EndTable
 
 
+'### Sampling ###
 Sub SampleGPS
     SerialOpen(SerialGPS,19200,3,20,1000)
     SerialFlush(SerialGPS)
@@ -35,18 +42,18 @@ Sub SampleGPS
     SOG = 0
     COG = 0
     For X = 1 To 10 Step 1
-    SerialIn(RawGPS,SerialGPS,150,10,80)
-    SplitStr(HVS(),RawGPS,",",13,5)
-    If Speed_Over_Ground = "" Then
-        COG = 0
-        SOG = 0
-    Else
-        COG = Course_Over_Ground
-        SOG = Speed_Over_Ground
-    EndIf
-    
-    GPS_Vector_X = GPS_Vector_X + (SOG * COS(COG))
-    GPS_Vector_Y = GPS_Vector_Y + (SOG * SIN(COG))
+        SerialIn(RawGPS,SerialGPS,150,10,80)
+        SplitStr(HVS(),RawGPS,",",13,5)
+        If Speed_Over_Ground = "" Then
+            COG = 0
+            SOG = 0
+        Else
+            COG = Course_Over_Ground
+            SOG = Speed_Over_Ground
+        EndIf
+        
+        GPS_Vector_X = GPS_Vector_X + (SOG * COS(COG))
+        GPS_Vector_Y = GPS_Vector_Y + (SOG * SIN(COG))
     Next
     
     SerialClose(SerialGPS)
@@ -93,4 +100,8 @@ Sub SampleGPS
     
     'Putting the String value in Float or Long variables 
     Mag_Var = Magnetic_Variation  
+
+    CallTable FileGPS
 EndSub
+
+'### Processing ###

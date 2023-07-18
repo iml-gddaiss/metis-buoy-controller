@@ -1,11 +1,17 @@
+'Suna related code
+'### Serial Port ###
 Const SerialPower = 45 'RS485
 
+
+'### Data Variables ###
 Dim RawSUNADark As String * 80
 Dim RawSUNALight As String * 80
 
 Dim SUNADark(8) As Float : Alias SUNADark = SUNA_Dark_Date, SUNA_Dark_Time, Dark_Nitrate, Dark_Nitrogen_in_Nitrate, Dark_254nm, Dark_300nm, Dark_Bromide, SUNA_Dark_RMSE
 Dim SUNALight(8) As Float : Alias SUNALight = SUNA_Light_Date, SUNA_Light_Time, Light_Nitrate, Light_Nitrogen_in_Nitrate, Light_254nm, Light_300nm, Light_Bromide, SUNA_Light_RMSE
 
+
+'### Units ###
 Units Dark_Nitrate = µM
 Units Light_Nitrate = µM
 Units Dark_Nitrogen_in_Nitrate = mgN/L
@@ -13,6 +19,8 @@ Units Light_Nitrogen_in_Nitrate = mgN/L
 Units Dark_Bromide = mg/L
 Units Light_Bromide = mg/L
 
+
+'### Tables ###
 DataTable(FileSUNA_Dark,1,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,Dark_Nitrate,IEEE4)
@@ -30,3 +38,45 @@ DataTable(FileSUNA_Light,1,-1)
   Sample (1,Light_300nm,IEEE4)
   Sample (1,Light_Bromide,IEEE4)
  EndTable
+
+
+'### Sampling ###
+Sub StartSUNA
+  SerialOpen(SerialSUNA,19200,3,20,250)
+  SerialOut(SerialSUNA,"$","CMD?",1,400)
+  SerialOut(SerialSUNA,"measure 1"&CHR(13),CHR(10),1,50)
+  SerialIn(RawSUNADark,SerialSUNA,150,CHR(13),80) 'The Dark sample is nearly auto, then at least 12sec for the Light one
+    
+  Timer(5,Sec,0) 'Timer #5 Start for at least 12 sec
+EndSub
+
+
+Sub CollectSUNA    Timer_Value(5) = Timer(5,Sec,4)
+  Timer(5,Sec,3) 'Timer 5 Stop and Reset
+  If Timer_Value(5) < 12 Then
+    Delay(1,12-Timer_Value(5),Sec)
+  EndIf   
+  
+  WhereAmI = "Collect SUNA"  
+  SerialInRecord(SerialSUNA,RawSUNALight,&H4C43,0,&H0D0A,NBR,101)
+  SerialOut(SerialSUNA,"sleep"&CHR(13),0,1,0)
+  SerialClose(SerialSUNA)
+  
+  If RawSUNADark = "" Then
+    RawSUNADark = "NAN"
+  EndIf
+  
+  If RawSUNADark <> "NAN" AND RawSUNALight <> "NAN" Then
+    SplitStr(SUNADark(),RawSUNADark,",",8,4)
+    CallTable FileSUNA_Dark
+    RawSUNALight = "SATSLC"&RawSUNALight
+    SplitStr(SUNALight(),RawSUNALight,",",8,4)
+    CallTable FileSUNA_Light
+    
+    TAGString = "[SUNA]" & Dark_Nitrate & "," & Light_Nitrate & "," & Dark_Nitrogen_in_Nitrate & "," & Light_Nitrogen_in_Nitrate & "," & Dark_Bromide & "," & Light_Bromide
+    Call WriteTagString
+  EndIf
+EndSub
+
+
+'### Processing ###

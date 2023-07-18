@@ -1,4 +1,9 @@
+'Winch related code
+'### Serial Port ###
+Const SerialWinch = 13 'U5-U6
 
+
+'### Data Variables ###
 Const Min_Air_Temp_for_Winch = 1
 Const Max_Wave_H13_for_Winch = 2
 Const Min_Wave_Period_for_Winch = 6
@@ -21,3 +26,9 @@ Dim Winch_Time_Short As String
 Dim Winch_Time_DDot As String
 Dim Winch_Lat As String
 Dim Winch_Long As String
+
+
+'### Units ###
+'### Tables ###
+'### Sampling ###
+'### Processing ###

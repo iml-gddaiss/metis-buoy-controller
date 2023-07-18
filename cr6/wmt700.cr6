@@ -1,5 +1,10 @@
+'wmt700 related code
+'### Data Variables ###
 Dim RawWMT700 As String * 80
 Dim WMT700(6) As Float : Alias WMT700 = Dir_Min1, Dir_Ave1, Dir_Max1, Spd_Min1, Spd_Ave1, Spd_Max1
+
+
+'### Units ###
 Units Dir_Min1 = °
 Units Dir_Ave1 = °
 Units Dir_Max1 = °
@@ -7,6 +12,8 @@ Units Spd_Min1 = Kn
 Units Spd_Ave1 = Kn
 Units Spd_Max1 = Kn
 
+
+'### Tables ###
 DataTable (FileWMT700,1,-1)
 	DataInterval (0,0,Sec,10)
   Sample (1,Dir_Min1,IEEE4)
@@ -16,3 +23,16 @@ DataTable (FileWMT700,1,-1)
   Sample (1,Spd_Ave1,IEEE4)
   Sample (1,Spd_Max1,IEEE4)
 EndTable
+
+
+'### Sampling ###
+Sub StartWMT700
+  Tower_Timer = Timer(7,Sec,4)
+  If Tower_Timer < 8 Then
+    Delay(1,8-Tower_Timer,Sec)
+  EndIf
+  SerialOut(SerialTower,"$Ameas,1"&CHR(10),"",1,0)
+EndSub
+
+
+'### Processing ###

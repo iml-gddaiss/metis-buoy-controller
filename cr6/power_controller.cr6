@@ -1,10 +1,17 @@
+'Power Controller related code
+'### Serial Port ###
 Const SerialPower = 45 'RS485
 
+
+'### Data Variables ###
 Dim RawPower As String * 150
 Dim Power(11) As Float : Alias Power = VBatt1, ABatt1, VBatt2, ABatt2, VSolar, ASolar, AMain, ATurbine, AWinch, PM_RH, Relay_State
 Dim PowerString(11) As String
 Dim VBatt_to_SD
 
+
+'### Units ###
+'### Tables ###
 DataTable(FilePower,1,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,VBatt1,IEEE4)
@@ -19,3 +26,34 @@ DataTable(FilePower,1,-1)
   Sample (1,PM_RH,IEEE4)
   Sample (1,PowerString(11),String)
  EndTable
+
+
+'### Sampling ###
+Sub SamplePowerController
+  SerialOpen(SerialPower,19200,51,600,200)
+  For X = 1 To 4
+    SerialOut(SerialPower,CHR(13),">",2,50)
+    SerialOut(SerialPower,"d",0,1,50)
+    SerialOut(SerialPower,"v",0,1,50)
+    SerialOut(SerialPower,CHR(13),CHR(13),1,50) 
+    SerialIn(RawPower,SerialPower,100,CHR(13),200)
+    SplitStr(Power,RawPower,0,11,0)
+    SplitStr(PowerString,RawPower,0,11,0)
+    If Len(Power(11)) > 5 Then
+      ExitFor
+    EndIf
+  Next X
+  
+  SerialClose(SerialPower)
+  
+  If VBatt1 > VBatt2 Then
+    VBatt_to_SD = VBatt1
+  Else
+    VBatt_to_SD = VBatt2
+  EndIf
+  
+  CallTable FilePower
+EndSub
+
+
+'### Processing ###

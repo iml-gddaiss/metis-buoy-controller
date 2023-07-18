@@ -1,11 +1,21 @@
+'Wave related code
+'### Serial Port ###
+Const SerialWave = 46 'RS232
+
+
+'### Data Variables ###
 Dim RawWave As String * 80
 Dim Wave(6) As String : Alias Wave = Wave_Date, Wave_Time, Wave_Period, Wave_Hm0, Wave_H13, Wave_Hmax
 
+
+'### Units ###
 Units Wave_Period = Sec
 Units Wave_Hm0 = m
 Units Wave_H13 = m
 Units Wave_Hmax = m
 
+
+'### Tables ###
 DataTable(FileWave,1,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,Wave_Date,String)
@@ -16,3 +26,6 @@ DataTable(FileWave,1,-1)
   Sample (1,Wave_Hmax,IEEE4)
  EndTable
 
+
+'### Sampling ###
+'### Processing ###

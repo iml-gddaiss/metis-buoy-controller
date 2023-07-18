@@ -1,3 +1,8 @@
+'compass related code
+'### Serial Port ###
+
+
+'### Data Variables ###
 Dim X, Y
 Dim ASCIIString As String * 100
 Dim RawCompass(9) As String
@@ -7,9 +12,101 @@ Units Heading = °
 Units Pitch = °
 Units Roll = °
 
+
+'### Units ###
+
+
+'### Tables ###
 DataTable (FileCompass,1,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,Heading,String)
   Sample (1,Pitch,String)
   Sample (1,Roll,String)
 EndTable
+
+
+'### Sampling ###
+Sub SampleCompass
+  ASCIIString = ""
+  Tower_Timer = Timer(7,Sec,4)
+  
+  wer_Timer < 4 Then
+    Delay(1,4-Tower_Timer,Sec)
+  EndIf
+
+  'Resetting the compass & Heading values
+  Compass() = 0 'Compass(3) = Heading, Pitch, Roll
+  Heading_Vec() = 0 'Heading_Vec(2) = Heading_x, Heading_y
+  SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",3,50)
+  For Y = 1 To 60
+    SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",1,50)  ' Command = h^D^A^D^I (68 04 01 04 09)
+    SerialInRecord(SerialTower,ASCIIString,&H68,13,0,NBR,101)   ' First byte sent is address 68
+    
+    If ASCIIString = "NAN" Then
+      Pitch = "NAN"
+      Roll = "NAN"
+      Heading = "NAN"
+      ExitFor
+    EndIf        
+
+    For X = 4 To 12                                      ' Setting each HEX byte in RawCompass Array
+      RawCompass(X-3) = Hex(ASCII(ASCIIString(1,1,X)))   ' Received message looks like 68 0D 01 84 00 11 22 10 33 44 05 66 77 99
+    Next X                                             '                             ID LG AD MS (- Roll) (+Pitch) ( Head ) CHK
+    
+    ' Changing the first pitch/roll byte for positive or negative  
+    If RawCompass(1) = 10 Then 
+      RawCompass(1) = "+"
+    Else
+      RawCompass(1) = "-" 
+    EndIf
+    
+    If RawCompass(4) = 10 Then
+      RawCompass(4) = "+"
+    Else
+      RawCompass(4) = "-"
+    EndIf
+        
+    If Len(RawCompass(8)) = 1 Then
+      RawCompass(8) = "0" + RawCompass(8)
+    EndIf
+
+    'Array are in order of Roll, Pitch & Heading
+    Roll = Roll + CTYPE(RawCompass(1)&RawCompass(2)&"."&RawCompass(3),Float)
+    Pitch = Pitch + CTYPE(RawCompass(4)&RawCompass(5)&"."&RawCompass(6),Float)
+    Heading = CTYPE(RawCompass(7)&RawCompass(8)&"."&RawCompass(9),Float)
+    Heading_x = Heading_x + COS(Heading)
+    Heading_y = Heading_y + SIN(Heading)
+    Delay(1,400,mSec)
+    
+  Next 'Next sample (Y = 1 to 60)
+    
+  'Making the average of the 60 measurement.
+  'Since the Heading is vectorial, no need to divide by 60
+  'ÃƒÅ½Ã‚Â¸ = atan(opp/adj) is same as ÃƒÅ½Ã‚Â¸ = atan((opp/60)/(adj/60))
+  Roll = Round(Roll/60,2)
+  Pitch = Round(Pitch/60,2)
+  Heading = ATN2(Heading_y, Heading_x)
+
+'       If Heading_x >= 0 AND Heading_y >= 0 Then
+'         Heading = Round(ATN2(Heading_y,Heading_x),2)
+'       ElseIf Heading_x < 0 AND Heading_y >= 0 Then
+'         Heading = Round(ATN2(Heading_y,Heading_x),2)+270
+'       ElseIf Heading_x < 0 AND Heading_y < 0 Then
+'         Heading = Round(ATN2(Heading_y,Heading_x),2)+180
+'       ElseIf Heading_x >= 0 AND Heading_y < 0 Then
+'         Heading = Round(ATN2(Heading_y,Heading_x),2)+90
+'       EndIf      
+
+  Heading = Heading + Mag_Var
+  If Heading >=  360 Then
+    Heading = Heading - 360
+  ElseIf Heading < 0 Then
+    Heading = Heading + 360
+  EndIf
+  Heading = Round(Heading,2)
+
+  CallTable FileCompass
+EndSub
+
+
+'### Processing ###

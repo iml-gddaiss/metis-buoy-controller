@@ -1,3 +1,5 @@
+Const SerialTriplet = 37 'RS232
+
 Dim RawTriplet As String * 200
 
 Dim Triplet(11) As String : Alias Triplet = Triplet_Date, Triplet_Hour, Sct_wl, Raw_Sct, Sct_Value, Chl_wl, Raw_Chl, Chl_Value, FDOM_wl, Raw_FDOM, FDOM_Value
@@ -12,3 +14,35 @@ DataTable (FileTriplet,1,-1)
   Sample (1,Raw_FDOM,String)
   Sample (1,FDOM_Value,String)
 EndTable
+
+
+Sub StartTriplet
+  SerialFlush(SerialTriplet)
+  SerialOpen(SerialTriplet,19200,3,20,500) 'Triplet string is around 100 char.
+  SerialOut(SerialTriplet,CHR(13)&CHR(10),0,2,100)
+  SerialOut(SerialTriplet,"!!!!!!!!","Mem",1,600)
+  SerialOut(SerialTriplet,"$run"&CHR(13),0,1,10)
+  Timer(4,Sec,0) 'Timer#4 Start for Triplet sampling
+EndSub
+
+
+Sub CollectTriplet
+  RawTriplet = ""
+  Triplet_Timer = Timer(4,Sec,4)
+  Timer(4,Sec,3) 'Timer #4 Stop&Reset
+  
+  If Triplet_Timer < 17 Then
+    Delay(1,17-Triplet_Timer,Sec)
+  EndIf
+  
+  WhereAmI = "Collect triplet"
+  SerialInRecord(SerialTriplet,RawTriplet,&H4242,0,&H0D0A,NBR,01)
+  SerialClose(SerialTriplet)
+  RawTriplet = "BB"+RawTriplet
+  SplitStr(Triplet(),RawTriplet,CHR(09),11,4)
+  'Getting the values in long (0.000) from scientific values (0.00E+00) 
+  Scattering = Round(Sct_Value,7)
+  Chlorophyll = Chl_Value
+  FDOM = FDOM_Value
+  CallTable FileTriplet
+EndSub

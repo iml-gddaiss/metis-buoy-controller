@@ -1,5 +1,9 @@
 'Date: 04 avril 2023
 'Program author: Anthony Ouellet
+'Modified by: Jerome Guay
+' Notes: 
+' Sample<> subroutine Call the data file table.
+' Start<> subroutine only start the insturment sampling. A later call to Collect<> subroutine is required to call the data table.
 'Installed in the buoy, pre-deployment
 
 SequentialMode
@@ -45,32 +49,9 @@ Dim ToTransmit As Long
 
 Dim SerialPort
 
-'COMPort Tower
 Const SerialTower = 32 'RS485 As WMT700(A), WXT536(2) & Compass(1)
-' Const SerialPAR = 33 'RS232
-' Const SerialOCRI = 34
-' Const Available = 35
-' Const SerialGPS = 16 'U11-U12 (trouble with GPS on SDM)
 
-'COMPort Well
-Const SerialSBE37 = 36 'RS232
-Const SerialTriplet = 37 'RS232
-Const SerialSeafet = 38 'RS232
-Const SerialOCRR = 39 'RS232
-Const SerialPCO2 = 40 'RS232
-'Const SerialSUNA = 41 'RS232
-'Const Available = 42
-'Const Available = 43
-'Const SerialFlow = 14 'U7-U8
-
-
-'COMPort Miscellaneous
-'Const Available = 44
-' Const SerialPower = 45 'RS485
-' Const SerialWave = 46 'RS232
-' Const WD_Channel = U1 'Voltage reading
-' Const SerialADCP = 12 'U3-U4 ' Move to adcp.CR6
-' Const SerialWinch = 13 'U5-U6
+' Instrument serial a declered in their respective cr6 files.
 
 Const Yes = True
 Const No = False
@@ -111,14 +92,17 @@ Const Disable_Pump = 0
 Const Seafet_Auto_Correction = -1 
 EndConstTable
 
-
 Public Manual_Tower_Switch = false
 Public Manual_Well_Switch = false
 
 Public Send_Break_to_ADCP = false
 
+Const WD_Channel = U1 'Voltage reading
+Public Water_Detection_Main 
+
 '###### DECLARING INSUTRMENTS #####
 
+Include "CPU:tower.cr6"                     '#   Declare Tower
 Include "CPU:wmt700.cr6"                    '#T1 Declare WMT700
 Include "CPU:wtx536.cr6"                    '#T2 Declare WMT536
 Include "CPU:compass.cr6"                   '#T3 Declare Compass
@@ -133,7 +117,6 @@ Include "CPU:pco2.cr6"                      '#W5 PCO2
 '#W6 Flowmeter Todo ? Useless ?
 Include "CPU:hyper_ocr_r.cr6"               '#W7 HyperOCR_R 
 Include "CPU:wave_monitor.cr6"              '#M1 Wave_Monitor 
-Include "CPU:water_detection_main.cr6"      '#M2 Water_Detection_Main 
 Include "CPU:power_controller.cr6"          '#M3 Power Controller
 Include "CPU:adcp.cr6"                      '#M4 ADCP 
 Include "CPU:winch.cr6"                     '#M5 Winch 
@@ -142,64 +125,7 @@ Include "CPU:winch.cr6"                     '#M5 Winch
 
 'Wind compensation by Compass and GPS
 
-Dim WindTAG As String
-Dim Wind_Dir_Vec(6) As Float : Alias Wind_Dir_Vec = Dir_Min_x, Dir_Min_y, Dir_Ave_x, Dir_Ave_y, Dir_Max_x, Dir_Max_y
-Dim Wind_Spd_Vec(6) As Float : Alias Wind_Spd_Vec = Spd_Min_x, Spd_Min_y, Spd_Ave_x, Spd_Ave_y, Spd_Max_x, Spd_Max_y
-Dim Buoy_Direction_Vector(2) As Float : Alias Buoy_Direction_Vector = Buoy_SOG_x, Buoy_SOG_y
-
-
-' Weather manipulation with selection of better wind and compensation
-
-Dim Wind(6) As Float : Alias Wind = Wind_Dir_Min, Wind_Dir_Ave, Wind_Dir_Max, Wind_Spd_Min, Wind_Spd_Ave, Wind_Spd_Max
-Units Wind_Dir_Min = °
-Units Wind_Dir_Ave = °
-Units Wind_Dir_Max = °
-Units Wind_Spd_Min = Kn
-Units Wind_Spd_Ave = Kn
-Units Wind_Spd_Max = Kn
-
-DataTable (Weather,1,-1)
-  DataInterval (0,0,Sec,10)
-  Sample (1,Air_Temp,IEEE4)
-  Sample (1,Air_Humidity,IEEE4)
-  Sample (1,Air_Pressure,IEEE4)
-  Sample (1,Wind_Dir_Min,IEEE4)
-  Sample (1,Wind_Dir_Ave,IEEE4)
-  Sample (1,Wind_Dir_Max,IEEE4)
-  Sample (1,Wind_Spd_Min,IEEE4)
-  Sample (1,Wind_Spd_Ave,IEEE4)
-  Sample (1,Wind_Spd_Max,IEEE4)
-  Sample (1,Rain_Total,IEEE4)
-  Sample (1,Rain_Duration,IEEE4)
-  Sample (1,Rain_Intensity,IEEE4)
-  Sample (1,Hail_Total,IEEE4)
-  Sample (1,Hail_Duration,IEEE4)
-  Sample (1,Hail_Intensity,IEEE4)
-  EndTable
-
-
-' Raw data from the instruments
-
-DataTable (Raw,1,-1)
-  DataInterval(0,0,Sec,10)
-  Sample (1,RawR1_Wind,String)
-  Sample (1,RawR2_Weather,String)
-  Sample (1,RawR3_Rain,String)
-  Sample (1,RawWMT700,String)
-  Sample (1,RawGPS,String)
-  Sample (1,RawPAR,String)  
-  Sample (1,RawWave,String)
-  Sample (1,RawPower,String)
-  Sample (1,RawSBE37,String)
-  Sample (1,RawTriplet,String)
-  Sample (1,RawSeafet,String)  
-  Sample (1,RawSUNADark,String)
-  Sample (1,RawSUNALight,String)
-  Sample (1,RawPCO2_Water,String)
-  Sample (1,RawPCO2_Air,String)
-  Sample (1,WinchMessage,String)
-EndTable
- 
+Include "CPU:weather.cr6"                   ' Weather variables  
 
 '------------------------------------------------------------------------------
 '----------------------------- Main Program -----------------------------------
@@ -259,32 +185,22 @@ BeginProg
   Call StartWeatherInstruments
 
     
-'GPS (T4) --------------------------------------------------------------------
-  WhereAmI = "Start GPS"
+  'GPS (T4) --------------------------------------------------------------------
+  WhereAmI = "Sample GPS"
   If With_GPS <> 0 Then
-    
     Call SampleGPS
-
-    CallTable FileGPS  
-  
   EndIf
   WhereAmI = "EndGPS, start Start Tower"
 
 
-'WXT536 (T2) Start sampling ---------------------------------------------------
+  'WXT536 (T2) Start sampling ---------------------------------------------------
   If With_WXT536 <> 0 Then
-    
-    Call SampleWXT536
-  
+    Call StartWXT536
   EndIf 'With_WXT536
 
 
   If With_WMT700 <> 0 Then
-    Tower_Timer = Timer(7,Sec,4)
-    If Tower_Timer < 8 Then
-      Delay(1,8-Tower_Timer,Sec)
-    EndIf
-    SerialOut(SerialTower,"$Ameas,1"&CHR(10),"",1,0)
+    Call StartWMT700
   EndIf
     
   'Start Timer#1 to collect data in 61sec
@@ -293,575 +209,163 @@ BeginProg
   EndIf
 
 
-
-'CTD SBE37 (W1) in salt water to start pump -----------------------------------
-'Rewrite security so it won't try to sample the CTD if Bypass_Salinity or Disable_Pump are True
-
-    If With_SBE37 <> 0 Then
-      RawSBE37_SalinityTest = ""
-      SBE37() = 0
-      SerialOpen(SerialSBE37,19200,3,20,50) 'CTD string is around 35 char.
-      For X = 1 To 3 Step 1
-        SerialOut(SerialSBE37,CHR(13),"S>",1,50)
-        SerialOut(SerialSBE37,"ts"&CHR(13)," ",1,400)
-        SerialIn(RawSBE37_SalinityTest,SerialSBE37,300,CHR(83),40) 
-        SplitStr(SBE37,RawSBE37_SalinityTest,",",4,0)
-        If Salinity > 10 AND Len(RawSBE37_SalinityTest) = 39 Then
-          ExitFor
-        EndIf
-      Next X
-      
-      EndIf 'With_SBE37
-      
-    If (Salinity > 10 OR Bypass_Salinity = Yes) AND (((With_SBE37 <> 0 OR With_Seafet <> 0 OR With_SUNA <> 0) AND Disable_Pump = No) OR With_OCR_R <> 0) Then
-     'Open Switch #2 to control pump for X sec
-      SW12(SW12_2,1)
-      Well_Switch = True
-      Timer(3,Sec,0) 'Start timer #3 for the pump working for min. 30 sec
-    EndIf
- 
-      
-'ECO-Triplet/w (W3) Start sample ----------------------------------------------
-    RawTriplet = ""
-    If With_Triplet <> 0 Then
-      WhereAmI = "Start Triplet"
-      SerialFlush(SerialTriplet)
-      SerialOpen(SerialTriplet,19200,3,20,500) 'Triplet string is around 100 char.
-      SerialOut(SerialTriplet,CHR(13)&CHR(10),0,2,100)
-      SerialOut(SerialTriplet,"!!!!!!!!","Mem",1,600)
-      SerialOut(SerialTriplet,"$run"&CHR(13),0,1,10)
-      Timer(4,Sec,0) 'Timer#4 Start for Triplet sampling
-      EndIf
-
-'Flowmeter (W6) Start sample --------------------------------------------------
-
-
-'Compass (T3) -----------------------------------------------------------------
-	  ASCIIString = ""
-    If With_Compass <> 0 Then
-      Tower_Timer = Timer(7,Sec,4)
-      If Tower_Timer < 4 Then
-        Delay(1,4-Tower_Timer,Sec)
-      EndIf
-
-      WhereAmI = "Start Compass"
-     'Resetting the compass & Heading values
-      Compass() = 0 'Compass(3) = Heading, Pitch, Roll
-      Heading_Vec() = 0 'Heading_Vec(2) = Heading_x, Heading_y
-      SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",3,50)
-      For Y = 1 To 60
-        SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",1,50)  ' Command = h^D^A^D^I (68 04 01 04 09)
-        SerialInRecord(SerialTower,ASCIIString,&H68,13,0,NBR,101)   ' First byte sent is address 68
-        
-        If ASCIIString = "NAN" Then
-          Pitch = "NAN"
-          Roll = "NAN"
-          Heading = "NAN"
-          ExitFor
-          EndIf        
-
-        For X = 4 To 12                                      ' Setting each HEX byte in RawCompass Array
-          RawCompass(X-3) = Hex(ASCII(ASCIIString(1,1,X)))   ' Received message looks like 68 0D 01 84 00 11 22 10 33 44 05 66 77 99
-          Next X                                             '                             ID LG AD MS (- Roll) (+Pitch) ( Head ) CHK
-        
-        ' Changing the first pitch/roll byte for positive or negative  
-        If RawCompass(1) = 10 Then 
-          RawCompass(1) = "+"
-          Else
-            RawCompass(1) = "-" 
-            EndIf
-        If RawCompass(4) = 10 Then
-          RawCompass(4) = "+"
-          Else
-            RawCompass(4) = "-"
-            EndIf
-            
-        If Len(RawCompass(8)) = 1 Then
-          RawCompass(8) = "0" + RawCompass(8)
-        EndIf
-
-        'Array are in order of Roll, Pitch & Heading
-    	  Roll = Roll + CTYPE(RawCompass(1)&RawCompass(2)&"."&RawCompass(3),Float)
-    	  Pitch = Pitch + CTYPE(RawCompass(4)&RawCompass(5)&"."&RawCompass(6),Float)
-    	  Heading = CTYPE(RawCompass(7)&RawCompass(8)&"."&RawCompass(9),Float)
-    	  Heading_x = Heading_x + COS(Heading)
-    	  Heading_y = Heading_y + SIN(Heading)
-    	  Delay(1,400,mSec)
-    	  
-    	  Next 'Next sample (Y = 1 to 60)
-    	  
-      'Making the average of the 60 measurement.
-      'Since the Heading is vectorial, no need to divide by 60
-      'ÃƒÅ½Ã‚Â¸ = atan(opp/adj) is same as ÃƒÅ½Ã‚Â¸ = atan((opp/60)/(adj/60))
-      Roll = Round(Roll/60,2)
-      Pitch = Round(Pitch/60,2)
-      Heading = ATN2(Heading_y, Heading_x)
-
-'       If Heading_x >= 0 AND Heading_y >= 0 Then
-'             Heading = Round(ATN2(Heading_y,Heading_x),2)
-'             ElseIf Heading_x < 0 AND Heading_y >= 0 Then
-'              Heading = Round(ATN2(Heading_y,Heading_x),2)+270
-'              ElseIf Heading_x < 0 AND Heading_y < 0 Then
-'                Heading = Round(ATN2(Heading_y,Heading_x),2)+180
-'                ElseIf Heading_x >= 0 AND Heading_y < 0 Then
-'                  Heading = Round(ATN2(Heading_y,Heading_x),2)+90
-'                  EndIf      
-
-      Heading = Heading + Mag_Var
-      If Heading >=  360 Then
-        Heading = Heading - 360
-      ElseIf Heading < 0 Then
-        Heading = Heading + 360
-      EndIf
-      Heading = Round(Heading,2)
+  'CTD SBE37 (W1) in salt water to start pump -----------------------------------
+  'Rewrite security so it won't try to sample the CTD if Bypass_Salinity or Disable_Pump are True
+  ' REVIEW THIS TODO
+  If With_SBE37 <> 0 Then
+    Call StartSBE37
+  EndIf 'With_SBE37
     
-      CallTable FileCompass
-    EndIf 'With_Compass
-    WhereAmI = "End Compass, collect power"
+  ' FIXME Starting pump ?? Testing pump ?
+  If (Salinity > 10 OR Bypass_Salinity = Yes) AND (((With_SBE37 <> 0 OR With_Seafet <> 0 OR With_SUNA <> 0) AND Disable_Pump = No) OR With_OCR_R <> 0) Then
+    'Open Switch #2 to control pump for X sec
+    SW12(SW12_2,1)
+    Well_Switch = True
+    Timer(3,Sec,0) 'Start timer #3 for the pump working for min. 30 sec
+  EndIf
 
-'Flowmeter (W6) collect -------------------------------------------------------
+        
+  'ECO-Triplet/w (W3) Start sample ----------------------------------------------
+  WhereAmI = "Start Triplet"
+  If With_Triplet <> 0 Then
+    Call StartTriplet
+  EndIf
+
+  'Flowmeter (W6) Start sample --------------------------------------------------
 
 
-'Water Detection --------------------------------------------------------------
-    If With_WD_Main <> 0 Then
-      WhereAmI = "Check Water Detection"
-      Water_Detection_Main = 0
-      VoltSe(Water_Detection_Main,1,AutoRange,U1,0,0,15000,1,0)
-      PortSet(C4,0)
-    EndIf
+  'Compass (T3) -----------------------------------------------------------------
+  WhereAmI = "Sample Compass"     ' Use to be after the Delay call in SampleCompass. #Jerome
+  If With_Compass <> 0 Then
+    Call SampleCompass
+  EndIf 'With_Compass
+  WhereAmI = "End Compass, collect power"
 
-'Buoy TAG with name, GPS, Compass, Flow & WaterDetection
+  'Flowmeter (W6) collect -------------------------------------------------------
+
+
+  'Water Detection --------------------------------------------------------------
+  If With_WD_Main <> 0 Then
+    WhereAmI = "Check Water Detection"
+    Water_Detection_Main = 0
+    VoltSe(Water_Detection_Main,1,AutoRange,U1,0,0,15000,1,0)
+    PortSet(C4,0)
+  EndIf
+
   
-    TAGString = "[INIT]" & Buoy_Name & "," & UTC_Date_Hyphen & "," & UTC_Time_DDot & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
+  'Buoy TAG with name, GPS, Compass, Flow & WaterDetection
+  TAGString = "[INIT]" & Buoy_Name & "," & UTC_Date_Hyphen & "," & UTC_Time_DDot & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
+  ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & UTC_Date_Short & UTC_Time_Short & ".dat","a",-1)
+  TAGFile = FileOpen("CRD:" & Buoy_Name & "_TAGFile.txt","a",-1)
     
-        
-
-    ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & UTC_Date_Short & UTC_Time_Short & ".dat","a",-1)
-    TAGFile = FileOpen("CRD:" & Buoy_Name & "_TAGFile.txt","a",-1)
-    
+  Call WriteTagString
+  
+  'Power (M3) -------------------------------------------------------------------
+  WhereAmI = "Sample Power Controller"
+  If With_Power <> 0 Then
+    Call SamplePowerController
+    TAGString = "[POWR]" & VBatt1 & "," & ABatt1 & "," & VBatt2 & "," & ABatt2 & "," & VSolar & "," & ASolar & "," & AMain & "," & ATurbine & "," & AWinch & "," & PM_RH & "," & PowerString(11)
     Call WriteTagString
-  
-'Power (M3) -------------------------------------------------------------------
-    If With_Power <> 0 Then
-      SerialOpen(SerialPower,19200,51,600,200)
-      For X = 1 To 4
-        SerialOut(SerialPower,CHR(13),">",2,50)
-        SerialOut(SerialPower,"d",0,1,50)
-        SerialOut(SerialPower,"v",0,1,50)
-        SerialOut(SerialPower,CHR(13),CHR(13),1,50) 
-        SerialIn(RawPower,SerialPower,100,CHR(13),200)
-        SplitStr(Power,RawPower,0,11,0)
-        SplitStr(PowerString,RawPower,0,11,0)
-        If Len(Power(11)) > 5 Then
-          ExitFor
-        EndIf
-      Next X
-      SerialClose(SerialPower)
-'        'Power(11) = Relay state, must have 7 char
-'        'Try a second time if it took the sample when the Power Manager
-'        '   was sampling too
-'        If Len(Power(11)) > 5 Then
-'          SerialClose(SerialPower)
-'      Else
-'        SerialOut(SerialPower,CHR(13),">",2,50)
-'        SerialOut(SerialPower,"d",0,1,50)
-'        SerialOut(SerialPower,"v",0,1,50)
-'        SerialOut(SerialPower,CHR(13),CHR(13),1,50) 
-'        SplitStr(Power,RawPower,0,11,0)
-'        SplitStr(PowerString,RawPower,0,11,0)
-'        SerialClose(SerialPower)
-'      EndIf
-    
-      If VBatt1 > VBatt2 Then
-        VBatt_to_SD = VBatt1
-      Else
-        VBatt_to_SD = VBatt2
-      EndIf
+  EndIf
+  WhereAmI = "End Power Controller"
+
+  'ECO-Triplet/w (W3) collect ---------------------------------------------------
+  WhereAmI = "Collect triplet"
+  If With_Triplet <> 0 Then
+    Call CollectTriplet
+    TAGString = "[TRP1]" & Scattering & "," & Chlorophyll & "," & FDOM
+    Call WriteTagString
+  EndIf 'With_Triplet
+  WhereAmI = "End Triplet"
       
-      CallTable FilePower
-      
-      TAGString = "[POWR]" & VBatt1 & "," & ABatt1 & "," & VBatt2 & "," & ABatt2 & "," & VSolar & "," & ASolar & "," & AMain & "," & ATurbine & "," & AWinch & "," & PM_RH & "," & PowerString(11)
-      Call WriteTagString
-    
+  '------------------------------------------------------------------------------
+  'Pumped sensor (SBE37, Seafet & SUNA) -----------------------------------------
+  WhereAmI = "See if pump is running 30sec"
+  If Well_Switch = True AND (With_SBE37 <> 0 OR With_Seafet <> 0 OR With_SUNA <> 0) Then
+    Well_Timer = Timer(3,Sec,4)
+    Timer(3,Sec,3) 'Timer #3 Stop and Reset
+    If Well_Timer < 30 Then
+      Delay(1,30-Well_Timer,Sec)
     EndIf
+  EndIf 
+  WhereAmI = "Pump ran 30sec"
 
-'ECO-Triplet/w (W3) collect ---------------------------------------------------
-     WhereAmI = "See if triplet is done"
-     If With_Triplet <> 0 Then
-      Triplet_Timer = Timer(4,Sec,4)
-      Timer(4,Sec,3) 'Timer #4 Stop&Reset
-      If Triplet_Timer < 17 Then
-        Delay(1,17-Triplet_Timer,Sec)
-        EndIf
-      WhereAmI = "Collect triplet"
-      SerialInRecord(SerialTriplet,RawTriplet,&H4242,0,&H0D0A,NBR,01)
-      SerialClose(SerialTriplet)
-      RawTriplet = "BB"+RawTriplet
-      SplitStr(Triplet(),RawTriplet,CHR(09),11,4)
-      'Getting the values in long (0.000) from scientific values (0.00E+00) 
-      Scattering = Round(Sct_Value,7)
-      Chlorophyll = Chl_Value
-      FDOM = FDOM_Value
-      CallTable FileTriplet
+  'SUNA (W4) start --------------------------------------------------------------
+  WhereAmI = "Starting SUNA"
+  If With_SUNA <> 0 Then
+    Call StartSUNA
+  EndIf
       
-      TAGString = "[TRP1]" & Scattering & "," & Chlorophyll & "," & FDOM
-      Call WriteTagString
+  'Collect OCR_R ----------------------------------------------------------------
+  WhereAmI = "Sample HyperOCRR"
+  If With_OCR_R <> 0 AND Well_Switch = True Then
+    Call SampleHyperOCRR
+  EndIf
+  WhereAmI = "End HyperOCRR"
+
+
+  'Collect OCR_I ---------------
+  WhereAmI = "Sample OCRI"
+  If With_OCR_I <> 0 Then
+    Call SampleOCRI
+  EndIf
+  WhereAmI = "End OCRI"
       
-      EndIf 'With_Triplet
-      
-
-'------------------------------------------------------------------------------
-'Pumped sensor (SBE37, Seafet & SUNA) -----------------------------------------
-    WhereAmI = "See if pump is running 30sec"
-    If Well_Switch = True AND (With_SBE37 <> 0 OR With_Seafet <> 0 OR With_SUNA <> 0) Then
-      Well_Timer = Timer(3,Sec,4)
-      Timer(3,Sec,3) 'Timer #3 Stop and Reset
-      If Well_Timer < 30 Then
-        Delay(1,30-Well_Timer,Sec)
-        EndIf
-      EndIf 
-      WhereAmI = "Pump ran 30sec"
-
-'SUNA (W4) start --------------------------------------------------------------
-    If With_SUNA <> 0 Then
-      WhereAmI = "Starting SUNA"
-      SerialOpen(SerialSUNA,19200,3,20,250)
-      SerialOut(SerialSUNA,"$","CMD?",1,400)
-      SerialOut(SerialSUNA,"measure 1"&CHR(13),CHR(10),1,50)
-      SerialIn(RawSUNADark,SerialSUNA,150,CHR(13),80) 'The Dark sample is nearly auto, then at least 12sec for the Light one
-      
-      Timer(5,Sec,0) 'Timer #5 Start for at least 12 sec
-      EndIf
-      
-'Collect OCR_R ----------------------------------------------------------------
-
-    If With_OCR_R <> 0 AND Well_Switch = True Then
-      SerialOpen(SerialOCRR,19200,3,0,800)
-      Well_Timer = Timer(3,Sec,4)
-      If Well_Timer < 8 Then
-        Delay(1,8-Well_Timer,Sec)
-      EndIf
-      SerialFlush(SerialOCRR)
-      StringOCRR = ""
-      RawOCRR = ""
-      For Y = 1 To 3
-        SerialInRecord(SerialOCRR,RawOCRR,&H5341,0,&H0D0A,NBR,101)
-        BytesBuffer = Hex(ASCII(RawOCRR(1,1,1)))
-        If BytesBuffer = "54" Then
-          SerialClose(SerialOCRR)
-          For X = 1 To 393
-            BytesBuffer = Hex(ASCII(RawOCRR(1,1,X)))
-            If Len(BytesBuffer) = 1 Then
-              BytesBuffer = "0" + BytesBuffer
-            EndIf
-            StringOCRR = StringOCRR + BytesBuffer
-          Next X
-          StringOCRR = "5341" + StringOCRR + "0D0A"
-          ExitFor
-        EndIf
-      Delay(1,2,Sec)
-      Next Y
-      If With_OCR_I = 0 Then
-        CallTable FileHyperOCR
-      EndIf
-    EndIf
-
-
-'Collect OCR_I ---------------
-
-    If With_OCR_I <> 0 Then
-      SerialOpen(SerialOCRI,19200,51,0,800)
-      Tower_Timer = Timer(7,Sec,4)
-      If Tower_Timer < 8 Then
-        Delay(1,8-Tower_Timer,Sec)
-      EndIf
-      SerialFlush(SerialOCRI)
-      StringOCRI = ""
-      RawOCRI = ""
-      For Y = 1 To 3
-        SerialInRecord(SerialOCRI,RawOCRI,&H5341,0,&H0D0A,NBR,101)
-        BytesBuffer = Hex(ASCII(RawOCRI(1,1,1)))
-        If BytesBuffer = "54" Then
-          SerialClose(SerialOCRI)
-          For X = 1 To 393
-            BytesBuffer = Hex(ASCII(RawOCRI(1,1,X)))
-            If Len(BytesBuffer) = 1 Then
-              BytesBuffer = "0" + BytesBuffer
-            EndIf
-            StringOCRI = StringOCRI + BytesBuffer
-          Next X
-          StringOCRI = "5341" + StringOCRI + "0D0A"
-          ExitFor
-        EndIf
-      Delay(1,2,Sec)
-      Next Y
-      CallTable FileHyperOCR
-    EndIf
-      
-'
-'      SerialInRecord(SerialOCRI,RawOCRI,&H5341,0,&H0D0A,NBR,101)
-'      SerialClose(SerialOCRI)
-'      For X = 1 To 393
-'        BytesBuffer = Hex(ASCII(RawOCRI(1,1,X)))
-'        If Len(BytesBuffer) = 1 Then
-'          BytesBuffer = "0" + BytesBuffer
-'        EndIf
-'        Delay(1,1,sec)
-'        StringOCRI = StringOCRI + BytesBuffer
-'      Next X
-'      StringOCRI = "5341" + StringOCRI + "0D0A"
-'      
-'      CallTable FileHyperOCR
-'    EndIf
-
-
-'SBE37 (W1) -------------------------------------------------------------------
-    If With_SBE37 <> 0 Then
-      WhereAmI = "Taking CTD"
-      SerialFlush(SerialSBE37)
-
-      For X = 1 To 3 Step 1
-        RawSBE37 = ""
-        SBE37() = ""
-        SerialOut(SerialSBE37,CHR(13),"S>",1,50)
-        If X = 1 Then
-          SerialOut(SerialSBE37,"tss"&CHR(13)," ",1,400)
-        Else
-          SerialOut(SerialSBE37,"sl"&CHR(13)," ",1,400)
-        EndIf
-        SerialIn(RawSBE37,SerialSBE37,400,83,60)
-        SplitStr(SBE37,RawSBE37,",",4,0)
-        If Len(RawSBE37) = 39 AND SBE37(4) <> "" Then
-          ExitFor
-        EndIf
-      Next X
-      
-      SerialClose(SerialSBE37)
-      CallTable FileSBE37
-      
-      TAGString = "[CTD]" & Water_Temp & "," & Conductivity & "," & Salinity & "," & Density
-      Call WriteTagString
-      
-     EndIf
-    WhereAmI = "CTD's finished"
+  'SBE37 (W1) -------------------------------------------------------------------
+  WhereAmI = "Collecting CTD"
+  If With_SBE37 <> 0 Then
+    Call CollectSBE37
+    TAGString = "[CTD]" & Water_Temp & "," & Conductivity & "," & Salinity & "," & Density
+    Call WriteTagString
+  EndIf
+  WhereAmI = "CTD's finished"
     
-'Seafet (W2) ------------------------------------------------------------------   
-    If With_Seafet <> 0 Then
-      WhereAmI = "Taking Seafet"
-      SerialOpen(SerialSeafet,19200,3,20,900) 'Seafet string is around 100, but bigger buffer for Coef.
-      For X = 1 To 3 Step 1
-        SerialFlush(SerialSeafet)
-        RawSeafet = ""
-        Seafet_Value() = ""
-        SerialOut(SerialSeafet,CHR(13),"S>",2,50)
-        If X = 1 Then
-          SerialOut(SerialSeafet,"tss"&CHR(13),CHR(13),1,50)
-        Else
-          SerialOut(SerialSeafet,"sl"&CHR(13),CHR(13),1,50)
-        EndIf
-        SerialIn(RawSeafet,SerialSeafet,800,CHR(13),125) 'Seafet string is around 100
-        SplitStr(Seafet_Value,RawSeafet,",",10,14)
-        Int_pH = Int_pH_Value
-        Ext_pH = Ext_pH_Value
-        If Len(RawSeafet) > 97 AND Mid(RawSeafet,24,1) = "T" AND Int_pH < 12 AND Int_pH > 3 AND Ext_pH < 12 AND Ext_pH > 3 Then
-          ExitFor
-        EndIf
-      Next X
-        
-
-      
-      If Error_Flag = 0000 Then
-        Error_Flag = 0
-      Else
-        Error_Flag = 1
-      EndIf
-      
-      TAGString = "[PH]" & Ext_pH & "," & Int_pH & "," & Error_Flag      
-        
-      If Seafet_Auto_Correction <> 0 AND Salinity > 10 Then
-        K0_Int_Exp = ""
-        K2_Int_Exp = ""
-        K0_Ext_Exp = ""
-        K2_Ext_Exp = ""
-        K0_Int = ""
-        K2_Int = ""
-        K0_Ext = ""
-        K2_Ext = ""
-        
-'        For X = 1 To 5 Step 1
-'        Coeff_Raw = ""
-'          SerialFlush(SerialSeafet)
-'          SerialOut(SerialSeafet,CHR(13),"S>",2,50)
-'          SerialOut(SerialSeafet,"dc"&CHR(13),"K0",1,400)
-'          SerialIn(Coeff_Raw,SerialSeafet,200,84,200) 'Terminaison character is "T" (ASCII #84)
-'          If Len(Coeff_Raw) > 117 Then
-'            ExitFor
-'          EndIf
-'        Next X
-
-        For X = 1 To 5 Step 1
-          If K0_Int_Exp = "" OR K0_Int = "NAN" Then
-            SerialFlush(SerialSeafet)
-            SerialOut(SerialSeafet,CHR(13),"S>",2,50)
-            SerialOut(SerialSeafet,"K0"&CHR(13),"",1,0)
-            SerialIn(K0_Int_Exp,SerialSeafet,100,39,40)
-            SerialIn(K0_Int_Exp,SerialSeafet,100,39,20)
-            If Len(K0_Int_Exp) <> 13 OR Mid(K0_Int_Exp,10,1) <> "e" Then
-              K0_Int_Exp = ""
-            EndIf                 
-          EndIf
-          
-          If K2_Int_Exp = "" OR K2_Int = "NAN" Then
-            SerialFlush(SerialSeafet)
-            SerialOut(SerialSeafet,CHR(13),"S>",2,50)
-            SerialOut(SerialSeafet,"K2"&CHR(13),"",1,0)
-            SerialIn(K2_Int_Exp,SerialSeafet,100,39,40)
-            SerialIn(K2_Int_Exp,SerialSeafet,100,39,20)
-            If Len(K2_Int_Exp) <> 13 OR Mid(K2_Int_Exp,10,1) <> "e" Then
-              K2_Int_Exp = ""
-            EndIf            
-          EndIf
-          
-          If K0_Ext_Exp = "" OR K0_Ext = "NAN" Then
-            SerialFlush(SerialSeafet)
-            SerialOut(SerialSeafet,CHR(13),"S>",2,50)
-            SerialOut(SerialSeafet,"KDF0"&CHR(13),"",1,0)
-            SerialIn(K0_Ext_Exp,SerialSeafet,100,39,40)
-            SerialIn(K0_Ext_Exp,SerialSeafet,100,39,20)
-            If Len(K0_Ext_Exp) <> 13 OR Mid(K0_Ext_Exp,10,1) <> "e" Then
-              K0_Ext_Exp = ""
-            EndIf
-          EndIf
-          
-          If K2_Ext_Exp = "" OR K2_Ext = "NAN" Then
-            SerialFlush(SerialSeafet)
-            SerialOut(SerialSeafet,CHR(13),"S>",2,50)
-            SerialOut(SerialSeafet,"KDF2"&CHR(13),"",1,0)
-            SerialIn(K2_Ext_Exp,SerialSeafet,100,39,40)
-            SerialIn(K2_Ext_Exp,SerialSeafet,100,39,20)
-            If Len(K2_Ext_Exp) <> 13 OR Mid(K2_Ext_Exp,10,1) <> "e" Then
-              K2_Ext_Exp = ""
-            EndIf
-          EndIf
-          
-        K0_Int = K0_Int_Exp
-        K2_Int = K2_Int_Exp
-        K0_Ext = K0_Ext_Exp
-        K2_Ext = K2_Ext_Exp
-        Next X     
-       
-
-        
-        'K0_Int = Mid(Coeff_Raw,15,9)
-        'K0_Int_Exp = Mid(Coeff_Raw,25,3)
-        'K0_Int = K0_Int * 10^K0_Int_Exp
-  
-        'K2_Int = Mid(Coeff_Raw,48,9)
-        'K2_Int_Exp =Mid(Coeff_Raw,58,3)
-        'K2_Int = K2_Int *10^K2_Int_Exp
-  
-        'K0_Ext = Mid(Coeff_Raw,81,9)
-        'K0_Ext_Exp = Mid(Coeff_Raw,91,3)
-        'K0_Ext = K0_Ext *10^K0_Ext_Exp
-  
-        'K2_Ext = Mid(Coeff_Raw,114,9)
-        'K2_Ext_Exp = Mid(Coeff_Raw,124,3)
-        'K2_Ext = K2_Ext *10^K2_Ext_Exp
-        
-
-        
-        Water_Temp_K = Kelvin + Water_Temp
-        Snernst = (R*Water_Temp_K*LN(10))/F
-        Clt = (0.99889/35.453)*(Salinity/1.80655)*(1000/(1000-(1.005*Salinity)))
-        I = (19.924*Salinity)/(1000-(1.005*Salinity))
-        Adh = (0.0000034286*(Water_Temp^2))+(0.00067524*Water_Temp)+0.49172143
-        log_yHClT = (-Adh*SQR(I))/(1+(1.394*SQR(I)))+((0.08885-(0.000111*Water_Temp))*I)
-        St = (0.1400/96.062)*(Salinity/1.80655)
-        Ks1 = (-4276.1/Water_Temp_K)+141.328-(23.093*LN(Water_Temp_K))
-        Ks2 = ((-13856/Water_Temp_K)+324.57-(47.986*LN(Water_Temp_K)))*SQR(I)
-        Ks3 = ((35474/Water_Temp_K)-771.54+(114.723*LN(Water_Temp_K)))*I
-        Ks4 = (2698/Water_Temp_K)*I^1.5
-        Ks5 = (1776/Water_Temp_K)*I^2
-        Ks = (1-(0.001005*Salinity))*EXP(Ks1+Ks2+Ks3-Ks4+Ks5)
-        
-        Int_pH_P = Round((CTYPE(Volt_Int_pH,Float) - K0_Int - (K2_Int*Water_Temp))/Snernst,4)
-        Ext_pH_P = Round(((CTYPE(Volt_Ext_pH,Float) - K0_Ext - (K2_Ext*Water_Temp))/Snernst) + LOG(Clt) + (2*log_yHClT) - LOG(1+(St/Ks)) - LOG((1000-(1.005*Salinity))/1000),4)
-      
-        If Int_pH_P <> "NAN" AND Ext_pH_P <> "NAN" Then
-          CallTable FileSeafet_Pro
-          TAGString = "[PHPRO]" & Ext_pH_P & "," & Int_pH_P & "," & Error_Flag & "," & Ext_pH & "," & Int_pH
-        EndIf 
-      EndIf 'Auto_Correction
-      
-      CallTable FileSeafet
-      
-      Call WriteTagString
-      
-    EndIf 'With_Seafet
+  'Seafet (W2) --------------------------------------------------------------------
+  WhereAmI = "Sample Seafet"
+  If With_Seafet <> 0 Then
+    Call SampleSeafet
+    Call WriteTagString
+  EndIf 'With_Seafet
+  WhereAmI = "End Seafet"
 
 
-'SUNA (W4) collect data ------------------------------------------------------------
-    If With_SUNA <> 0 Then
-      WhereAmI = "See if SUNA is done"
-      
-      Timer_Value(5) = Timer(5,Sec,4)
-      Timer(5,Sec,3) 'Timer 5 Stop and Reset
-      If Timer_Value(5) < 12 Then
-        Delay(1,12-Timer_Value(5),Sec)
-      EndIf   
-      
-      WhereAmI = "Collect SUNA"  
-      SerialInRecord(SerialSUNA,RawSUNALight,&H4C43,0,&H0D0A,NBR,101)
-      SerialOut(SerialSUNA,"sleep"&CHR(13),0,1,0)
-      SerialClose(SerialSUNA)
-      
-      If RawSUNADark = "" Then
-        RawSUNADark = "NAN"
-      EndIf
-      
-      If RawSUNADark <> "NAN" AND RawSUNALight <> "NAN" Then
-        SplitStr(SUNADark(),RawSUNADark,",",8,4)
-        CallTable FileSUNA_Dark
-        RawSUNALight = "SATSLC"&RawSUNALight
-        SplitStr(SUNALight(),RawSUNALight,",",8,4)
-        CallTable FileSUNA_Light
-        
-        TAGString = "[SUNA]" & Dark_Nitrate & "," & Light_Nitrate & "," & Dark_Nitrogen_in_Nitrate & "," & Light_Nitrogen_in_Nitrate & "," & Dark_Bromide & "," & Light_Bromide
-        Call WriteTagString
-      
-      EndIf
-    EndIf
+  'SUNA (W4) collect data ------------------------------------------------------------
+  WhereAmI = "Collecting SUNA"
+  If With_SUNA <> 0 Then
+    Call CollectSUNA
+  EndIf
+  WhereAmI = "End SUNA"
 
-'Pumped sensor are done, close pump -------------------------------------------
-    If Well_Switch = True Then
-      WhereAmI = "Close pump"
-      SW12(SW12_2,0)
-      Well_Switch = False
-      EndIf
+  'Pumped sensor are done, close pump -------------------------------------------
+  If Well_Switch = True Then
+    WhereAmI = "Close pump"
+    SW12(SW12_2,0)
+    Well_Switch = False
+  EndIf
     
-'PAR and Delay for WMT700 and WXT536 ------------------------------------------
-    WhereAmI = "See if weather is done"
-    If With_PAR <> 0 OR With_WMT700 <> 0 OR With_WXT536 <> 0 Then
-      Timer(1,Sec,1)' Weather_Timer
-      Weather_Timer = Timer(1,Sec,4)
-      'Delay to make sure the instruments are sampling for at 61sec
-      If Weather_Timer < 61 Then  
-        Delay (1,61-Weather_Timer,Sec)
-        EndIf
-      Timer(1,Sec,3) 'Stop and reset on Timer#1
+  'PAR and Delay for WMT700 and WXT536 ------------------------------------------
+  WhereAmI = "See if weather is done"
+  If With_PAR <> 0 OR With_WMT700 <> 0 OR With_WXT536 <> 0 Then
+    Timer(1,Sec,1)' Weather_Timer
+    Weather_Timer = Timer(1,Sec,4)
+    'Delay to make sure the instruments are sampling for at 61sec
+    If Weather_Timer < 61 Then  
+      Delay (1,61-Weather_Timer,Sec)
+      EndIf
+    Timer(1,Sec,3) 'Stop and reset on Timer#1
+  EndIf
+    
+  WhereAmI = "Collect PAR"
+  If With_PAR <> 0 Then
+    SerialIn(RawPAR,SerialPAR,10,CHR(13),60)
+    SplitStr(PARSensor(),RawPAR,",",5,4)
+    SerialClose(SerialPAR)
+    
+    CallTable FilePAR
     EndIf
     
-	  WhereAmI = "Collect PAR"
-	  If With_PAR <> 0 Then
-      SerialIn(RawPAR,SerialPAR,10,CHR(13),60)
-      SplitStr(PARSensor(),RawPAR,",",5,4)
-      SerialClose(SerialPAR)
-      
-      CallTable FilePAR
-     EndIf
-    
 
-'WMT700 and WXT536 Polling Sample--- ------------------------------------------
+  'WMT700 and WXT536 Polling Sample--- ------------------------------------------
     If With_WXT536 <> 0 Then
       WhereAmI = "Collect WXT"
       RawR1_Wind = ""
@@ -901,34 +405,7 @@ BeginProg
         EndIf
         
       Next X
-'      SerialOut(SerialTower,CHR(13)&CHR(10),0,1,10)        
-'  	  SerialOut(SerialTower,"2R!","Sx",1,100)                          '  Collecting data from WXT536
-'  	  SerialInRecord(SerialTower,RawR1_Wind,&H5231,0,&H0D0A,NBR,101)     '  R1(5231) is the wind, Sx is the last data sent then /r/n (0D0A)                                                           '                      '
-'  	  SerialInRecord(SerialTower,RawR2_Weather,&H5232,0,&H0D0A,NBR,101)  '  R2 is the weather, Pa is the last data sent
-'  	  SerialInRecord(SerialTower,RawR3_Rain,&H5233,0,&H0D0A,NBR,101)     '  R3 is the rain, Hi is the last data sent
-'  	  
-'      RawR1_Wind = Mid(RawR1_Wind,2,80)        '  Removing extra comma after 2R*
-'      RawR2_Weather = Mid(RawR2_Weather,2,30)  '
-'      RawR3_Rain = Mid(RawR3_Rain,2,80)        '
-'  
-'      If RawR1_Wind = "AN" Then
-'        RawR1_Wind = "NAN"
-'        Else
-'          SplitStr(WXT536_Wind(),RawR1_Wind,",",6,0)        ' Splitting the WXT536 data in Arrays
-'          EndIf
-'          
-'      If RawR2_Weather = "AN" Then
-'        RawR2_Weather = "NAN"
-'        Else
-'          SplitStr(WXT536_Weather(),RawR2_Weather,",",3,0)  '
-'          EndIf
-'          
-'      If RawR3_Rain = "AN" Then
-'        RawR3_Rain = "NAN"
-'        Else
-'          SplitStr(WXT536_Rain(),RawR3_Rain,",",6,0)
-'          EndIf
-      
+
       CallTable FileWXT536
       EndIf
       

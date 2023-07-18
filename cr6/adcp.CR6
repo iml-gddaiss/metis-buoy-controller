@@ -1,12 +1,17 @@
 ' adcp related code
-
+'### Serial Port ###
 Const SerialADCP = 12 'U3-U4
 
+
+'### Data Variables ###
 Dim RawADCP(31) As String * 100
 
 Dim ADCPHeader(3) As String : Alias ADCPHeader = ADCPDate, ADCPTime, ADCPSmpNbr
 Dim ADCPBin1(11) As Float : Alias ADCPBin1 = Bin, ADCPDir, ADCPMag, EW, NS, Vert, Err, Echo1, Echo2, Echo3, Echo4
 
+
+'### Units ###
+'### Tables ###
 DataTable(FileADCP,1,-1)
   DataInterval(0,0,Sec,10)
   Sample(1,RawADCP(1),String)
@@ -43,6 +48,7 @@ DataTable(FileADCP,1,-1)
 EndTable
 
 
+'### Sampling ###
 Sub SampleADCP
     For X = 1 To 31 Step 1
         SerialIn(RawADCP(X),SerialADCP,10,10,100)
@@ -67,3 +73,6 @@ EndSub
 Function ADCPTagString As String
     ADCPTagString = "[RDI]" & ADCPDate & "," & ADCPTime & "," & ADCPDir & "," & ADCPMag
 EndFunction
+
+
+'### Processing ###

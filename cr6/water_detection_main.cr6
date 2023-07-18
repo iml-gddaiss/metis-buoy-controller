@@ -1,3 +1,0 @@
-Const WD_Channel = U1 'Voltage reading
-
-Public Water_Detection_Main 

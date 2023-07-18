@@ -1,5 +1,9 @@
+'PCO2 related code
+'### Serial Port ###
 Const SerialPCO2 = 40 'RS232
 
+
+'### Data Variables ###
 Dim RawPCO2 As String * 1000
 Dim RawPCO2_Air As String * 100
 Dim RawPCO2_Water As String * 100
@@ -10,7 +14,7 @@ Public PCO2_Sampling As Boolean
 
 Dim PCO2WStart
 Dim PCO2WEnd
-Dim PCO2AStart
+Dim PCO2AStart7
 Dim PCO2AEnd
 
 
@@ -19,12 +23,15 @@ Dim CO2_Water = "#.#", PCO2_Gaz_Pressure_Water, PCO2W_Humidity, CO2_Air = "#.#",
 Dim PCO2_Date As String, PCO2_Time As String, PCO2_Type As String
 
 
+'### Units ###
 Units CO2_Water = ppm
 Units CO2_Air = ppm
 Units PCO2_Gaz_Pressure_Water = mbar
 Units PCO2_Gaz_Pressure_Air = mbar
 Units PCO2W_Humidity = %
 
+
+'### Tables ###
 DataTable(FilePCO2W,1,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,PCO2_Type,String)
@@ -58,3 +65,7 @@ DataTable(FilePCO2A,1,-1)
   Sample (1,RawPCO2,String)
   Sample (1,RawPCO2_Air,String)
 EndTable
+
+
+'### Sampling ###
+'### Processing ###

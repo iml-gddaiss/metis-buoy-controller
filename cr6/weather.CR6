@@ -1,0 +1,57 @@
+Dim WindTAG As String
+Dim Wind_Dir_Vec(6) As Float : Alias Wind_Dir_Vec = Dir_Min_x, Dir_Min_y, Dir_Ave_x, Dir_Ave_y, Dir_Max_x, Dir_Max_y
+Dim Wind_Spd_Vec(6) As Float : Alias Wind_Spd_Vec = Spd_Min_x, Spd_Min_y, Spd_Ave_x, Spd_Ave_y, Spd_Max_x, Spd_Max_y
+Dim Buoy_Direction_Vector(2) As Float : Alias Buoy_Direction_Vector = Buoy_SOG_x, Buoy_SOG_y
+
+
+' Weather manipulation with selection of better wind and compensation
+
+Dim Wind(6) As Float : Alias Wind = Wind_Dir_Min, Wind_Dir_Ave, Wind_Dir_Max, Wind_Spd_Min, Wind_Spd_Ave, Wind_Spd_Max
+Units Wind_Dir_Min = °
+Units Wind_Dir_Ave = °
+Units Wind_Dir_Max = °
+Units Wind_Spd_Min = Kn
+Units Wind_Spd_Ave = Kn
+Units Wind_Spd_Max = Kn
+
+DataTable (Weather,1,-1)
+  DataInterval (0,0,Sec,10)
+  Sample (1,Air_Temp,IEEE4)
+  Sample (1,Air_Humidity,IEEE4)
+  Sample (1,Air_Pressure,IEEE4)
+  Sample (1,Wind_Dir_Min,IEEE4)
+  Sample (1,Wind_Dir_Ave,IEEE4)
+  Sample (1,Wind_Dir_Max,IEEE4)
+  Sample (1,Wind_Spd_Min,IEEE4)
+  Sample (1,Wind_Spd_Ave,IEEE4)
+  Sample (1,Wind_Spd_Max,IEEE4)
+  Sample (1,Rain_Total,IEEE4)
+  Sample (1,Rain_Duration,IEEE4)
+  Sample (1,Rain_Intensity,IEEE4)
+  Sample (1,Hail_Total,IEEE4)
+  Sample (1,Hail_Duration,IEEE4)
+  Sample (1,Hail_Intensity,IEEE4)
+  EndTable
+
+
+' Raw data from the instruments
+
+DataTable (Raw,1,-1)
+  DataInterval(0,0,Sec,10)
+  Sample (1,RawR1_Wind,String)
+  Sample (1,RawR2_Weather,String)
+  Sample (1,RawR3_Rain,String)
+  Sample (1,RawWMT700,String)
+  Sample (1,RawGPS,String)
+  Sample (1,RawPAR,String)  
+  Sample (1,RawWave,String)
+  Sample (1,RawPower,String)
+  Sample (1,RawSBE37,String)
+  Sample (1,RawTriplet,String)
+  Sample (1,RawSeafet,String)  
+  Sample (1,RawSUNADark,String)
+  Sample (1,RawSUNALight,String)
+  Sample (1,RawPCO2_Water,String)
+  Sample (1,RawPCO2_Air,String)
+  Sample (1,WinchMessage,String)
+EndTable

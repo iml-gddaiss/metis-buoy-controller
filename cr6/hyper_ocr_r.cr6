@@ -1,9 +1,52 @@
+'hyper ocr_r related code
+'### Serial Port ###
+Const SerialOCRR = 39 'RS232
+
+
+'### Data Variables ###
 Public RawOCRR As String * 500
 Public BytesBuffer As String
 Public StringOCRR As String * 1000
 
+
+'### Units ###
+'### Tables ###
 DataTable(FileHyperOCR,1,-1)
   DataInterval(0,0,Sec,10)
   Sample(1,StringOCRR,String)
   Sample(1,StringOCRI,String)
 EndTable
+
+
+'### Sampling ###
+Sub SampleHyperOCRR
+SerialOpen(SerialOCRR,19200,3,0,800)
+    Well_Timer = Timer(3,Sec,4)
+    If Well_Timer < 8 Then
+      Delay(1,8-Well_Timer,Sec)
+    EndIf
+    SerialFlush(SerialOCRR)
+    StringOCRR = ""
+    RawOCRR = ""
+    For Y = 1 To 3
+      SerialInRecord(SerialOCRR,RawOCRR,&H5341,0,&H0D0A,NBR,101)
+      BytesBuffer = Hex(ASCII(RawOCRR(1,1,1)))
+      If BytesBuffer = "54" Then
+        SerialClose(SerialOCRR)
+        For X = 1 To 393
+          BytesBuffer = Hex(ASCII(RawOCRR(1,1,X)))
+          If Len(BytesBuffer) = 1 Then
+            BytesBuffer = "0" + BytesBuffer
+          EndIf
+          StringOCRR = StringOCRR + BytesBuffer
+        Next X
+        StringOCRR = "5341" + StringOCRR + "0D0A"
+        ExitFor
+      EndIf
+      Delay(1,2,Sec)
+    Next Y
+    If With_OCR_I = 0 Then
+      CallTable FileHyperOCR
+    EndIf
+EndSub
+'### Processing ###
