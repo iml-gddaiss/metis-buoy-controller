@@ -68,4 +68,47 @@ Sub StartWXT536
 EndSub
 
 
+Sub CollectWXT536
+    RawR1_Wind = ""
+    RawR2_Weather = ""
+    RawR3_Rain = ""
+
+    For X = 1 To 3 Step 1
+        SerialOut(SerialTower,CHR(13)&CHR(10),0,1,10)
+        If RawR1_Wind = "" Then
+            SerialOut(SerialTower,"2R1!",0,1,10)
+            SerialIn(RawR1_Wind,SerialTower,20,13,80)
+            RawR1_Wind = Mid(RawR1_Wind,5,80)
+            SplitStr(WXT536_Wind(),RawR1_Wind,",",6,0)
+            If WXT536_Wind(6) = "" Then
+            RawR1_Wind = ""
+            EndIf
+    EndIf
+
+    If RawR2_Weather = "" Then
+        SerialOut(SerialTower,"2R2!",0,1,10)
+        SerialIn(RawR2_Weather,SerialTower,20,13,30)
+        RawR2_Weather = Mid(RawR2_Weather,5,30)
+        SplitStr(WXT536_Weather(),RawR2_Weather,",",3,0)
+        If WXT536_Weather(3) = "" Then
+        RawR2_Weather = ""
+        EndIf
+    EndIf
+
+    If RawR3_Rain = "" Then
+        SerialOut(SerialTower,"2R3!",0,1,10)
+        SerialIn(RawR3_Rain,SerialTower,20,13,80)
+        RawR3_Rain = Mid(RawR3_Rain,5,80)
+        SplitStr(WXT536_Rain(),RawR3_Rain,",",6,0)
+        If WXT536_Rain(6) = "" Then
+        RawR3_Rain = ""
+        EndIf
+    EndIf
+
+    Next X
+
+    CallTable FileWXT536
+EndSub
+
+
 '### Processing ###

@@ -21,4 +21,12 @@ EndTable
 
 
 '### Sampling ###
+
+Sub CollectPAR
+  SerialIn(RawPAR,SerialPAR,10,CHR(13),60)
+  SplitStr(PARSensor(),RawPAR,",",5,4)
+  SerialClose(SerialPAR)
+  
+  CallTable FilePAR
+EndSub
 '### Processing ###

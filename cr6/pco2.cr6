@@ -68,4 +68,82 @@ EndTable
 
 
 '### Sampling ###
+
+Sub StartPCO2
+  RawPCO2 = ""
+  RawPCO2_Water = ""
+  RawPCO2_Air = ""
+  
+  SerialOpen(SerialPCO2,19200,3,20,500)
+  Delay(1,1,Sec)
+  SerialFlush(SerialPCO2)
+  SerialOut(SerialPCO2,CHR(27),"",2,50)
+  Delay (1,500,mSec)
+  SerialOut(SerialPCO2,CHR(27),"",1,0)
+  Delay (1,500,mSec)
+  SerialOut(SerialPCO2,"1","",1,0)
+  Delay (1,500,mSec)
+  SerialOut(SerialPCO2,"s","",1,0)
+  SerialFlush(SerialPCO2)
+  PCO2_Sampling = true
+  PCO2_Last_Sample = Public.TimeStamp(1)
+EndSub
+
+Sub EmptyPCO2
+  CallTable FilePCO2W
+  CallTable FilePCO2A
+  RawPCO2_Water = ""
+  RawPCO2_Air = ""
+  PCO2_Sampling = false
+EndSub
+
+
+
+Sub CollectPCO2
+  SerialIn(RawPCO2,SerialPCO2,10,"Sample Complete",500)
+  If RawPCO2_Water = "" Then
+    'Search in RawPCO2 where PCO2_Water starts with "W M"
+    PCO2WStart = InStr(1,RawPCO2,"W M,",4)
+    PCO2WEnd = InStr(PCO2WStart,RawPCO2,CHR(10),2)
+    If PCO2WStart <> 0 AND PCO2WEnd <> 0 Then
+      'Collect from RawPCO2 to get RawPCO2_Water
+      RawPCO2_Water = Mid(RawPCO2,PCO2WStart,PCO2WEnd - PCO2WStart)
+    EndIf
+  EndIf
+
+  If RawPCO2_Air = "" Then
+    'Search in RawPCO2 where PCO2_Air starts with "A M"
+    PCO2AStart = InStr(1,RawPCO2,"A M,",4)
+    PCO2AEnd = InStr(PCO2AStart,RawPCO2,CHR(10),2)
+    If PCO2AStart <> 0 AND PCO2AEnd <> 0 Then
+      'Collect from RawPCO2 to get RawPCO2_Water
+      RawPCO2_Air = Mid(RawPCO2,PCO2AStart,PCO2AEnd - PCO2AStart)
+    EndIf
+  EndIf
+    
+  If RawPCO2_Water <> "" AND RawPCO2_Air <> "" Then 
+    PCO2_Sampling = false
+    SplitStr(PCO2,RawPCO2_Water,",",14,0)
+    PCO2_Type = "W M"
+    PCO2_Date = PCO2(1)&"-"&PCO2(2)&"-"&PCO2(3)
+    PCO2_Time = PCO2(4)&":"&PCO2(5)&":"&PCO2(6)
+    CO2_Water = PCO2(9)
+    PCO2_Gaz_Pressure_Water = PCO2(13)
+    PCO2W_Humidity = PCO2(11)
+    CallTable FilePCO2W
+      
+    SplitStr(PCO2,RawPCO2_Air,",",14,0)
+    PCO2_Type = "A M"
+    PCO2_Date = PCO2(1)&"-"&PCO2(2)&"-"&PCO2(3)
+    PCO2_Time = PCO2(4)&":"&PCO2(5)&":"&PCO2(6)
+    CO2_Air = PCO2(9)
+    PCO2_Gaz_Pressure_Air = PCO2(11)
+    SerialFlush(SerialPCO2)
+    SerialClose(SerialPCO2)
+    
+    CallTable FilePCO2A
+              
+  EndIf 'If there's a water and an air string
+EndSub
+
 '### Processing ###

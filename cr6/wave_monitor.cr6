@@ -26,6 +26,23 @@ DataTable(FileWave,1,-1)
   Sample (1,Wave_Hmax,IEEE4)
  EndTable
 
-
 '### Sampling ###
+Sub CollectWave
+  Wave() = ""
+  SerialOpen(SerialWave,19200,3,600,200)
+  For X = 1 To 3 Step 1
+    SerialOut(SerialWave,CHR(13)&CHR(10),"CMD >>",2,200)
+    SerialOut(SerialWave,"slt "&Buoy_Name&CHR(13)&CHR(10),",",1,100)
+    SerialIn(RawWave,SerialWave,50,CHR(13),60)
+    SplitStr(Wave(),RawWave,",",6,5)
+    If Len(RawWave) > 38 AND Wave(6) <> "" Then
+      ExitFor
+    EndIf        
+  Next X
+  
+  SerialClose(SerialWave)
+  CallTable FileWave
+EndSub
+
+
 '### Processing ###

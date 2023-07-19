@@ -357,455 +357,258 @@ BeginProg
     
   WhereAmI = "Collect PAR"
   If With_PAR <> 0 Then
-    SerialIn(RawPAR,SerialPAR,10,CHR(13),60)
-    SplitStr(PARSensor(),RawPAR,",",5,4)
-    SerialClose(SerialPAR)
-    
-    CallTable FilePAR
-    EndIf
+    Call CollectPAR
+  EndIf
     
 
   'WMT700 and WXT536 Polling Sample--- ------------------------------------------
-    If With_WXT536 <> 0 Then
-      WhereAmI = "Collect WXT"
-      RawR1_Wind = ""
-      RawR2_Weather = ""
-      RawR3_Rain = ""
-      
-      For X = 1 To 3 Step 1
-        SerialOut(SerialTower,CHR(13)&CHR(10),0,1,10)
-        If RawR1_Wind = "" Then
-          SerialOut(SerialTower,"2R1!",0,1,10)
-          SerialIn(RawR1_Wind,SerialTower,20,13,80)
-          RawR1_Wind = Mid(RawR1_Wind,5,80)
-          SplitStr(WXT536_Wind(),RawR1_Wind,",",6,0)
-          If WXT536_Wind(6) = "" Then
-            RawR1_Wind = ""
-          EndIf
-        EndIf
-        
-        If RawR2_Weather = "" Then
-          SerialOut(SerialTower,"2R2!",0,1,10)
-          SerialIn(RawR2_Weather,SerialTower,20,13,30)
-          RawR2_Weather = Mid(RawR2_Weather,5,30)
-          SplitStr(WXT536_Weather(),RawR2_Weather,",",3,0)
-          If WXT536_Weather(3) = "" Then
-            RawR2_Weather = ""
-          EndIf
-        EndIf
-        
-        If RawR3_Rain = "" Then
-          SerialOut(SerialTower,"2R3!",0,1,10)
-          SerialIn(RawR3_Rain,SerialTower,20,13,80)
-          RawR3_Rain = Mid(RawR3_Rain,5,80)
-          SplitStr(WXT536_Rain(),RawR3_Rain,",",6,0)
-          If WXT536_Rain(6) = "" Then
-            RawR3_Rain = ""
-          EndIf
-        EndIf
-        
-      Next X
+  WhereAmI = "Collect WXT536"
+  If With_WXT536 <> 0 Then
+    Call CollectWXT536
+  EndIf
+  WhereAmI = "Finish WXT536"
 
-      CallTable FileWXT536
-      EndIf
-      
-  	If With_WMT700 <> 0 Then    
-  	  WhereAmI = "Collect WMT"                                                                     '
-      SerialOut(SerialTower,"$Apoll,1"&CHR(13)&CHR(10),"Sx",1,100)             '
-      SerialInRecord(SerialTower,RawWMT700,&H574D,0,&H0D0A,NBR,101)         '  poll,1 is the WMT700 wind, Sx is the last data sent
-      SerialOut(SerialTower,"$Asleep"&CHR(13)&CHR(10),"",1,0)
+  WhereAmI = "Collect WMT700"                                                                     '      
+  If With_WMT700 <> 0 Then    
+    Call CollectWMT700
+  EndIf
+  WhereAmI = "Finish WMT700"
     
-      RawWMT700 = Mid(RawWMT700,7,80)    ' Removing the 6 first digit to pass the numerical value for the type of SplitStr
+  'Closing Tower's Serial -----------
+  If With_WXT536 <> 0 OR With_WMT700 <> 0 OR With_Compass <> 0 Then
+    SerialClose(SerialTower)
+    SW12(SW12_1,0)
+    Tower_Switch = False
+    WhereAmI = "Close Tower"
+  EndIf	  
+
+
+  'Creating Weather file if Wind, GPS & Compass ---------------------------------   
+
+  WhereAmI = "Processing Weather"
+  Call SelectWindInstrument   
       
-      If RawWMT700 = "AN" Then
-        RawWMT700 = "NAN"
-        Else
-          SplitStr(WMT700(),RawWMT700,",",6,0)
-          EndIf
-          
-      CallTable FileWMT700
-      EndIf
+  If (With_WMT700 <> 0 OR With_WXT536 <> 0) AND With_GPS <> 0 AND Pitch <> "NAN" AND Roll <> "NAN" Then 
+    Call ProcessWeather
     
-'Closing Tower's Serial -----------
-    If With_WXT536 <> 0 OR With_WMT700 <> 0 OR With_Compass <> 0 Then
-	    SerialClose(SerialTower)
-	    SW12(SW12_1,0)
-	    Tower_Switch = False
-	    WhereAmI = "Close Tower"
-	    EndIf	  
-
-
-'Creating Weather file if Wind, GPS & Compass ---------------------------------   
-    If WMT700(5) = CHR(00) OR WMT700(5) = 0 Then  ' If there's data from WMT700, taking them as Wind
-      Wind() = WXT536_Wind()
-      WindTAG = "[W536]"                    ' Otherwise take the WXT536
-    Else                                    '
-      Wind() = WMT700()
-      WindTAG = "[W700]"                    '
-    EndIf         
+    TAGString = WindTAG & Wind_Dir_Min & "," & Wind_Dir_Ave & "," & Wind_Dir_Max & "," & Wind_Spd_Min & "," & Wind_Spd_Ave & "," & Wind_Spd_Max
+    Call WriteTagString
     
-    If (With_WMT700 <> 0 OR With_WXT536 <> 0) AND With_GPS <> 0 AND Pitch <> "NAN" AND Roll <> "NAN" Then 
-      
-      Dim W                                    ' Small loop to correct the wind direction
-      For W = 1 To 3                           ' with the heading (which is already corrected with magnetic
-        Wind(W) = Wind(W)+Heading              ' declinaison from the GPS
-        If Wind(W) >=  360 Then                '
-          Wind(W) = Round(Wind(W) - 360,2)     '
-          ElseIf Wind(W) < 0 Then              '
-            Wind(W) = Round(Wind(W) + 360,2)   '
-            EndIf                              '
-        Next                                   '
-  
-'Wind = Wind_Dir_Min, Wind_Dir_Ave, Wind_Dir_Max, Wind_Spd_Min, Wind_Spd_Ave, Wind_Spd_Max
-'             (1)          (2)          (3)            (4)          (5)            (6)
-  
-      'Finding speed vector (x,y) with direction from Wind_Direction_Average
-      'With compensation from Pitch/Roll and Buoy's displacement
-      Spd_Min_x = ((Wind(4)/COS(Pitch))*SIN(Wind(2))) + Buoy_SOG_x
-      Spd_Min_y = ((Wind(4)/COS(Roll))*COS(Wind(2))) + Buoy_SOG_y
-      Wind_Spd_Min = Round(SQR(PWR(Spd_Min_x,2)+PWR(Spd_Min_y,2)),2)
-      
-      Spd_Ave_x = ((Wind(5)/COS(Pitch))*SIN(Wind(2)))+ Buoy_SOG_x
-      Spd_Ave_y = ((Wind(5)/COS(Roll))*COS(Wind(2)))+ Buoy_SOG_y
-      Wind_Spd_Ave = Round(SQR(PWR(Spd_Ave_x,2)+PWR(Spd_Ave_y,2)),2)
-      
-      Spd_Max_x = ((Wind(6)/COS(Pitch))*SIN(Wind(2)))+ Buoy_SOG_x
-      Spd_Max_y = ((Wind(6)/COS(Roll))*COS(Wind(2)))+ Buoy_SOG_y
-      Wind_Spd_Max = Round(SQR(PWR(Spd_Max_x,2)+PWR(Spd_Max_y,2)),2)
-      
-  
-      'Finding direction vector (x,y) with speed from Wind_Speed_Average
-      Dir_Min_x = ((Wind(5)/COS(Pitch))*SIN(Wind(1))) + Buoy_SOG_x
-      Dir_Min_y = ((Wind(5)/COS(Roll))*COS(Wind(1))) + Buoy_SOG_y
-      
-      Dir_Ave_x = ((Wind(5)/COS(Pitch))*SIN(Wind(2))) + Buoy_SOG_x
-      Dir_Ave_y = ((Wind(5)/COS(Roll))*COS(Wind(2))) + Buoy_SOG_y
-      
-      Dir_Max_x = ((Wind(5)/COS(Pitch))*SIN(Wind(3))) + Buoy_SOG_x
-      Dir_Max_y = ((Wind(5)/COS(Roll))*COS(Wind(3))) + Buoy_SOG_y
-      
-      'Finding the final directions with tan-1(opp/adj) with absolute value, then
-      'putting correction for the appropriate quadrant
-      Dim A
-      For A = 1 To 3
-        If Wind_Dir_Vec((A*2)-1) >= 0 AND Wind_Dir_Vec(A*2) >= 0 Then
-          Wind(A) = Round(ATN(Wind_Dir_Vec((A*2)-1) / Wind_Dir_Vec(A*2)),2)        
-        ElseIf Wind_Dir_Vec((A*2)-1) < 0 AND Wind_Dir_Vec(A*2) >= 0 Then
-          Wind(A) = Round(ATN(Wind_Spd_Vec(A*2) / ABS(Wind_Dir_Vec((A*2)-1))),2)+270          
-        ElseIf Wind_Dir_Vec((A*2)-1) < 0 AND Wind_Spd_Vec(A*2) < 0 Then
-          Wind(A) = Round(ATN(Wind_Dir_Vec((A*2)-1) / Wind_Dir_Vec(A*2)),2)+180           
-        ElseIf Wind_Dir_Vec((A*2)-1) >= 0 AND Wind_Dir_Vec(A*2) < 0 Then
-          Wind(A) = Round(ATN(ABS(Wind_Dir_Vec(A*2)) / Wind_Dir_Vec((A*2)-1)),2)+90
-        EndIf
-      Next
-  
-      CallTable Weather
-      
-      TAGString = WindTAG & Wind_Dir_Min & "," & Wind_Dir_Ave & "," & Wind_Dir_Max & "," & Wind_Spd_Min & "," & Wind_Spd_Ave & "," & Wind_Spd_Max
-      Call WriteTagString
-      
-      TAGString = "[ATMS]" & Air_Temp & "," & Air_Humidity & "," & Air_Pressure & "," & PAR & "," & Rain_Total & "," & Rain_Duration & "," & Rain_Intensity
-      Call WriteTagString
-      
-    EndIf 'Creating weather file
+    TAGString = "[ATMS]" & Air_Temp & "," & Air_Humidity & "," & Air_Pressure & "," & PAR & "," & Rain_Total & "," & Rain_Duration & "," & Rain_Intensity
+    Call WriteTagString
+  EndIf 'Creating weather file
+  WhereAmI = "Finish Weather"
       
 
-'Wave -------------------------------------------------------------------------
-    RawWave = ""
-    WhereAmI = "Collect Wave"
-    If With_Wave <> 0 Then
-      Wave() = ""
-      SerialOpen(SerialWave,19200,3,600,200)
-      For X = 1 To 3 Step 1
-        SerialOut(SerialWave,CHR(13)&CHR(10),"CMD >>",2,200)
-        SerialOut(SerialWave,"slt "&Buoy_Name&CHR(13)&CHR(10),",",1,100)
-        SerialIn(RawWave,SerialWave,50,CHR(13),60)
-        SplitStr(Wave(),RawWave,",",6,5)
-        If Len(RawWave) > 38 AND Wave(6) <> "" Then
-          ExitFor
-        EndIf        
-      Next X
-      
-      SerialClose(SerialWave)
-      CallTable FileWave
-      
-      TAGString = "[WAVE]" & Wave_Date & "," & Wave_Time & "," & Wave_Period & "," & Wave_Hm0 & "," & Wave_H13 & "," & Wave_Hmax
-      FileWrite(ToTransmit,TAGString,0)
-      FileWrite(TAGFile,TAGString,0)
-    EndIf
+  'Wave -------------------------------------------------------------------------
+  RawWave = ""
+  WhereAmI = "Collect Wave"
+  If With_Wave <> 0 Then
+    Call CollectWave    
+    TAGString = "[WAVE]" & Wave_Date & "," & Wave_Time & "," & Wave_Period & "," & Wave_Hm0 & "," & Wave_H13 & "," & Wave_Hmax
+    FileWrite(ToTransmit,TAGString,0)
+    FileWrite(TAGFile,TAGString,0)
+  EndIf
+  WhereAmI = "Finish Wave"
        
 
 'ADCP -------------------------------------------------------------------------
 
-    If With_ADCP <> 0 Then
-      Call SampleADCP
+  If With_ADCP <> 0 Then
+    Call SampleADCP
+    TAGString = ADCPTagString()
+    Call WriteTagString  
+  EndIf
       
-      TAGString = ADCPTagString()
-      
-      Call WriteTagString
 
-      CallTable FileADCP
+  'PCO2 -------------------------------------------------------------------------
+  If With_PCO2 <> 0 AND (Salinity > 10 OR Bypass_Salinity = True) Then 'Security for PCO2 pump if not in water
+    Buoy_TimeStamp_1990 = Public.TimeStamp(1)
     
+    'minus 10sec to not skip a scan planned at PCO2_Interval hour (got 3599s and didn't sampled)
+    WhereAmI = "Start PCO2"
+    If (PCO2_Last_Sample + (PCO2_Interval*60*60) - 10 <= Buoy_TimeStamp_1990) AND PCO2_Sampling = false Then
+      ' WhereAmI = "Entering PCO2 Loop"
+      Call StartPCO2
     EndIf
-      
+    
+    If PCO2_Sampling = true Then
+      'Watchdog if there's no data in 1Hour (if power disconnected during sampling)
+                          'sec
+      If (PCO2_Last_Sample + 3600) < Buoy_TimeStamp_1990 Then
+        Call EmptyPCO2 '  Change le nom #jerome July 2023
+      Else
+        Call CollectPCO2
+        If RawPCO2_Water <> "" AND RawPCO2_Air <> "" Then 'TODO FIXME ME: Vérifier avec Anthony. C'est la seule place qui n'envoie pas le tags en cas de NA data ? #jerome July 2023
+          TAGString = "[PCO2]" & CO2_Water & "," & CO2_Air & "," & PCO2_Gaz_Pressure_Water & "," & PCO2_Gaz_Pressure_Air & "," & PCO2_Humidity
+          Call WriteTagString
+        EndIf
+      EndIf 'If Else Watchdog
+    EndIf 'If PCO2_Sampling is True
+  EndIf 'If there's a PCO2 and salinity (or bypass)
+    
 
-'PCO2 -------------------------------------------------------------------------
-    If With_PCO2 <> 0 AND (Salinity > 10 OR Bypass_Salinity = True) Then 'Security for PCO2 pump if not in water
-      Buoy_TimeStamp_1990 = Public.TimeStamp(1)
-      
-                            'minus 10sec to not skip a scan planned at PCO2_Interval hour (got 3599s and didn't sampled)
-      If (PCO2_Last_Sample + (PCO2_Interval*60*60) - 10 <= Buoy_TimeStamp_1990) AND PCO2_Sampling = false Then
-        WhereAmI = "Entering PCO2 Loop"
-        RawPCO2 = ""
-        RawPCO2_Water = ""
-        RawPCO2_Air = ""
-        
-        SerialOpen(SerialPCO2,19200,3,20,500)
-        Delay(1,1,Sec)
-        SerialFlush(SerialPCO2)
-        SerialOut(SerialPCO2,CHR(27),"",2,50)
-        Delay (1,500,mSec)
-        SerialOut(SerialPCO2,CHR(27),"",1,0)
-        Delay (1,500,mSec)
-        SerialOut(SerialPCO2,"1","",1,0)
-        Delay (1,500,mSec)
-        SerialOut(SerialPCO2,"s","",1,0)
-        SerialFlush(SerialPCO2)
-        PCO2_Sampling = true
-        PCO2_Last_Sample = Public.TimeStamp(1)
+  'Winch -------------------------------------------------------------------------
+  If With_Winch <> 0 AND (Salinity > 10 OR Bypass_Salinity = Y) Then
+    Buoy_TimeStamp_1990 = Public.TimeStamp(1)
+    WinchMessage = "Entering the Winch Block"
+    MissingCondition = 0
+                          'minus 10sec to not skip a scan planned at Winch_Interval hour (got 3599s and didn't sampled)
+    If (Winch_Last_Sample + (Winch_Interval*60*60) - 10 <= Buoy_TimeStamp_1990) AND Winch_Sampling = false Then
+      WhereAmI = "Starting A Winch"
+    
+      If With_WXT536 <> 0 AND Air_Temp < Min_Air_Temp_for_Winch Then
+        MissingCondition = MissingCondition + 1
+        WinchMessage = "The air temperature is too cold"
       EndIf
       
-      If PCO2_Sampling = true Then
-        'Watchdog if there's no data in 1Hour (if power disconnected during sampling)
-                            'sec
-        If (PCO2_Last_Sample + 3600) < Buoy_TimeStamp_1990 Then
-          CallTable FilePCO2W
-          CallTable FilePCO2A
-          RawPCO2_Water = ""
-          RawPCO2_Air = ""
-          PCO2_Sampling = false
-        Else
-
-          SerialIn(RawPCO2,SerialPCO2,10,"Sample Complete",500)
-
-          If RawPCO2_Water = "" Then
-            'Search in RawPCO2 where PCO2_Water starts with "W M"
-            PCO2WStart = InStr(1,RawPCO2,"W M,",4)
-            PCO2WEnd = InStr(PCO2WStart,RawPCO2,CHR(10),2)
-            If PCO2WStart <> 0 AND PCO2WEnd <> 0 Then
-              'Collect from RawPCO2 to get RawPCO2_Water
-              RawPCO2_Water = Mid(RawPCO2,PCO2WStart,PCO2WEnd - PCO2WStart)
-            EndIf
-          EndIf
-
-          If RawPCO2_Air = "" Then
-            'Search in RawPCO2 where PCO2_Air starts with "A M"
-            PCO2AStart = InStr(1,RawPCO2,"A M,",4)
-            PCO2AEnd = InStr(PCO2AStart,RawPCO2,CHR(10),2)
-            If PCO2AStart <> 0 AND PCO2AEnd <> 0 Then
-              'Collect from RawPCO2 to get RawPCO2_Water
-              RawPCO2_Air = Mid(RawPCO2,PCO2AStart,PCO2AEnd - PCO2AStart)
-            EndIf
-          EndIf
-            
-          If RawPCO2_Water <> "" AND RawPCO2_Air <> "" Then 
-            PCO2_Sampling = false
-            SplitStr(PCO2,RawPCO2_Water,",",14,0)
-            PCO2_Type = "W M"
-            PCO2_Date = PCO2(1)&"-"&PCO2(2)&"-"&PCO2(3)
-            PCO2_Time = PCO2(4)&":"&PCO2(5)&":"&PCO2(6)
-            CO2_Water = PCO2(9)
-            PCO2_Gaz_Pressure_Water = PCO2(13)
-            PCO2W_Humidity = PCO2(11)
-            CallTable FilePCO2W
-              
-            SplitStr(PCO2,RawPCO2_Air,",",14,0)
-            PCO2_Type = "A M"
-            PCO2_Date = PCO2(1)&"-"&PCO2(2)&"-"&PCO2(3)
-            PCO2_Time = PCO2(4)&":"&PCO2(5)&":"&PCO2(6)
-            CO2_Air = PCO2(9)
-            PCO2_Gaz_Pressure_Air = PCO2(11)
-            SerialFlush(SerialPCO2)
-            SerialClose(SerialPCO2)
-            CallTable FilePCO2A
-              
-            TAGString = "[PCO2]" & CO2_Water & "," & CO2_Air & "," & PCO2_Gaz_Pressure_Water & "," & PCO2_Gaz_Pressure_Air & "," & PCO2_Humidity
-            
-            Call WriteTagString
-          
-          EndIf 'If there's a water and an air string
-        EndIf 'If Else Watchdog
-      EndIf 'If PCO2_Sampling is True
-    EndIf 'If there's a PCO2 and salinity (or bypass)
-    
-
-'Winch -------------------------------------------------------------------------
-    If With_Winch <> 0 AND (Salinity > 10 OR Bypass_Salinity = Y) Then
-      Buoy_TimeStamp_1990 = Public.TimeStamp(1)
-      WinchMessage = "Entering the Winch Block"
-      MissingCondition = 0
-                            'minus 10sec to not skip a scan planned at Winch_Interval hour (got 3599s and didn't sampled)
-      If (Winch_Last_Sample + (Winch_Interval*60*60) - 10 <= Buoy_TimeStamp_1990) AND Winch_Sampling = false Then
-        WhereAmI = "Starting A Winch"
-      
-        If With_WXT536 <> 0 AND Air_Temp < Min_Air_Temp_for_Winch Then
+      If With_Wave <> 0 Then
+        If Wave_H13 > Max_Wave_H13_for_Winch Then
           MissingCondition = MissingCondition + 1
-          WinchMessage = "The air temperature is too cold"
+          WinchMessage = "Average wave is too high"
         EndIf
-        
-        If With_Wave <> 0 Then
-          If Wave_H13 > Max_Wave_H13_for_Winch Then
-            MissingCondition = MissingCondition + 1
-            WinchMessage = "Average wave is too high"
-          EndIf
-          If Wave_H13 > 1 AND Wave_Period < Min_Wave_Period_for_Winch  AND Wave_Period <> 0 Then
-            MissingCondition = MissingCondition + 1
-            WinchMessage = "Wave period is too short"
-          EndIf
-        EndIf
-        
-  '      If With_Flow <> 0 AND Flow > Max_Flow_for_Winch Then
-  '        MissingCondition = MissingCondition + 1
-  '        WinchMessage = "Surface flow is too high"
-  '      EndIf
-        
-        If With_GPS <> 0 AND SOG > Max_Buoy_Speed_for_Winch Then
+        If Wave_H13 > 1 AND Wave_Period < Min_Wave_Period_for_Winch  AND Wave_Period <> 0 Then
           MissingCondition = MissingCondition + 1
-          WinchMessage = "The buoy is moving too fast"
+          WinchMessage = "Wave period is too short"
         EndIf
-        
-        If With_Power <> 0 Then
-          OnWhichBattery = Mid(PowerString(11),4,1)
-          If OnWhichBattery = 1 Then
-            Winch_Voltage = VBatt1
-          Else If OnWhichBattery = 2 Then
-            Winch_Voltage = VBatt2
-          EndIf
-          If Winch_Voltage < Min_Voltage_for_Winch Then
-            MissingCondition = MissingCondition + 1
-            WinchMessage = "The Winch voltage is too low"
-          EndIf
-        EndIf
-  
-        If MissingCondition = 0 Then
-          SerialOpen(SerialWinch,19200,3,20,100)
-          WinchString = ""
-          SerialFlush(SerialWinch)
-          Delay(1,500,mSec)
-          SerialIn(WinchString,SerialWinch,100,10,60)
-          If WinchString = "" Then
-            SerialOut(SerialWinch,CHR(13),"",1,0)
-            SerialOut(SerialWinch,"p1"&CHR(13)&CHR(10),.,2,300)
-            Delay(1,2,Sec)
-            SerialFlush(SerialWinch)
-            SerialIn(WinchString,SerialWinch,100,10,100)
-            SerialOut(SerialWinch,"p0"&CHR(13)&CHR(10),.,2,300)
-            If Mid(WinchString,1,3) = "[S]" Then 'If String received from ctd
-              SerialOut(SerialWinch,"X"&CHR(13)&CHR(10),"[W]1B>Operation Complete",2,200)
-              SerialOut(SerialWinch,"R"&CHR(13)&CHR(10),"[W]09>Top Switch Activated",3,1000)
-              SerialOut(SerialWinch,"K"&CHR(13)&CHR(10),"[W]13>Lenght Manually Cleared",2,200)
-              SerialOut(SerialWinch,"Y"&Depth_for_Winch&CHR(13)&CHR(10),CHR(13),1,0)
-              WinchMessage = "Winch Mission Started"
-              Winch_Sampling = True
-              Winch_Last_Sample = Buoy_TimeStamp_1990
-              Winch_Date_Slash = Mid(GPS_Date,5,2)&"/"&Mid(GPS_Date,3,2)&"/"&Mid(GPS_Date,1,2)
-              Winch_Date_Hyphen = UTC_Date_Hyphen
-              Winch_Time_Short = UTC_Time_Short
-              Winch_Time_DDot = UTC_Time_DDot
-              Winch_Lat = Mid(Lat,1,2)&" "&Mid(Lat,3,5)&Lat_Hem
-              Winch_Long = Mid(Lon,1,3)&" "&Mid(Lon,4,5)&Lon_Hem
-            Else 'No string from CTD
-              WinchMessage = "No String received from CTD"
-            EndIf
-          Else
-            WinchMessage = "Winch already in function"
-            Winch_Sampling = True
-          EndIf
-        EndIf
+      EndIf
+            
+      If With_GPS <> 0 AND SOG > Max_Buoy_Speed_for_Winch Then
+        MissingCondition = MissingCondition + 1
+        WinchMessage = "The buoy is moving too fast"
+      EndIf
       
-      Else If Winch_Sampling = True Then
-        WhereAmI = "Check if the winch is done"
-        
+      If With_Power <> 0 Then
+        OnWhichBattery = Mid(PowerString(11),4,1)
+        If OnWhichBattery = 1 Then
+          Winch_Voltage = VBatt1
+        Else If OnWhichBattery = 2 Then
+          Winch_Voltage = VBatt2
+        EndIf
+        If Winch_Voltage < Min_Voltage_for_Winch Then
+          MissingCondition = MissingCondition + 1
+          WinchMessage = "The Winch voltage is too low"
+        EndIf
+      EndIf
+
+      If MissingCondition = 0 Then
         SerialOpen(SerialWinch,19200,3,20,100)
+        WinchString = ""
         SerialFlush(SerialWinch)
-        SerialIn(WinchString,SerialWinch,200,10,100)
+        Delay(1,500,mSec)
+        SerialIn(WinchString,SerialWinch,100,10,60)
         If WinchString = "" Then
-          WhereAmI = "Collecting the winch"
-          WinchFileName = Buoy_Name&"_"&Winch_Date_Hyphen&"_"&Winch_Time_Short
-          WinchFile = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
-          FileWrite(WinchFile,Winch_Time_DDot&" "&Winch_Date_Slash&CHR(10),0)
-          FileWrite(WinchFile,Buoy_Name&CHR(10),0)     
-          FileWrite(WinchFile,Winch_Lat&","&Winch_Long&CHR(10),0)    
-          FileWrite(WinchFile,"D"&CHR(10),0)
-          SerialOut(SerialWinch,"D"&CHR(13)&CHR(10),0,1,0)
-          Do 
-            WinchString = ""
-            SerialIn(WinchString,SerialWinch,300,10,60)
-            FileWrite(WinchFile,WinchString,0)
-          Loop While WinchString <> ""
-          
-          WhereAmI = "Out of Do.. While Loop after winch"
-          WinchString = ""
-          FileClose(WinchFile)
-          Winch_Sampling = False
-          WinchMessage = "Winch Complete"
+          SerialOut(SerialWinch,CHR(13),"",1,0)
+          SerialOut(SerialWinch,"p1"&CHR(13)&CHR(10),.,2,300)
+          Delay(1,2,Sec)
+          SerialFlush(SerialWinch)
+          SerialIn(WinchString,SerialWinch,100,10,100)
+          SerialOut(SerialWinch,"p0"&CHR(13)&CHR(10),.,2,300)
+          If Mid(WinchString,1,3) = "[S]" Then 'If String received from ctd
+            SerialOut(SerialWinch,"X"&CHR(13)&CHR(10),"[W]1B>Operation Complete",2,200)
+            SerialOut(SerialWinch,"R"&CHR(13)&CHR(10),"[W]09>Top Switch Activated",3,1000)
+            SerialOut(SerialWinch,"K"&CHR(13)&CHR(10),"[W]13>Lenght Manually Cleared",2,200)
+            SerialOut(SerialWinch,"Y"&Depth_for_Winch&CHR(13)&CHR(10),CHR(13),1,0)
+            WinchMessage = "Winch Mission Started"
+            Winch_Sampling = True
+            Winch_Last_Sample = Buoy_TimeStamp_1990
+            Winch_Date_Slash = Mid(GPS_Date,5,2)&"/"&Mid(GPS_Date,3,2)&"/"&Mid(GPS_Date,1,2)
+            Winch_Date_Hyphen = UTC_Date_Hyphen
+            Winch_Time_Short = UTC_Time_Short
+            Winch_Time_DDot = UTC_Time_DDot
+            Winch_Lat = Mid(Lat,1,2)&" "&Mid(Lat,3,5)&Lat_Hem
+            Winch_Long = Mid(Lon,1,3)&" "&Mid(Lon,4,5)&Lon_Hem
+          Else 'No string from CTD
+            WinchMessage = "No String received from CTD"
+          EndIf
         Else
-          WinchMessage = "Winch in Progress"
+          WinchMessage = "Winch already in function"
+          Winch_Sampling = True
         EndIf
+      EndIf
+    
+    Else If Winch_Sampling = True Then
+      WhereAmI = "Check if the winch is done"
       
+      SerialOpen(SerialWinch,19200,3,20,100)
+      SerialFlush(SerialWinch)
+      SerialIn(WinchString,SerialWinch,200,10,100)
+      If WinchString = "" Then
+        WhereAmI = "Collecting the winch"
+        WinchFileName = Buoy_Name&"_"&Winch_Date_Hyphen&"_"&Winch_Time_Short
+        WinchFile = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
+        FileWrite(WinchFile,Winch_Time_DDot&" "&Winch_Date_Slash&CHR(10),0)
+        FileWrite(WinchFile,Buoy_Name&CHR(10),0)     
+        FileWrite(WinchFile,Winch_Lat&","&Winch_Long&CHR(10),0)    
+        FileWrite(WinchFile,"D"&CHR(10),0)
+        SerialOut(SerialWinch,"D"&CHR(13)&CHR(10),0,1,0)
+        Do 
+          WinchString = ""
+          SerialIn(WinchString,SerialWinch,300,10,60)
+          FileWrite(WinchFile,WinchString,0)
+        Loop While WinchString <> ""
+        
+        WhereAmI = "Out of Do.. While Loop after winch"
+        WinchString = ""
+        FileClose(WinchFile)
+        Winch_Sampling = False
+        WinchMessage = "Winch Complete"
       Else
-        WinchMessage = "Interval not reach"
-      EndIf  
-      
+        WinchMessage = "Winch in Progress"
+      EndIf
+    
+    Else
+      WinchMessage = "Interval not reach"
+    EndIf  
+    
     TAGString = "[WNCH]" + WinchMessage
     Call WriteTagString
-    
-    EndIf
+  EndIf
 
-'Close all serial port on CR6 if still open
-    For SerialPort = 11 To 16 Step 1
-      If SerialPort = 12 Then 'SerialADCP, always open
-        'Do not close the port
-      Else If SerialPort = 13 AND WinchMessage <> "Interval not reach" Then
-        'Do not close the port
-      Else
-        SerialClose(SerialPort)
-      EndIf
-    Next SerialPort
-      
-'Close all serial port on SDM4, except for PCO2 (40) which must stays on is PCO2 is sampling
-    For SerialPort = 32 To 47 Step 1
-      If SerialPort = 40 AND PCO2_Sampling = true Then
+  'Close all serial port on CR6 if still open
+  For SerialPort = 11 To 16 Step 1
+    If SerialPort = 12 Then 'SerialADCP, always open
       'Do not close the port
-      Else
-        SerialClose(SerialPort)
-      EndIf
-    Next SerialPort
-    
-    CallTable Raw
-    'CallTable SD
-    
-    If CO2_Water <> "#.#" AND CO2_Air <> "#.#" Then
-      CO2_Water = "#.#"
-      CO2_Air = "#.#"
+    Else If SerialPort = 13 AND WinchMessage <> "Interval not reach" Then
+      'Do not close the port
+    Else
+      SerialClose(SerialPort)
     EndIf
+  Next SerialPort
+      
+  'Close all serial port on SDM4, except for PCO2 (40) which must stays on is PCO2 is sampling
+  For SerialPort = 32 To 47 Step 1
+    If SerialPort = 40 AND PCO2_Sampling = true Then
+    'Do not close the port
+    Else
+      SerialClose(SerialPort)
+    EndIf
+  Next SerialPort
+  
+  CallTable Raw
+  'CallTable SD
+  
+  If CO2_Water <> "#.#" AND CO2_Air <> "#.#" Then
+    CO2_Water = "#.#"
+    CO2_Air = "#.#"
+  EndIf
 
-    If RawPCO2_Air <> "" AND RawPCO2_Water <> "" Then
-      RawPCO2_Air = ""
-      RawPCO2_Water = ""
-      RawPCO2 = ""
-    EndIf
-    
-    TAGString = "[END]"
-    Call WriteTagString
-    
-    TAGString = ""
-    Call WriteTagString
-    
-    FileClose(TAGFile)
-    FileClose(ToTransmit)
-    
-    WhereAmI = "Scan end"
+  If RawPCO2_Air <> "" AND RawPCO2_Water <> "" Then
+    RawPCO2_Air = ""
+    RawPCO2_Water = ""
+    RawPCO2 = ""
+  EndIf
+  
+  TAGString = "[END]"
+  Call WriteTagString
+  
+  TAGString = ""
+  Call WriteTagString
+  
+  FileClose(TAGFile)
+  FileClose(ToTransmit)
+  
+  WhereAmI = "Scan end"
   NextScan
 	
   SlowSequence

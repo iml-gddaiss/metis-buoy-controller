@@ -67,6 +67,7 @@ Sub SampleADCP
 
     SerialFlush(SerialADCP)
 
+    CallTable FileADCP
 EndSub
 
 

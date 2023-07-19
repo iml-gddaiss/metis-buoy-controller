@@ -55,3 +55,71 @@ DataTable (Raw,1,-1)
   Sample (1,RawPCO2_Air,String)
   Sample (1,WinchMessage,String)
 EndTable
+
+
+Sub SelectWindInstrument
+  If WMT700(5) = CHR(00) OR WMT700(5) = 0 Then  ' If there's data from WMT700, taking them as Wind
+    Wind() = WXT536_Wind()
+    WindTAG = "[W536]"                    ' Otherwise take the WXT536
+  Else                                    '
+    Wind() = WMT700()
+    WindTAG = "[W700]"                    '
+  EndIf         
+EndSub
+
+
+Sub ProcessWeather
+  Dim W                                    ' Small loop to correct the wind direction
+  For W = 1 To 3                           ' with the heading (which is already corrected with magnetic
+    Wind(W) = Wind(W)+Heading              ' declinaison from the GPS
+    If Wind(W) >=  360 Then                '
+      Wind(W) = Round(Wind(W) - 360,2)     '
+    ElseIf Wind(W) < 0 Then              '
+      Wind(W) = Round(Wind(W) + 360,2)   '
+    EndIf                              '
+  Next                                   '
+
+  'Wind = Wind_Dir_Min, Wind_Dir_Ave, Wind_Dir_Max, Wind_Spd_Min, Wind_Spd_Ave, Wind_Spd_Max
+  '             (1)          (2)          (3)            (4)          (5)            (6)
+
+  'Finding speed vector (x,y) with direction from Wind_Direction_Average
+  'With compensation from Pitch/Roll and Buoy's displacement
+  Spd_Min_x = ((Wind(4)/COS(Pitch))*SIN(Wind(2))) + Buoy_SOG_x
+  Spd_Min_y = ((Wind(4)/COS(Roll))*COS(Wind(2))) + Buoy_SOG_y
+  Wind_Spd_Min = Round(SQR(PWR(Spd_Min_x,2)+PWR(Spd_Min_y,2)),2)
+  
+  Spd_Ave_x = ((Wind(5)/COS(Pitch))*SIN(Wind(2)))+ Buoy_SOG_x
+  Spd_Ave_y = ((Wind(5)/COS(Roll))*COS(Wind(2)))+ Buoy_SOG_y
+  Wind_Spd_Ave = Round(SQR(PWR(Spd_Ave_x,2)+PWR(Spd_Ave_y,2)),2)
+  
+  Spd_Max_x = ((Wind(6)/COS(Pitch))*SIN(Wind(2)))+ Buoy_SOG_x
+  Spd_Max_y = ((Wind(6)/COS(Roll))*COS(Wind(2)))+ Buoy_SOG_y
+  Wind_Spd_Max = Round(SQR(PWR(Spd_Max_x,2)+PWR(Spd_Max_y,2)),2)
+  
+  'Finding direction vector (x,y) with speed from Wind_Speed_Average
+  Dir_Min_x = ((Wind(5)/COS(Pitch))*SIN(Wind(1))) + Buoy_SOG_x
+  Dir_Min_y = ((Wind(5)/COS(Roll))*COS(Wind(1))) + Buoy_SOG_y
+  
+  Dir_Ave_x = ((Wind(5)/COS(Pitch))*SIN(Wind(2))) + Buoy_SOG_x
+  Dir_Ave_y = ((Wind(5)/COS(Roll))*COS(Wind(2))) + Buoy_SOG_y
+  
+  Dir_Max_x = ((Wind(5)/COS(Pitch))*SIN(Wind(3))) + Buoy_SOG_x
+  Dir_Max_y = ((Wind(5)/COS(Roll))*COS(Wind(3))) + Buoy_SOG_y
+  
+  'Finding the final directions with tan-1(opp/adj) with absolute value, then
+  'putting correction for the appropriate quadrant
+  Dim A
+  For A = 1 To 3
+    If Wind_Dir_Vec((A*2)-1) >= 0 AND Wind_Dir_Vec(A*2) >= 0 Then
+      Wind(A) = Round(ATN(Wind_Dir_Vec((A*2)-1) / Wind_Dir_Vec(A*2)),2)        
+    ElseIf Wind_Dir_Vec((A*2)-1) < 0 AND Wind_Dir_Vec(A*2) >= 0 Then
+      Wind(A) = Round(ATN(Wind_Spd_Vec(A*2) / ABS(Wind_Dir_Vec((A*2)-1))),2)+270          
+    ElseIf Wind_Dir_Vec((A*2)-1) < 0 AND Wind_Spd_Vec(A*2) < 0 Then
+      Wind(A) = Round(ATN(Wind_Dir_Vec((A*2)-1) / Wind_Dir_Vec(A*2)),2)+180           
+    ElseIf Wind_Dir_Vec((A*2)-1) >= 0 AND Wind_Dir_Vec(A*2) < 0 Then
+      Wind(A) = Round(ATN(ABS(Wind_Dir_Vec(A*2)) / Wind_Dir_Vec((A*2)-1)),2)+90
+    EndIf
+  Next
+
+  CallTable Weather
+EndSub
