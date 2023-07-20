@@ -1,10 +1,13 @@
+'#####################################################################################
 'Date: 04 avril 2023
 'Program author: Anthony Ouellet
 'Modified by: Jerome Guay
+'
 ' Notes: 
 ' Sample<> subroutine Call the data file table.
 ' Start<> subroutine only start the insturment sampling. A later call to Collect<> subroutine is required to call the data table.
 'Installed in the buoy, pre-deployment
+'#####################################################################################
 
 SequentialMode
 AngleDegrees
@@ -33,6 +36,8 @@ PreserveVariables
 '#M3 Power controller
 '#M4 ADCP
 '#M5 Winch
+Const Yes = True
+Const No = False
 
 Public WhereAmI As String
 Public TAGString As String * 200
@@ -51,46 +56,11 @@ Dim SerialPort
 
 Const SerialTower = 32 'RS485 As WMT700(A), WXT536(2) & Compass(1)
 
-' Instrument serial a declered in their respective cr6 files.
-
-Const Yes = True
-Const No = False
-
 'Instruments state
+Include "CPU:buoy_config.cr6"                     '#   Declare Buoy Config
 
-ConstTable (Buoy_Config,0)
-Const Buoy_Name = "PMZA-RIKI" 
-Const Buoy_Interval = 30
-Const PCO2_Interval = 12
-Const Winch_Interval = 5
-Const Depth_for_Winch = 210 
-
-Const Instrument_installed = "As Follow" 
-Const With_GPS = 1
-Const With_WMT700 = 1
-Const With_WXT536 = 1
-Const With_Compass = 1
-Const With_PAR = 1
-Const With_OCR_I = 1
-
-Const With_SBE37 = 1
-Const With_Seafet = 1
-Const With_Triplet = 1
-Const With_SUNA = 1
-Const With_PCO2 = 1
-Const With_OCR_R = 1
-
-Const With_Wave = 1
-Const With_ADCP = 1
-Const With_Winch = 1
-Const With_WD_Main = 1
-Const With_Power = 1
-
-Const Buoy_Config = "As Follow" 
-Const Bypass_Salinity = 0
-Const Disable_Pump = 0 
-Const Seafet_Auto_Correction = -1 
-EndConstTable
+Const With_Tower = With_WXT536 + With_WMT700 + With_Compass          '# Jerome
+Const With_Well = With_SBE37 + With_Seafet + With_SUNA           '#Jerome
 
 Public Manual_Tower_Switch = false
 Public Manual_Well_Switch = false
@@ -101,7 +71,7 @@ Const WD_Channel = U1 'Voltage reading
 Public Water_Detection_Main 
 
 '###### DECLARING INSUTRMENTS #####
-
+' Instrument serial a declered in their respective cr6 files.
 Include "CPU:tower.cr6"                     '#   Declare Tower
 Include "CPU:wmt700.cr6"                    '#T1 Declare WMT700
 Include "CPU:wtx536.cr6"                    '#T2 Declare WMT536
@@ -122,9 +92,7 @@ Include "CPU:adcp.cr6"                      '#M4 ADCP
 Include "CPU:winch.cr6"                     '#M5 Winch 
 
 '####### Different processing past this point #######
-
 'Wind compensation by Compass and GPS
-
 Include "CPU:weather.cr6"                   ' Weather variables  
 
 '------------------------------------------------------------------------------
@@ -184,7 +152,6 @@ BeginProg
   'Starting the weather instrument as soon as possible to stabilize the OCR, start the PAR sample and initialize the WMT700
   Call StartWeatherInstruments
 
-    
   'GPS (T4) --------------------------------------------------------------------
   WhereAmI = "Sample GPS"
   If With_GPS <> 0 Then
@@ -217,11 +184,8 @@ BeginProg
   EndIf 'With_SBE37
     
   ' FIXME Starting pump ?? Testing pump ?
-  If (Salinity > 10 OR Bypass_Salinity = Yes) AND (((With_SBE37 <> 0 OR With_Seafet <> 0 OR With_SUNA <> 0) AND Disable_Pump = No) OR With_OCR_R <> 0) Then
-    'Open Switch #2 to control pump for X sec
-    SW12(SW12_2,1)
-    Well_Switch = True
-    Timer(3,Sec,0) 'Start timer #3 for the pump working for min. 30 sec
+  If (Salinity > 10 OR Bypass_Salinity = Yes) AND ((With_Well <> 0 AND Disable_Pump = No) OR With_OCR_R <> 0) Then
+    Call StartWellPump
   EndIf
 
         
@@ -231,7 +195,7 @@ BeginProg
     Call StartTriplet
   EndIf
 
-  'Flowmeter (W6) Start sample --------------------------------------------------
+  'Flowmeter (W6) Start sample -------------------------------------------------- # ? Jerome
 
 
   'Compass (T3) -----------------------------------------------------------------
@@ -241,23 +205,19 @@ BeginProg
   EndIf 'With_Compass
   WhereAmI = "End Compass, collect power"
 
-  'Flowmeter (W6) collect -------------------------------------------------------
+  'Flowmeter (W6) collect ------------------------------------------------------- # ? Jerome
 
 
-  'Water Detection --------------------------------------------------------------
+  'Water Detection ---------------------
+  WhereAmI = "Check Water Detection"
   If With_WD_Main <> 0 Then
-    WhereAmI = "Check Water Detection"
-    Water_Detection_Main = 0
-    VoltSe(Water_Detection_Main,1,AutoRange,U1,0,0,15000,1,0)
-    PortSet(C4,0)
+    Call CheckWaterDetection
   EndIf
 
-  
   'Buoy TAG with name, GPS, Compass, Flow & WaterDetection
   TAGString = "[INIT]" & Buoy_Name & "," & UTC_Date_Hyphen & "," & UTC_Time_DDot & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
   ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & UTC_Date_Short & UTC_Time_Short & ".dat","a",-1)
   TAGFile = FileOpen("CRD:" & Buoy_Name & "_TAGFile.txt","a",-1)
-    
   Call WriteTagString
   
   'Power (M3) -------------------------------------------------------------------
@@ -281,12 +241,9 @@ BeginProg
   '------------------------------------------------------------------------------
   'Pumped sensor (SBE37, Seafet & SUNA) -----------------------------------------
   WhereAmI = "See if pump is running 30sec"
-  If Well_Switch = True AND (With_SBE37 <> 0 OR With_Seafet <> 0 OR With_SUNA <> 0) Then
-    Well_Timer = Timer(3,Sec,4)
-    Timer(3,Sec,3) 'Timer #3 Stop and Reset
-    If Well_Timer < 30 Then
-      Delay(1,30-Well_Timer,Sec)
-    EndIf
+  ' If Well_Switch = True AND (With_SBE37 + With_Seafet + With_SUNA) <> 0 Then # Jerome July 2023
+  If Well_Switch = True AND (With_Well <> 0) Then
+    Call CheckWellPump 
   EndIf 
   WhereAmI = "Pump ran 30sec"
 
@@ -337,10 +294,9 @@ BeginProg
   WhereAmI = "End SUNA"
 
   'Pumped sensor are done, close pump -------------------------------------------
+  WhereAmI = "Close pump"
   If Well_Switch = True Then
-    WhereAmI = "Close pump"
-    SW12(SW12_2,0)
-    Well_Switch = False
+    Call CloseWellPump
   EndIf
     
   'PAR and Delay for WMT700 and WXT536 ------------------------------------------
@@ -375,16 +331,14 @@ BeginProg
   WhereAmI = "Finish WMT700"
     
   'Closing Tower's Serial -----------
-  If With_WXT536 <> 0 OR With_WMT700 <> 0 OR With_Compass <> 0 Then
+  If With_Tower <> 0 Then
     SerialClose(SerialTower)
     SW12(SW12_1,0)
     Tower_Switch = False
     WhereAmI = "Close Tower"
   EndIf	  
 
-
   'Creating Weather file if Wind, GPS & Compass ---------------------------------   
-
   WhereAmI = "Processing Weather"
   Call SelectWindInstrument   
       
@@ -413,7 +367,6 @@ BeginProg
        
 
 'ADCP -------------------------------------------------------------------------
-
   If With_ADCP <> 0 Then
     Call SampleADCP
     TAGString = ADCPTagString()
@@ -672,9 +625,7 @@ EndSub
 
 
 Sub StartADCP
-  If With_ADCP <> 0 Then
-      SerialOpen(SerialADCP,115200,3,0,3000)
-    EndIf
+  SerialOpen(SerialADCP,115200,3,0,3000)
 EndSub
 
 
@@ -687,7 +638,7 @@ EndSub
 
 
 Sub StartWeatherInstruments
-' Weather instrument include WXT536, WMT700, OCR, Compas
+' Weather instrument include WXT536, WMT700, OCR, Compas # FIXME MIssing WXT536 ?
   If With_PAR <> 0 OR With_WMT700 <> 0 OR With_Compass <> 0 OR With_OCR_I <> 0 Then  
       SW12(SW12_1,1)
       Tower_Switch = True
@@ -695,7 +646,7 @@ Sub StartWeatherInstruments
     EndIf
     
   'Open the RS485 port if there's one of the intruments
-  If With_WXT536 <> 0 OR With_WMT700 <> 0 OR With_Compass <> 0 Then
+  If With_Tower <> 0 Then
     'Opening SDM and PAR (T5) voltage. 1sec before communication  
     SerialOpen(SerialTower,19200,51,20,500) 'for 2R! test
   EndIf
@@ -704,4 +655,34 @@ Sub StartWeatherInstruments
   If With_PAR <> 0 Then
     SerialOpen(SerialPAR,19200,3,20,100)
   EndIf
+EndSub
+
+
+Sub CheckWaterDetection
+  Water_Detection_Main = 0
+  VoltSe(Water_Detection_Main,1,AutoRange,U1,0,0,15000,1,0)
+  PortSet(C4,0)
+EndSub
+
+
+Sub StartWellPump
+  'Open Switch #2 to control pump for X sec
+  SW12(SW12_2,1)
+  Well_Switch = True
+  Timer(3,Sec,0) 'Start timer #3 for the pump working for min. 30 sec
+EndSub
+
+
+Sub CheckWellPump
+  Well_Timer = Timer(3,Sec,4)
+  Timer(3,Sec,3) 'Timer #3 Stop and Reset
+  If Well_Timer < 30 Then
+    Delay(1,30-Well_Timer,Sec)
+  EndIf
+EndSub
+
+
+Sub CloseWellPump
+  SW12(SW12_2,0)
+  Well_Switch = False
 EndSub
