@@ -49,6 +49,11 @@ EndTable
 
 
 '### Sampling ###
+Sub StartADCP
+  SerialOpen(SerialADCP,115200,3,0,3000)
+EndSub
+
+
 Sub SampleADCP
     For X = 1 To 31 Step 1
         SerialIn(RawADCP(X),SerialADCP,10,10,100)

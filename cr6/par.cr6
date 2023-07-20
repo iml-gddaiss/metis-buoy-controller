@@ -22,6 +22,10 @@ EndTable
 
 '### Sampling ###
 
+Sub StartPAR
+  SerialOpen(SerialPAR,19200,3,20,100)
+EndSub
+
 Sub CollectPAR
   SerialIn(RawPAR,SerialPAR,10,CHR(13),60)
   SplitStr(PARSensor(),RawPAR,",",5,4)
