@@ -351,6 +351,7 @@ BeginProg
     WhereAmI = "Close Tower"
   EndIf	  
 
+  
   'Creating Weather file if Wind, GPS & Compass ---------------------------------   
   WhereAmI = "Processing Weather"
   Call SelectWindInstrument   
@@ -389,146 +390,13 @@ BeginProg
 
   'PCO2 -------------------------------------------------------------------------
   If With_PCO2 <> 0 AND (Salinity > 10 OR Bypass_Salinity = True) Then 'Security for PCO2 pump if not in water
-    Buoy_TimeStamp_1990 = Public.TimeStamp(1)
-    
-    'minus 10sec to not skip a scan planned at PCO2_Interval hour (got 3599s and didn't sampled)
-    WhereAmI = "Start PCO2"
-    If (PCO2_Last_Sample + (PCO2_Interval*60*60) - 10 <= Buoy_TimeStamp_1990) AND PCO2_Sampling = false Then
-      ' WhereAmI = "Entering PCO2 Loop"
-      Call StartPCO2
-    EndIf
-    
-    If PCO2_Sampling = true Then
-      'Watchdog if there's no data in 1Hour (if power disconnected during sampling)
-                          'sec
-      If (PCO2_Last_Sample + 3600) < Buoy_TimeStamp_1990 Then
-        Call EmptyPCO2 '  Change le nom #jerome July 2023
-      Else
-        Call CollectPCO2
-        If RawPCO2_Water <> "" AND RawPCO2_Air <> "" Then 'TODO FIXME ME: Vérifier avec Anthony. C'est la seule place qui n'envoie pas le tags en cas de NA data ? #jerome July 2023
-          TAGString = "[PCO2]" & CO2_Water & "," & CO2_Air & "," & PCO2_Gaz_Pressure_Water & "," & PCO2_Gaz_Pressure_Air & "," & PCO2_Humidity
-          Call WriteTagString
-        EndIf
-      EndIf 'If Else Watchdog
-    EndIf 'If PCO2_Sampling is True
+    Call SamplePCO2
   EndIf 'If there's a PCO2 and salinity (or bypass)
     
 
   'Winch -------------------------------------------------------------------------
   If With_Winch <> 0 AND (Salinity > 10 OR Bypass_Salinity = Y) Then
-    Buoy_TimeStamp_1990 = Public.TimeStamp(1)
-    WinchMessage = "Entering the Winch Block"
-    MissingCondition = 0
-                          'minus 10sec to not skip a scan planned at Winch_Interval hour (got 3599s and didn't sampled)
-    If (Winch_Last_Sample + (Winch_Interval*60*60) - 10 <= Buoy_TimeStamp_1990) AND Winch_Sampling = false Then
-      WhereAmI = "Starting A Winch"
-    
-      If With_WXT536 <> 0 AND Air_Temp < Min_Air_Temp_for_Winch Then
-        MissingCondition = MissingCondition + 1
-        WinchMessage = "The air temperature is too cold"
-      EndIf
-      
-      If With_Wave <> 0 Then
-        If Wave_H13 > Max_Wave_H13_for_Winch Then
-          MissingCondition = MissingCondition + 1
-          WinchMessage = "Average wave is too high"
-        EndIf
-        If Wave_H13 > 1 AND Wave_Period < Min_Wave_Period_for_Winch  AND Wave_Period <> 0 Then
-          MissingCondition = MissingCondition + 1
-          WinchMessage = "Wave period is too short"
-        EndIf
-      EndIf
-            
-      If With_GPS <> 0 AND SOG > Max_Buoy_Speed_for_Winch Then
-        MissingCondition = MissingCondition + 1
-        WinchMessage = "The buoy is moving too fast"
-      EndIf
-      
-      If With_Power <> 0 Then
-        OnWhichBattery = Mid(PowerString(11),4,1)
-        If OnWhichBattery = 1 Then
-          Winch_Voltage = VBatt1
-        Else If OnWhichBattery = 2 Then
-          Winch_Voltage = VBatt2
-        EndIf
-        If Winch_Voltage < Min_Voltage_for_Winch Then
-          MissingCondition = MissingCondition + 1
-          WinchMessage = "The Winch voltage is too low"
-        EndIf
-      EndIf
-
-      If MissingCondition = 0 Then
-        SerialOpen(SerialWinch,19200,3,20,100)
-        WinchString = ""
-        SerialFlush(SerialWinch)
-        Delay(1,500,mSec)
-        SerialIn(WinchString,SerialWinch,100,10,60)
-        If WinchString = "" Then
-          SerialOut(SerialWinch,CHR(13),"",1,0)
-          SerialOut(SerialWinch,"p1"&CHR(13)&CHR(10),.,2,300)
-          Delay(1,2,Sec)
-          SerialFlush(SerialWinch)
-          SerialIn(WinchString,SerialWinch,100,10,100)
-          SerialOut(SerialWinch,"p0"&CHR(13)&CHR(10),.,2,300)
-          If Mid(WinchString,1,3) = "[S]" Then 'If String received from ctd
-            SerialOut(SerialWinch,"X"&CHR(13)&CHR(10),"[W]1B>Operation Complete",2,200)
-            SerialOut(SerialWinch,"R"&CHR(13)&CHR(10),"[W]09>Top Switch Activated",3,1000)
-            SerialOut(SerialWinch,"K"&CHR(13)&CHR(10),"[W]13>Lenght Manually Cleared",2,200)
-            SerialOut(SerialWinch,"Y"&Depth_for_Winch&CHR(13)&CHR(10),CHR(13),1,0)
-            WinchMessage = "Winch Mission Started"
-            Winch_Sampling = True
-            Winch_Last_Sample = Buoy_TimeStamp_1990
-            Winch_Date_Slash = Mid(GPS_Date,5,2)&"/"&Mid(GPS_Date,3,2)&"/"&Mid(GPS_Date,1,2)
-            Winch_Date_Hyphen = UTC_Date_Hyphen
-            Winch_Time_Short = UTC_Time_Short
-            Winch_Time_DDot = UTC_Time_DDot
-            Winch_Lat = Mid(Lat,1,2)&" "&Mid(Lat,3,5)&Lat_Hem
-            Winch_Long = Mid(Lon,1,3)&" "&Mid(Lon,4,5)&Lon_Hem
-          Else 'No string from CTD
-            WinchMessage = "No String received from CTD"
-          EndIf
-        Else
-          WinchMessage = "Winch already in function"
-          Winch_Sampling = True
-        EndIf
-      EndIf
-    
-    Else If Winch_Sampling = True Then
-      WhereAmI = "Check if the winch is done"
-      
-      SerialOpen(SerialWinch,19200,3,20,100)
-      SerialFlush(SerialWinch)
-      SerialIn(WinchString,SerialWinch,200,10,100)
-      If WinchString = "" Then
-        WhereAmI = "Collecting the winch"
-        WinchFileName = Buoy_Name&"_"&Winch_Date_Hyphen&"_"&Winch_Time_Short
-        WinchFile = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
-        FileWrite(WinchFile,Winch_Time_DDot&" "&Winch_Date_Slash&CHR(10),0)
-        FileWrite(WinchFile,Buoy_Name&CHR(10),0)     
-        FileWrite(WinchFile,Winch_Lat&","&Winch_Long&CHR(10),0)    
-        FileWrite(WinchFile,"D"&CHR(10),0)
-        SerialOut(SerialWinch,"D"&CHR(13)&CHR(10),0,1,0)
-        Do 
-          WinchString = ""
-          SerialIn(WinchString,SerialWinch,300,10,60)
-          FileWrite(WinchFile,WinchString,0)
-        Loop While WinchString <> ""
-        
-        WhereAmI = "Out of Do.. While Loop after winch"
-        WinchString = ""
-        FileClose(WinchFile)
-        Winch_Sampling = False
-        WinchMessage = "Winch Complete"
-      Else
-        WinchMessage = "Winch in Progress"
-      EndIf
-    
-    Else
-      WinchMessage = "Interval not reach"
-    EndIf  
-    
-    TAGString = "[WNCH]" + WinchMessage
-    Call WriteTagString
+    Call SampleWinch
   EndIf
 
   Call CloseCR6SerialPorts
@@ -679,4 +547,69 @@ EndSub
 Sub CloseWellPump
   SW12(SW12_2,0)
   Well_Switch = False
+EndSub
+
+
+Sub SamplePCO2
+  Buoy_TimeStamp_1990 = Public.TimeStamp(1)
+      
+  'minus 10sec to not skip a scan planned at PCO2_Interval hour (got 3599s and didn't sampled)
+  WhereAmI = "Start PCO2"
+  If (PCO2_Last_Sample + (PCO2_Interval*60*60) - 10 <= Buoy_TimeStamp_1990) AND PCO2_Sampling = false Then
+    ' WhereAmI = "Entering PCO2 Loop"
+    Call StartPCO2
+  EndIf
+  
+  If PCO2_Sampling = true Then
+    'Watchdog if there's no data in 1Hour (if power disconnected during sampling)
+                        'sec
+    If (PCO2_Last_Sample + 3600) < Buoy_TimeStamp_1990 Then
+      Call EmptyPCO2 '  Change le nom #jerome July 2023
+    Else
+      Call CollectPCO2
+      If RawPCO2_Water <> "" AND RawPCO2_Air <> "" Then 'TODO FIXME ME: Vérifier avec Anthony. C'est la seule place qui n'envoie pas le tags en cas de NA data ? #jerome July 2023
+        TAGString = "[PCO2]" & CO2_Water & "," & CO2_Air & "," & PCO2_Gaz_Pressure_Water & "," & PCO2_Gaz_Pressure_Air & "," & PCO2_Humidity
+        Call WriteTagString
+      EndIf
+    EndIf 'If Else Watchdog
+  EndIf 'If PCO2_Sampling is True
+EndSub
+
+
+Sub SampleWinch
+  Buoy_TimeStamp_1990 = Public.TimeStamp(1)
+  WinchMessage = "Entering the Winch Block"
+  MissingCondition = 0
+                        'minus 10sec to not skip a scan planned at Winch_Interval hour (got 3599s and didn't sampled)
+  If (Winch_Last_Sample + (Winch_Interval*60*60) - 10 <= Buoy_TimeStamp_1990) AND Winch_Sampling = false Then
+    WhereAmI = "Starting A Winch"
+    If With_WXT536 <> 0 Then
+      Call CheckWinchAir(Air_Temp)
+    EndIf
+    
+    If With_Wave <> 0 Then
+      Call CheckWinchWave(Wave_H13, Wave_Period)
+    EndIf
+          
+    If With_GPS <> 0 Then
+      Call CheckWinchGPS(SOG)
+    EndIf
+    
+    If With_Power <> 0 Then
+      Call CheckWinchPower(VBatt1, VBatt2)
+    EndIf
+
+    If MissingCondition = 0 Then
+      Call StartWinch(Depth_for_Winch, Buoy_TimeStamp_1990, GPS_Date, UTC_Date_Hyphen, UTC_Time_Short, UTC_Time_DDot, Lat, Lon, Lat_Hem, Lon_Hem)
+    EndIf
+  
+  Else If Winch_Sampling = True Then
+    WhereAmI = "Check if the winch is done"
+    Call CollectWinch(WhereAmI, Buoy_Name)      
+  Else
+    WinchMessage = "Interval not reach"
+  EndIf  
+  
+  TAGString = "[WNCH]" + WinchMessage
+  Call WriteTagString
 EndSub

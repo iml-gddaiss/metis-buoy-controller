@@ -3,7 +3,7 @@ Const Buoy_Name = "PMZA-RIKI"
 Const Buoy_Interval = 30
 Const PCO2_Interval = 12
 Const Winch_Interval = 5
-Const Depth_for_Winch = 210 
+Const Depth_for_Winch = 210
 
 Const Instrument_installed = "As Follow" 
 Const With_GPS = 1
