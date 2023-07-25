@@ -90,8 +90,10 @@ Sub StartPCO2
 EndSub
 
 Sub EmptyPCO2
+  Scan(1,Sec, 0, 1)
   CallTable FilePCO2W
   CallTable FilePCO2A
+  NextScan
   RawPCO2_Water = ""
   RawPCO2_Air = ""
   PCO2_Sampling = false

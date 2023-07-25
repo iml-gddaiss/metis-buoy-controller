@@ -30,7 +30,7 @@ Units Hail_Intensity = mm/h
 
 
 '### Tables ###
-DataTable (FileWXT536,1,-1) 'Set table size to # of records, or -1 to autoallocate.
+DataTable(FileWXT536,1,-1) 'Set table size to # of records, or -1 to autoallocate.
     DataInterval (0,0,Sec,10)
     Sample (1,Air_Temp,IEEE4)
     Sample (1,Air_Humidity,IEEE4)

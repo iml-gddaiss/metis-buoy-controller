@@ -294,8 +294,7 @@ BeginProg
   WhereAmI = "Sample Seafet"
   If With_Seafet <> 0 Then
     Call SampleSeafet
-    ' This should be here and not in the Collect SubRoutine TODO or pass it as variable
-    'TAGString = "[PHPRO]" & Ext_pH_P & "," & Int_pH_P & "," & Error_Flag & "," & Ext_pH & "," & Int_pH
+    TAGString = "[PHPRO]" & Ext_pH_P & "," & Int_pH_P & "," & Error_Flag & "," & Ext_pH & "," & Int_pH
     Call WriteTagString
   EndIf 'With_Seafet
   WhereAmI = "End Seafet"
@@ -306,8 +305,8 @@ BeginProg
   If With_SUNA <> 0 Then
     Call CollectSUNA
     ' This should be here and not in the Collect SubRoutine TODO or pass it as variable
-    'TAGString = "[SUNA]" & Dark_Nitrate & "," & Light_Nitrate & "," & Dark_Nitrogen_in_Nitrate & "," & Light_Nitrogen_in_Nitrate & "," & Dark_Bromide & "," & Light_Bromide
-    'Call WriteTagString
+    TAGString = "[SUNA]" & Dark_Nitrate & "," & Light_Nitrate & "," & Dark_Nitrogen_in_Nitrate & "," & Light_Nitrogen_in_Nitrate & "," & Dark_Bromide & "," & Light_Bromide
+    Call WriteTagString
   EndIf
   WhereAmI = "End SUNA"
 
