@@ -162,8 +162,10 @@ Sub SampleSeafet
     Ext_pH_P = Round(((CTYPE(Volt_Ext_pH,Float) - K0_Ext - (K2_Ext*Water_Temp))/Snernst) + LOG(Clt) + (2*log_yHClT) - LOG(1+(St/Ks)) - LOG((1000-(1.005*Salinity))/1000),4)
   
     If Int_pH_P <> "NAN" AND Ext_pH_P <> "NAN" Then
+      Scan(1,Sec, 0, 1)
       CallTable FileSeafet_Pro
-      TAGString = "[PHPRO]" & Ext_pH_P & "," & Int_pH_P & "," & Error_Flag & "," & Ext_pH & "," & Int_pH
+      NextScan
+      ' TAGString = "[PHPRO]" & Ext_pH_P & "," & Int_pH_P & "," & Error_Flag & "," & Ext_pH & "," & Int_pH ' it this ok to put in main FIXME jerome
     EndIf 
   EndIf 'Auto_Correction
   

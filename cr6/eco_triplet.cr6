@@ -5,7 +5,7 @@ Dim RawTriplet As String * 200
 Dim Triplet(11) As String : Alias Triplet = Triplet_Date, Triplet_Hour, Sct_wl, Raw_Sct, Sct_Value, Chl_wl, Raw_Chl, Chl_Value, FDOM_wl, Raw_FDOM, FDOM_Value
 Public Triplet_Value(3) As Float : Alias Triplet_Value = Scattering, Chlorophyll, FDOM
 
-DataTable (FileTriplet,1,-1)
+DataTable(FileTriplet,1,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,Raw_Sct,String)
   Sample (1,Sct_Value,String)
