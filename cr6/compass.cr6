@@ -107,7 +107,7 @@ Sub SampleCompass
 
   Scan(1,Sec, 0, 1)
   CallTable FileCompass
-  Next
+  NextScan
 EndSub
 
 
