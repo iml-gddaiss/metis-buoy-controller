@@ -72,7 +72,9 @@ Sub SampleADCP
 
     SerialFlush(SerialADCP)
 
+    Scan(1,Sec, 0, 1)
     CallTable FileADCP
+    NextScan
 EndSub
 
 

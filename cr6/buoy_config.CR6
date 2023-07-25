@@ -1,33 +1,34 @@
 ConstTable (Buoy_Config,0)
-Const Buoy_Name = "PMZA-RIKI" 
-Const Buoy_Interval = 30
-Const PCO2_Interval = 12
-Const Winch_Interval = 5
-Const Depth_for_Winch = 210
+    Const Buoy_Name = "PMZA-RIKI" 
+    Const Buoy_Interval = 30
+    Const PCO2_Interval = 12
+    Const Winch_Interval = 5
+    Const Depth_for_Winch = 210
 
-Const Instrument_installed = "As Follow" 
-Const With_GPS = 1
-Const With_WMT700 = 1
-Const With_WXT536 = 1
-Const With_Compass = 1
-Const With_PAR = 1
-Const With_OCR_I = 1
+    Const Instrument_installed = "As Follow" 
+    Const With_GPS = 1
+    Const With_WMT700 = 1
+    Const With_WXT536 = 1
+    Const With_Compass = 1
+    Const With_PAR = 1
+    Const With_OCR_I = 1
 
-Const With_SBE37 = 1
-Const With_Seafet = 1
-Const With_Triplet = 1
-Const With_SUNA = 1
-Const With_PCO2 = 1
-Const With_OCR_R = 1
+    Const With_SBE37 = 1
+    Const With_Seafet = 1
+    Const With_Triplet = 1
+    Const With_SUNA = 1
+    Const With_PCO2 = 1
+    Const With_OCR_R = 1
 
-Const With_Wave = 1
-Const With_ADCP = 1
-Const With_Winch = 1
-Const With_WD_Main = 1
-Const With_Power = 1
+    Const With_Wave = 1
+    Const With_ADCP = 1
+    Const With_Winch = 1
+    Const With_WD_Main = 1
+    Const With_Power = 1
 
-Const Buoy_Config = "As Follow" 
-Const Bypass_Salinity = 0
-Const Disable_Pump = 0 
-Const Seafet_Auto_Correction = -1 
+    Const Buoy_Config = "As Follow" 
+    Const Bypass_Salinity = 0
+    Const Disable_Pump = 0 
+    Const Seafet_Auto_Correction = -1 
+
 EndConstTable

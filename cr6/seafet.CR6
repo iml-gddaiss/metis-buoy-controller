@@ -167,7 +167,9 @@ Sub SampleSeafet
     EndIf 
   EndIf 'Auto_Correction
   
+  Scan(1,Sec, 0, 1)
   CallTable FileSeafet
+  NextScan
 EndSub
 
 

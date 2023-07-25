@@ -44,11 +44,13 @@ Sub CollectWMT700
   
   If RawWMT700 = "AN" Then
     RawWMT700 = "NAN"
-    Else
-      SplitStr(WMT700(),RawWMT700,",",6,0)
-      EndIf
-      
+  Else
+    SplitStr(WMT700(),RawWMT700,",",6,0)
+  EndIf
+
+  Scan(1,Sec, 0, 1)    
   CallTable FileWMT700
+  NextScan
 EndSub
 
 

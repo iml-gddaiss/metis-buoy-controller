@@ -63,7 +63,10 @@ Sub CollectSBE37
   Next X
     
   SerialClose(SerialSBE37)
+
+  Scan(1,Sec, 0, 1)
   CallTable FileSBE37
+  NextScan
 
 EndSub
 

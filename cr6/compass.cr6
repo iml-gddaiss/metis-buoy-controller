@@ -30,7 +30,7 @@ Sub SampleCompass
   ASCIIString = ""
   Tower_Timer = Timer(7,Sec,4)
   
-  wer_Timer < 4 Then
+  If Tower_Timer < 4 Then
     Delay(1,4-Tower_Timer,Sec)
   EndIf
 
@@ -105,7 +105,9 @@ Sub SampleCompass
   EndIf
   Heading = Round(Heading,2)
 
+  Scan(1,Sec, 0, 1)
   CallTable FileCompass
+  NextScan
 EndSub
 
 

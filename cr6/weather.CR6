@@ -121,5 +121,7 @@ Sub ProcessWeather
     EndIf
   Next
 
+  Scan(1,Sec, 0, 1)
   CallTable Weather
+  NextScan
 EndSub

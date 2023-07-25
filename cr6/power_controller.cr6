@@ -52,7 +52,9 @@ Sub SamplePowerController
     VBatt_to_SD = VBatt2
   EndIf
   
+  Scan(1,Sec, 0, 1)
   CallTable FilePower
+  NextScan
 EndSub
 
 

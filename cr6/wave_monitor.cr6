@@ -41,7 +41,10 @@ Sub CollectWave
   Next X
   
   SerialClose(SerialWave)
+  Scan(1,Sec, 0, 1)
   CallTable FileWave
+  NextScan
+
 EndSub
 
 

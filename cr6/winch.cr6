@@ -75,7 +75,7 @@ Sub CheckWinchPower(VBatt1, VBatt2)
 EndSub
 
 
-Sub StartWinch(Depth_for_Winch, Buoy_TimeStamp_1990, GPS_Date, UTC_Date_Hyphen, UTC_Time_Short, UTC_Time_DDot, Lat, Lon, Lat_Hem, Lon_Hem)
+Sub StartWinch(Buoy_TimeStamp_1990, GPS_Date, UTC_Date_Hyphen, UTC_Time_Short, UTC_Time_DDot, Lat, Lon, Lat_Hem, Lon_Hem)
     SerialOpen(SerialWinch,19200,3,20,100)
     WinchString = ""
     SerialFlush(SerialWinch)
@@ -124,8 +124,8 @@ Sub CheckWinch(WhereAmI)
     EndIf
 EndSub
 
-Sub CollectWinch(WhereAmI, Buoy_Name)      
-    If WinchMessage == "Winch Complete" Then
+Sub CollectWinch(WhereAmI)      
+    If WinchMessage = "Winch Complete" Then
         Winch_Sampling = False
         
         WhereAmI = "Collecting the winch"

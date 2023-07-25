@@ -77,20 +77,19 @@ Public Water_Detection_Main
 
 '###### DECLARING INSUTRMENTS #####
 ' Instrument serial a declered in their respective cr6 files.
-Include "CPU:tower.cr6"                     '#   Declare Tower
 Include "CPU:wmt700.cr6"                    '#T1 Declare WMT700
-Include "CPU:wtx536.cr6"                    '#T2 Declare WMT536
+Include "CPU:wxt536.cr6"                    '#T2 Declare WXT536
 Include "CPU:compass.cr6"                   '#T3 Declare Compass
 Include "CPU:gps.cr6"                       '#T4 Declare GPS
 Include "CPU:par.cr6"                       '#T5 Declare PAR
-Include "CPU:ocri.cr6"                      '#T6 Declare HyperOCR_I 
+' Include "CPU:ocri.cr6"                      '#T6 Declare HyperOCR_I 
 Include "CPU:sbe37.cr6"                     '#W1 Declare CTD SBE37 
 Include "CPU:eco_triplet.cr6"               '#W2 Declare ECO-Triplet
 Include "CPU:seafet.cr6"                    '#W3 Declare Seafet 
 Include "CPU:suna.cr6"                      '#W4 Declare SUNA 
 Include "CPU:pco2.cr6"                      '#W5 PCO2
 '#W6 Flowmeter Todo ? Useless ?
-Include "CPU:hyper_ocr_r.cr6"               '#W7 HyperOCR_R 
+Include "CPU:ocr.cr6"               '#W7 HyperOCR_R 
 Include "CPU:wave_monitor.cr6"              '#M1 Wave_Monitor 
 Include "CPU:power_controller.cr6"          '#M3 Power Controller
 Include "CPU:adcp.cr6"                      '#M4 ADCP 
@@ -269,6 +268,7 @@ BeginProg
   'Collect OCR_R ----------------------------------------------------------------
   WhereAmI = "Sample HyperOCRR"
   If With_OCR_R <> 0 AND Well_Switch = True Then
+    'With_OCR_I is use in SampleHyperOCRR as a condition to calltable TODO FIXME
     Call SampleHyperOCRR
   EndIf
   WhereAmI = "End HyperOCRR"
@@ -294,6 +294,8 @@ BeginProg
   WhereAmI = "Sample Seafet"
   If With_Seafet <> 0 Then
     Call SampleSeafet
+    ' This should be here and not in the Collect SubRoutine TODO or pass it as variable
+    'TAGString = "[PHPRO]" & Ext_pH_P & "," & Int_pH_P & "," & Error_Flag & "," & Ext_pH & "," & Int_pH
     Call WriteTagString
   EndIf 'With_Seafet
   WhereAmI = "End Seafet"
@@ -303,6 +305,9 @@ BeginProg
   WhereAmI = "Collecting SUNA"
   If With_SUNA <> 0 Then
     Call CollectSUNA
+    ' This should be here and not in the Collect SubRoutine TODO or pass it as variable
+    'TAGString = "[SUNA]" & Dark_Nitrate & "," & Light_Nitrate & "," & Dark_Nitrogen_in_Nitrate & "," & Light_Nitrogen_in_Nitrate & "," & Dark_Bromide & "," & Light_Bromide
+    'Call WriteTagString
   EndIf
   WhereAmI = "End SUNA"
 

@@ -31,6 +31,8 @@ Sub CollectPAR
   SplitStr(PARSensor(),RawPAR,",",5,4)
   SerialClose(SerialPAR)
   
+  Scan(1,Sec, 0, 1)
   CallTable FilePAR
+  NextScan
 EndSub
 '### Processing ###

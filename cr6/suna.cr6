@@ -1,6 +1,6 @@
 'Suna related code
 '### Serial Port ###
-Const SerialPower = 45 'RS485
+Const SerialSUNA = 41 'RS232
 
 
 '### Data Variables ###
@@ -51,7 +51,8 @@ Sub StartSUNA
 EndSub
 
 
-Sub CollectSUNA    Timer_Value(5) = Timer(5,Sec,4)
+Sub CollectSUNA  
+  Timer_Value(5) = Timer(5,Sec,4)
   Timer(5,Sec,3) 'Timer 5 Stop and Reset
   If Timer_Value(5) < 12 Then
     Delay(1,12-Timer_Value(5),Sec)
@@ -71,7 +72,10 @@ Sub CollectSUNA    Timer_Value(5) = Timer(5,Sec,4)
     CallTable FileSUNA_Dark
     RawSUNALight = "SATSLC"&RawSUNALight
     SplitStr(SUNALight(),RawSUNALight,",",8,4)
+
+    Scan(1,Sec, 0, 1)
     CallTable FileSUNA_Light
+    NextScan
     
     TAGString = "[SUNA]" & Dark_Nitrate & "," & Light_Nitrate & "," & Dark_Nitrogen_in_Nitrate & "," & Light_Nitrogen_in_Nitrate & "," & Dark_Bromide & "," & Light_Bromide
     Call WriteTagString

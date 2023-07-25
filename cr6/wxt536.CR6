@@ -107,7 +107,9 @@ Sub CollectWXT536
 
     Next X
 
+    Scan(1,Sec, 0, 1)
     CallTable FileWXT536
+    NextScan
 EndSub
 
 

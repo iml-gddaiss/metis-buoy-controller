@@ -44,5 +44,8 @@ Sub CollectTriplet
   Scattering = Round(Sct_Value,7)
   Chlorophyll = Chl_Value
   FDOM = FDOM_Value
+
+  Scan(1,Sec, 0, 1)
   CallTable FileTriplet
+  NextScan
 EndSub

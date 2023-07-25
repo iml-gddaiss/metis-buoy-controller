@@ -1,12 +1,19 @@
-'hyper ocr_r related code
+'OCR related code
 '### Serial Port ###
+
+Const SerialOCRI = 34
 Const SerialOCRR = 39 'RS232
+
 
 
 '### Data Variables ###
 Public RawOCRR As String * 500
 Public BytesBuffer As String
 Public StringOCRR As String * 1000
+
+
+Public RawOCRI As String * 500
+Public StringOCRI As String * 1000
 
 
 '### Units ###
@@ -46,7 +53,42 @@ SerialOpen(SerialOCRR,19200,3,0,800)
       Delay(1,2,Sec)
     Next Y
     If With_OCR_I = 0 Then
-      CallTable FileHyperOCR
+      Scan(1,Sec, 0, 1)
+      CallTable FileHyperOCR '# why not just OCR FIXME -----------------
+      NextScan
     EndIf
+EndSub
+
+Sub SampleOCRI
+    SerialOpen(SerialOCRI,19200,51,0,800)
+    Tower_Timer = Timer(7,Sec,4)
+    If Tower_Timer < 8 Then
+      Delay(1,8-Tower_Timer,Sec)
+    EndIf
+    
+    SerialFlush(SerialOCRI)
+    StringOCRI = ""
+    RawOCRI = ""
+    
+    For Y = 1 To 3
+      SerialInRecord(SerialOCRI,RawOCRI,&H5341,0,&H0D0A,NBR,101)
+      BytesBuffer = Hex(ASCII(RawOCRI(1,1,1)))
+      If BytesBuffer = "54" Then
+        SerialClose(SerialOCRI)
+        For X = 1 To 393
+          BytesBuffer = Hex(ASCII(RawOCRI(1,1,X)))
+          If Len(BytesBuffer) = 1 Then
+            BytesBuffer = "0" + BytesBuffer
+          EndIf
+          StringOCRI = StringOCRI + BytesBuffer
+        Next X
+        StringOCRI = "5341" + StringOCRI + "0D0A"
+        ExitFor
+      EndIf
+    Delay(1,2,Sec)
+    Next Y
+    Scan(1,Sec, 0, 1)
+    CallTable FileHyperOCR  '# why not just OCR FIXME -----------------
+    NextScan
 EndSub
 '### Processing ###
