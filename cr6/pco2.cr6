@@ -123,6 +123,7 @@ Sub CollectPCO2
     
   If RawPCO2_Water <> "" AND RawPCO2_Air <> "" Then 
     PCO2_Sampling = false
+    
     SplitStr(PCO2,RawPCO2_Water,",",14,0)
     PCO2_Type = "W M"
     PCO2_Date = PCO2(1)&"-"&PCO2(2)&"-"&PCO2(3)
@@ -142,6 +143,10 @@ Sub CollectPCO2
     SerialClose(SerialPCO2)
     
     CallTable FilePCO2A
+
+    RawPCO2 = ""
+    CO2_Water = "#.#"
+    CO2_Air = "#.#"
               
   EndIf 'If there's a water and an air string
 EndSub

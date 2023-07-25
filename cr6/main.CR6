@@ -60,8 +60,12 @@ Const SerialTower = 32 'RS485 As WMT700(A), WXT536(2) & Compass(1)
 'Instruments state
 Include "CPU:buoy_config.cr6"                     '#   Declare Buoy Config
 
-Const With_Tower = With_WXT536 + With_WMT700 + With_Compass          '# Jerome
-Const With_Well = With_SBE37 + With_Seafet + With_SUNA           '#Jerome
+' With_Tower_485 : Tower 485 com port TODO
+Const With_Tower_485 = With_WXT536 + With_WMT700 + With_Compass       
+' With_Tower : Tower Power TODO
+Const With_Tower = With_PAR + With_WMT700 + With_Compass + With_OCR_I
+' With_Well : Well Pump TODO
+Const With_Well_Pump = With_SBE37 + With_Seafet + With_SUNA
 
 Public Manual_Tower_Switch = false
 Public Manual_Well_Switch = false
@@ -153,7 +157,7 @@ BeginProg
   Call StartWaterDetectionSensor
       
   'Starting the weather instrument as soon as possible to stabilize the OCR, start the PAR sample and initialize the WMT700
-  Call StartWeatherInstruments
+  Call StartTowerInstruments
 
   'Open the PAR port if present, sending the data as soon as it's ready
   If With_PAR <> 0 Then
@@ -161,8 +165,8 @@ BeginProg
   EndIf
 
   'Open the RS485 port if there's one of the intruments
-  If With_Tower <> 0 Then
-    Call StartTower
+  If With_Tower_485 <> 0 Then
+    Call StartTower485
   EndIf
 
   'GPS (T4) --------------------------------------------------------------------
@@ -185,7 +189,7 @@ BeginProg
     
   'Start Timer#1 to collect data in 61sec
   If With_WXT536 <> 0 OR With_WMT700 <> 0 OR With_PAR <> 0 Then
-    Timer(1,Sec,0)
+    Timer(1,Sec,0) ' TODO Start_WeatherTimer ?
   EndIf
 
 
@@ -197,7 +201,7 @@ BeginProg
   EndIf 'With_SBE37
     
   ' FIXME Starting pump ?? Testing pump ?
-  If (Salinity > 10 OR Bypass_Salinity = Yes) AND ((With_Well <> 0 AND Disable_Pump = No) OR With_OCR_R <> 0) Then
+  If (Salinity > 10 OR Bypass_Salinity = Yes) AND ((With_Well_Pump <> 0 AND Disable_Pump = No) OR With_OCR_R <> 0) Then
     Call StartWellPump
   EndIf
 
@@ -208,8 +212,6 @@ BeginProg
     Call StartTriplet
   EndIf
 
-  'Flowmeter (W6) Start sample -------------------------------------------------- # ? Jerome
-
 
   'Compass (T3) -----------------------------------------------------------------
   WhereAmI = "Sample Compass"     ' Use to be after the Delay call in SampleCompass. #Jerome
@@ -217,8 +219,6 @@ BeginProg
     Call SampleCompass
   EndIf 'With_Compass
   WhereAmI = "End Compass, collect power"
-
-  'Flowmeter (W6) collect ------------------------------------------------------- # ? Jerome
 
 
   'Water Detection ---------------------
@@ -255,7 +255,7 @@ BeginProg
   'Pumped sensor (SBE37, Seafet & SUNA) -----------------------------------------
   WhereAmI = "See if pump is running 30sec"
   ' If Well_Switch = True AND (With_SBE37 + With_Seafet + With_SUNA) <> 0 Then # Jerome July 2023
-  If Well_Switch = True AND (With_Well <> 0) Then
+  If Well_Switch = True AND (With_Well_Pump <> 0) Then
     Call CheckWellPump 
   EndIf 
   WhereAmI = "Pump ran 30sec"
@@ -344,7 +344,7 @@ BeginProg
   WhereAmI = "Finish WMT700"
     
   'Closing Tower's Serial -----------
-  If With_Tower <> 0 Then
+  If With_Tower_485 <> 0 Then
     SerialClose(SerialTower)
     SW12(SW12_1,0)
     Tower_Switch = False
@@ -409,15 +409,15 @@ BeginProg
 
   ' ?????????????????????????????????????????????
   ' WHAT DOES THAT DO ? RESET STRINGS ? JEROME FIXME
-  If CO2_Water <> "#.#" AND CO2_Air <> "#.#" Then
-    CO2_Water = "#.#"
-    CO2_Air = "#.#"
-  EndIf
+  ' If CO2_Water <> "#.#" AND CO2_Air <> "#.#" Then
+  '   CO2_Water = "#.#"
+  '   CO2_Air = "#.#"
+  ' EndIf
 
   If RawPCO2_Air <> "" AND RawPCO2_Water <> "" Then
     RawPCO2_Air = ""
     RawPCO2_Water = ""
-    RawPCO2 = ""
+    ' RawPCO2 = ""
   EndIf
 
   ' ?????????????????????????????????????????????
@@ -430,6 +430,8 @@ BeginProg
   
   FileClose(TAGFile)
   FileClose(ToTransmit)
+
+  CollectWinch(WhereAmI)
   
   WhereAmI = "Scan end"
   NextScan
@@ -504,17 +506,18 @@ Sub StartWaterDetectionSensor
 EndSub
 
 
-Sub StartWeatherInstruments
-' Weather instrument include WXT536, WMT700, OCR, Compas
-  If With_PAR <> 0 OR With_WMT700 <> 0 OR With_Compass <> 0 OR With_OCR_I <> 0 Then  
+Sub StartTowerInstruments
+  If With_Tower <> 0 Then  
       SW12(SW12_1,1)
       Tower_Switch = True
-      Tower_Timer = Timer(7,Sec,0)
+      Tower_Timer = Timer(7,Sec,0)  'WMT700 power up delay
   EndIf
 EndSub
+'Tower_Switch alimente (above), wxt indépendant.
+'WXT not in towerinstrument.
 
-
-Sub StartTower
+'SerialTower wxt, wmt, compass
+Sub StartTower485
   'Opening SDM and PAR (T5) voltage. 1sec before communication  
   SerialOpen(SerialTower,19200,51,20,500) 'for 2R! test
 EndSub
@@ -584,28 +587,28 @@ Sub SampleWinch
   If (Winch_Last_Sample + (Winch_Interval*60*60) - 10 <= Buoy_TimeStamp_1990) AND Winch_Sampling = false Then
     WhereAmI = "Starting A Winch"
     If With_WXT536 <> 0 Then
-      Call CheckWinchAir(Air_Temp)
+      Call CheckWinchAir(Air_Temp) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
     EndIf
     
     If With_Wave <> 0 Then
-      Call CheckWinchWave(Wave_H13, Wave_Period)
+      Call CheckWinchWave(Wave_H13, Wave_Period) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
     EndIf
           
     If With_GPS <> 0 Then
-      Call CheckWinchGPS(SOG)
+      Call CheckWinchGPS(SOG) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
     EndIf
     
     If With_Power <> 0 Then
-      Call CheckWinchPower(VBatt1, VBatt2)
+      Call CheckWinchPower(VBatt1, VBatt2) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
     EndIf
 
     If MissingCondition = 0 Then
-      Call StartWinch(Depth_for_Winch, Buoy_TimeStamp_1990, GPS_Date, UTC_Date_Hyphen, UTC_Time_Short, UTC_Time_DDot, Lat, Lon, Lat_Hem, Lon_Hem)
+      Call StartWinch(Depth_for_Winch, Buoy_TimeStamp_1990, GPS_Date, UTC_Date_Hyphen, UTC_Time_Short, UTC_Time_DDot, Lat, Lon, Lat_Hem, Lon_Hem) 
     EndIf
   
   Else If Winch_Sampling = True Then
     WhereAmI = "Check if the winch is done"
-    Call CollectWinch(WhereAmI, Buoy_Name)      
+    Call CheckWinch(WhereAmI)      
   Else
     WinchMessage = "Interval not reach"
   EndIf  

@@ -56,7 +56,7 @@ Sub StartWXT536
 	'Timer(6,Hr,0) 'Start the timer if it isn't started
 	RainReset_Timer = Timer(6,Hr,4)
 	    
-    Reset Rain if 00:00 or active for more than 24h
+    ' Reset Rain if 00:00 or active for more than 24h
 	If UTC_Time_DDot = "00:00:00" OR RainReset_Timer >= 24 Then
 	    SerialOut(SerialTower,CHR(13)&CHR(10)&"2XZRU"&CHR(13)&CHR(10),"",1,0)
         SerialOut(SerialTower,CHR(13)&CHR(10)&"2XZRI"&CHR(13)&CHR(10),"",1,0)

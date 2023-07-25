@@ -27,7 +27,7 @@ EndTable
 
 '### Sampling ###
 Sub StartWMT700
-  Tower_Timer = Timer(7,Sec,4)
+  Tower_Timer = Timer(7,Sec,4) ' mettre un timer stop
   If Tower_Timer < 8 Then
     Delay(1,8-Tower_Timer,Sec)
   EndIf
