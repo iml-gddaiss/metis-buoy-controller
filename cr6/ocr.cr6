@@ -26,69 +26,104 @@ EndTable
 
 
 '### Sampling ###
-Sub SampleHyperOCRR
-SerialOpen(SerialOCRR,19200,3,0,800)
-    Well_Timer = Timer(3,Sec,4)
-    If Well_Timer < 8 Then
-      Delay(1,8-Well_Timer,Sec)
+Sub SampleOCRR
+  WhereAmI = "Sample OCRR"
+  Dim X, Y
+  
+  SerialOpen(SerialOCRR,19200,3,0,800)
+  Well_Timer = Timer(3,Sec,4)
+  
+  If Well_Timer < 8 Then
+    Delay(1,8-Well_Timer,Sec)
+  EndIf
+  
+  SerialFlush(SerialOCRR)
+  StringOCRR = ""
+  RawOCRR = ""
+  
+  For Y = 1 To 3
+    SerialInRecord(SerialOCRR,RawOCRR,&H5341,0,&H0D0A,NBR,101)
+    BytesBuffer = Hex(ASCII(RawOCRR(1,1,1)))
+    If BytesBuffer = "54" Then
+      SerialClose(SerialOCRR)
+      For X = 1 To 393
+        BytesBuffer = Hex(ASCII(RawOCRR(1,1,X)))
+        If Len(BytesBuffer) = 1 Then
+          BytesBuffer = "0" + BytesBuffer
+        EndIf
+        StringOCRR = StringOCRR + BytesBuffer
+      Next X
+      StringOCRR = "5341" + StringOCRR + "0D0A"
+      ExitFor
     EndIf
-    SerialFlush(SerialOCRR)
-    StringOCRR = ""
-    RawOCRR = ""
-    For Y = 1 To 3
-      SerialInRecord(SerialOCRR,RawOCRR,&H5341,0,&H0D0A,NBR,101)
-      BytesBuffer = Hex(ASCII(RawOCRR(1,1,1)))
-      If BytesBuffer = "54" Then
-        SerialClose(SerialOCRR)
-        For X = 1 To 393
-          BytesBuffer = Hex(ASCII(RawOCRR(1,1,X)))
-          If Len(BytesBuffer) = 1 Then
-            BytesBuffer = "0" + BytesBuffer
-          EndIf
-          StringOCRR = StringOCRR + BytesBuffer
-        Next X
-        StringOCRR = "5341" + StringOCRR + "0D0A"
-        ExitFor
-      EndIf
-      Delay(1,2,Sec)
-    Next Y
-    If With_OCR_I = 0 Then
-      Scan(1,Sec, 0, 1)
-      CallTable FileHyperOCR '# why not just OCR FIXME -----------------
-      NextScan
-    EndIf
+    Delay(1,2,Sec)
+  Next Y
+  WhereAmI = "End OCRR"
 EndSub
 
+
 Sub SampleOCRI
-    SerialOpen(SerialOCRI,19200,51,0,800)
-    Tower_Timer = Timer(7,Sec,4)
-    If Tower_Timer < 8 Then
-      Delay(1,8-Tower_Timer,Sec)
+  WhereAmI = "Sample OCRI"
+ 
+  Dim X, Y
+  
+  SerialOpen(SerialOCRI,19200,51,0,800)
+  Tower_Timer = Timer(7,Sec,4)
+  If Tower_Timer < 8 Then
+    Delay(1,8-Tower_Timer,Sec)
+  EndIf
+  
+  SerialFlush(SerialOCRI)
+  StringOCRI = ""
+  RawOCRI = ""
+  
+  For Y = 1 To 3
+    SerialInRecord(SerialOCRI,RawOCRI,&H5341,0,&H0D0A,NBR,101)
+    BytesBuffer = Hex(ASCII(RawOCRI(1,1,1)))
+    If BytesBuffer = "54" Then
+      SerialClose(SerialOCRI)
+      For X = 1 To 393
+        BytesBuffer = Hex(ASCII(RawOCRI(1,1,X)))
+        If Len(BytesBuffer) = 1 Then
+          BytesBuffer = "0" + BytesBuffer
+        EndIf
+        StringOCRI = StringOCRI + BytesBuffer
+      Next X
+      StringOCRI = "5341" + StringOCRI + "0D0A"
+      ExitFor
     EndIf
-    
-    SerialFlush(SerialOCRI)
-    StringOCRI = ""
-    RawOCRI = ""
-    
-    For Y = 1 To 3
-      SerialInRecord(SerialOCRI,RawOCRI,&H5341,0,&H0D0A,NBR,101)
-      BytesBuffer = Hex(ASCII(RawOCRI(1,1,1)))
-      If BytesBuffer = "54" Then
-        SerialClose(SerialOCRI)
-        For X = 1 To 393
-          BytesBuffer = Hex(ASCII(RawOCRI(1,1,X)))
-          If Len(BytesBuffer) = 1 Then
-            BytesBuffer = "0" + BytesBuffer
-          EndIf
-          StringOCRI = StringOCRI + BytesBuffer
-        Next X
-        StringOCRI = "5341" + StringOCRI + "0D0A"
-        ExitFor
-      EndIf
     Delay(1,2,Sec)
-    Next Y
-    Scan(1,Sec, 0, 1)
-    CallTable FileHyperOCR  '# why not just OCR FIXME -----------------
-    NextScan
+  Next Y
+  WhereAmI = "End OCRI"
 EndSub
+
+Sub HyperOCRTable
+  Scan(1,Sec, 0, 1)
+  CallTable FileHyperOCR
+  NextScan
+EndSub
+
+
+Sub SampleOCRs(WhereAmI, Well_Switch)
+  WhereAmI = "Sample HyperOCR"
+  Dim call_table = false
+  
+  If With_OCR_R <> 0 AND Well_Switch = True Then
+    Call SampleOCRR
+    call_table = true
+  EndIf
+  
+  If With_OCR_I <> 0 Then
+    Call SampleOCRI
+    call_table = true
+  EndIf
+  
+
+  If call_table = true Then
+    Call HyperOCRTable
+  EndIf
+
+  WhereAmI = "End HyperOCR"
+EndSub
+
 '### Processing ###

@@ -33,6 +33,7 @@ EndTable
 
 '### Sampling ###
 Sub SampleGPS
+    Dim X
     SerialOpen(SerialGPS,19200,3,20,1000)
     SerialFlush(SerialGPS)
     SerialIn(RawGPS,SerialGPS,150,10,80)

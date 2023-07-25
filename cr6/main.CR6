@@ -9,6 +9,42 @@
 ' Collect<> implies a wait period between for the instrument to sample data.
 'Installed in the buoy, pre-deployment
 '#####################################################################################
+'------------------------------------------------------------------------------
+'----------------------------- Main Program -----------------------------------
+'------------------------------------------------------------------------------
+
+''' Start sampling '''
+'Close unused SerialPort on SDM
+'Open 5V for the Water_Detection_Main
+'Start Weather sensor
+'Collect SBE37 to verify there's salt water -> Start pump
+'Collect GPS data
+'Start Triplet
+'Start Flowmeter (not yet done)
+'Collect Compass (60 samples / 2Hz)
+'Collect Flowmeter (not yet done)
+'Collect Water_Detection_Main
+'Collect Power
+'Collect ADCP (not yet done)
+'Collect Triplet
+
+''' After pump running min. 30sec '''
+'Start SUNA
+'Collect SBE37
+'Collect Seafet
+'Collect SUNA
+
+''' After the weather station collected for min. 61sec '''
+'Collect PAR
+'Collect Weather (WMT700 & WXT536)
+'Collect OCR ?
+
+''' Before ending scan '''
+'Collect Wave
+'Collect PCO2 / Start sample / Delay sample
+'Collect Winch / Start Winch / Delay Winch
+
+''' Send data and End Scan '''
 
 SequentialMode
 AngleDegrees
@@ -45,7 +81,7 @@ Public TAGString As String * 200
 Dim Well_Switch As Boolean
 Dim Tower_Switch As Boolean
 Dim Timer_Value(9) As Long : Alias Timer_Value = Weather_Timer, GPS_Timer, Well_Timer, Triplet_Timer, SUNA_Timer, RainReset_Timer, Tower_Timer
-Dim NBR 'NBytesReturned
+Dim NBR 'NBytesReturned ' 
 Dim Buoy_Time(9) : Alias Buoy_Time = Buoy_Year, Buoy_Month, Buoy_Date, Buoy_Hour, Buoy_Minute, Buoy_Second, Buoy_Millisecond, Buoy_DayofWeek, Buoy_DayofYear
 Public ScanDateTime As String
 
@@ -99,42 +135,154 @@ Include "CPU:winch.cr6"                     '#M5 Winch
 'Wind compensation by Compass and GPS
 Include "CPU:weather.cr6"                   ' Weather variables  
 
-'------------------------------------------------------------------------------
-'----------------------------- Main Program -----------------------------------
-'------------------------------------------------------------------------------
+Sub WriteTagString
+  FileWrite(TAGFile,TAGString & CHR(10),0)
+  FileWrite(ToTransmit,TAGString & CHR(10),0)
+EndSub
 
-''' Start sampling '''
-'Close unused SerialPort on SDM
-'Open 5V for the Water_Detection_Main
-'Start Weather sensor
-'Collect SBE37 to verify there's salt water -> Start pump
-'Collect GPS data
-'Start Triplet
-'Start Flowmeter (not yet done)
-'Collect Compass (60 samples / 2Hz)
-'Collect Flowmeter (not yet done)
-'Collect Water_Detection_Main
-'Collect Power
-'Collect ADCP (not yet done)
-'Collect Triplet
 
-''' After pump running min. 30sec '''
-'Start SUNA
-'Collect SBE37
-'Collect Seafet
-'Collect SUNA
+Sub CloseCR6SerialPorts
+  'Close all serial port on CR6 if still open except ADCP
+  For SerialPort = 11 To 16 Step 1
+    If SerialPort = SerialADCP Then
+      'Do not close the ADCP port
+    Else If SerialPort = 13 AND WinchMessage <> "Interval not reach" Then ' is this ok ? was not in Subroutine at the start of the program # JEROME FIXME
+      'Do not close port
+    Else
+      SerialClose(SerialPort)
+    EndIf
+  Next SerialPort
+EndSub
 
-''' After the weather station collected for min. 61sec '''
-'Collect PAR
-'Collect Weather (WMT700 & WXT536)
-'Collect OCR ?
 
-''' Before ending scan '''
-'Collect Wave
-'Collect PCO2 / Start sample / Delay sample
-'Collect Winch / Start Winch / Delay Winch
+Sub CloseSDM4SerialPorts
+  'Close all serial port on SDM4, except for PCO2 (40) which must stays on is PCO2 is sampling
+  For SerialPort = 32 To 47 Step 1
+    If SerialPort = SerialPCO2 AND PCO2_Sampling = true Then
+    'Do not close the port
+    Else
+      SerialClose(SerialPort)
+    EndIf
+  Next SerialPort
+EndSub
 
-''' Send data and End Scan '''
+
+Sub StartWaterDetectionSensor
+ '5V to the Water Detection sensor, sample taked at the end --------------------
+  If With_WD_Main <> 0 Then
+    PortSet(C4,1)
+  EndIf
+EndSub
+
+
+Sub StartTowerInstruments
+  If With_Tower <> 0 Then  
+      SW12(SW12_1,1)
+      Tower_Switch = True
+      Tower_Timer = Timer(7,Sec,0)  'WMT700 power up delay
+  EndIf
+EndSub
+
+
+Sub StartTower485
+  'Opening SDM and PAR (T5) voltage. 1sec before communication  
+  SerialOpen(SerialTower,19200,51,20,500) 'for 2R! test
+EndSub
+
+
+Sub CheckWaterDetection
+  Water_Detection_Main = 0
+  VoltSe(Water_Detection_Main,1,AutoRange,U1,0,0,15000,1,0)
+  PortSet(C4,0)
+EndSub
+
+
+Sub StartWellPump
+  'Open Switch #2 to control pump for X sec
+  SW12(SW12_2,1)
+  Well_Switch = True
+  Timer(3,Sec,0) 'Start timer #3 for the pump working for min. 30 sec
+EndSub
+
+
+Sub CheckWellPump
+  Well_Timer = Timer(3,Sec,4)
+  Timer(3,Sec,3) 'Timer #3 Stop and Reset
+  If Well_Timer < 30 Then
+    Delay(1,30-Well_Timer,Sec)
+  EndIf
+EndSub
+
+
+Sub CloseWellPump
+  SW12(SW12_2,0)
+  Well_Switch = False
+EndSub
+
+
+Sub SamplePCO2
+  Buoy_TimeStamp_1990 = Public.TimeStamp(1)
+      
+  'minus 10sec to not skip a scan planned at PCO2_Interval hour (got 3599s and didn't sampled)
+  WhereAmI = "Start PCO2"
+  If (PCO2_Last_Sample + (PCO2_Interval*60*60) - 10 <= Buoy_TimeStamp_1990) AND PCO2_Sampling = false Then
+    ' WhereAmI = "Entering PCO2 Loop"
+    Call StartPCO2
+  EndIf
+  
+  If PCO2_Sampling = true Then
+    'Watchdog if there's no data in 1Hour (if power disconnected during sampling)
+                        'sec
+    If (PCO2_Last_Sample + 3600) < Buoy_TimeStamp_1990 Then
+      Call EmptyPCO2 '  Change le nom #jerome July 2023
+    Else
+      Call CollectPCO2
+      If RawPCO2_Water <> "" AND RawPCO2_Air <> "" Then 'TODO FIXME ME: Vérifier avec Anthony. C'est la seule place qui n'envoie pas le tags en cas de NA data ? #jerome July 2023
+        TAGString = "[PCO2]" & CO2_Water & "," & CO2_Air & "," & PCO2_Gaz_Pressure_Water & "," & PCO2_Gaz_Pressure_Air & "," & PCO2_Humidity
+        Call WriteTagString
+      EndIf
+    EndIf 'If Else Watchdog
+  EndIf 'If PCO2_Sampling is True
+EndSub
+
+
+Sub SampleWinch
+  Buoy_TimeStamp_1990 = Public.TimeStamp(1)
+  WinchMessage = "Entering the Winch Block"
+  MissingCondition = 0
+                        'minus 10sec to not skip a scan planned at Winch_Interval hour (got 3599s and didn't sampled)
+  If (Winch_Last_Sample + (Winch_Interval*60*60) - 10 <= Buoy_TimeStamp_1990) AND Winch_Sampling = false Then
+    WhereAmI = "Starting A Winch"
+    If With_WXT536 <> 0 Then
+      Call CheckWinchAir(Air_Temp) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
+    EndIf
+    
+    If With_Wave <> 0 Then
+      Call CheckWinchWave(Wave_H13, Wave_Period) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
+    EndIf
+          
+    If With_GPS <> 0 Then
+      Call CheckWinchGPS(SOG) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
+    EndIf
+    
+    If With_Power <> 0 Then
+      Call CheckWinchPower(VBatt1, VBatt2) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
+    EndIf
+
+    If MissingCondition = 0 Then
+      Call StartWinch(Buoy_TimeStamp_1990, GPS_Date, UTC_Date_Hyphen, UTC_Time_Short, UTC_Time_DDot, Lat, Lon, Lat_Hem, Lon_Hem) 
+    EndIf
+  
+  Else If Winch_Sampling = True Then
+    WhereAmI = "Check if the winch is done"
+    Call CheckWinch(WhereAmI)      
+  Else
+    WinchMessage = "Interval not reach"
+  EndIf  
+  
+  TAGString = "[WNCH]" + WinchMessage
+  Call WriteTagString
+EndSub
 
 
 BeginProg
@@ -265,14 +413,9 @@ BeginProg
     Call StartSUNA
   EndIf
       
-  'Collect OCR_R ----------------------------------------------------------------
-  WhereAmI = "Sample HyperOCRR"
-  If With_OCR_R <> 0 AND Well_Switch = True Then
-    'With_OCR_I is use in SampleHyperOCRR as a condition to calltable TODO FIXME
-    Call SampleHyperOCRR
-  EndIf
-  WhereAmI = "End HyperOCRR"
 
+  Call SampleOCRs(WhereAmI, Well_Switch)
+  
 
   'Collect OCR_I ---------------
   WhereAmI = "Sample OCRI"
@@ -303,8 +446,7 @@ BeginProg
   'SUNA (W4) collect data ------------------------------------------------------------
   WhereAmI = "Collecting SUNA"
   If With_SUNA <> 0 Then
-    Call CollectSUNA
-    ' This should be here and not in the Collect SubRoutine TODO or pass it as variable
+    Call CollectSUNA(WhereAmI)
     TAGString = "[SUNA]" & Dark_Nitrate & "," & Light_Nitrate & "," & Dark_Nitrogen_in_Nitrate & "," & Light_Nitrogen_in_Nitrate & "," & Dark_Bromide & "," & Light_Bromide
     Call WriteTagString
   EndIf
@@ -408,23 +550,11 @@ BeginProg
   Call CloseSDM4SerialPorts        
   
   CallTable Raw
-  'CallTable SD
-  
-
-  ' ?????????????????????????????????????????????
-  ' WHAT DOES THAT DO ? RESET STRINGS ? JEROME FIXME
-  ' If CO2_Water <> "#.#" AND CO2_Air <> "#.#" Then
-  '   CO2_Water = "#.#"
-  '   CO2_Air = "#.#"
-  ' EndIf
 
   If RawPCO2_Air <> "" AND RawPCO2_Water <> "" Then
     RawPCO2_Air = ""
     RawPCO2_Water = ""
-    ' RawPCO2 = ""
   EndIf
-
-  ' ?????????????????????????????????????????????
   
   TAGString = "[END]"
   Call WriteTagString
@@ -470,153 +600,3 @@ BeginProg
 EndProg
 
 
-Sub WriteTagString
-  FileWrite(TAGFile,TAGString & CHR(10),0)
-  FileWrite(ToTransmit,TAGString & CHR(10),0)
-EndSub
-
-
-Sub CloseCR6SerialPorts
-  'Close all serial port on CR6 if still open except ADCP
-  For SerialPort = 11 To 16 Step 1
-    If SerialPort = SerialADCP Then
-      'Do not close the ADCP port
-    Else If SerialPort = 13 AND WinchMessage <> "Interval not reach" Then ' is this ok ? was not in Subroutine at the start of the program # JEROME FIXME
-      'Do not close port
-    Else
-      SerialClose(SerialPort)
-    EndIf
-  Next SerialPort
-EndSub
-
-
-Sub CloseSDM4SerialPorts
-'Close all serial port on SDM4, except for PCO2 (40) which must stays on is PCO2 is sampling
-  For SerialPort = 32 To 47 Step 1
-    If SerialPort = SerialPCO2 AND PCO2_Sampling = true Then
-    'Do not close the port
-    Else
-      SerialClose(SerialPort)
-    EndIf
-  Next SerialPort
-EndSub
-
-
-Sub StartWaterDetectionSensor
- '5V to the Water Detection sensor, sample taked at the end --------------------
-  If With_WD_Main <> 0 Then
-    PortSet(C4,1)
-  EndIf
-EndSub
-
-
-Sub StartTowerInstruments
-  If With_Tower <> 0 Then  
-      SW12(SW12_1,1)
-      Tower_Switch = True
-      Tower_Timer = Timer(7,Sec,0)  'WMT700 power up delay
-  EndIf
-EndSub
-'Tower_Switch alimente (above), wxt indépendant.
-'WXT not in towerinstrument.
-
-'SerialTower wxt, wmt, compass
-Sub StartTower485
-  'Opening SDM and PAR (T5) voltage. 1sec before communication  
-  SerialOpen(SerialTower,19200,51,20,500) 'for 2R! test
-EndSub
-
-
-Sub CheckWaterDetection
-  Water_Detection_Main = 0
-  VoltSe(Water_Detection_Main,1,AutoRange,U1,0,0,15000,1,0)
-  PortSet(C4,0)
-EndSub
-
-
-Sub StartWellPump
-  'Open Switch #2 to control pump for X sec
-  SW12(SW12_2,1)
-  Well_Switch = True
-  Timer(3,Sec,0) 'Start timer #3 for the pump working for min. 30 sec
-EndSub
-
-
-Sub CheckWellPump
-  Well_Timer = Timer(3,Sec,4)
-  Timer(3,Sec,3) 'Timer #3 Stop and Reset
-  If Well_Timer < 30 Then
-    Delay(1,30-Well_Timer,Sec)
-  EndIf
-EndSub
-
-
-Sub CloseWellPump
-  SW12(SW12_2,0)
-  Well_Switch = False
-EndSub
-
-
-Sub SamplePCO2
-  Buoy_TimeStamp_1990 = Public.TimeStamp(1)
-      
-  'minus 10sec to not skip a scan planned at PCO2_Interval hour (got 3599s and didn't sampled)
-  WhereAmI = "Start PCO2"
-  If (PCO2_Last_Sample + (PCO2_Interval*60*60) - 10 <= Buoy_TimeStamp_1990) AND PCO2_Sampling = false Then
-    ' WhereAmI = "Entering PCO2 Loop"
-    Call StartPCO2
-  EndIf
-  
-  If PCO2_Sampling = true Then
-    'Watchdog if there's no data in 1Hour (if power disconnected during sampling)
-                        'sec
-    If (PCO2_Last_Sample + 3600) < Buoy_TimeStamp_1990 Then
-      Call EmptyPCO2 '  Change le nom #jerome July 2023
-    Else
-      Call CollectPCO2
-      If RawPCO2_Water <> "" AND RawPCO2_Air <> "" Then 'TODO FIXME ME: Vérifier avec Anthony. C'est la seule place qui n'envoie pas le tags en cas de NA data ? #jerome July 2023
-        TAGString = "[PCO2]" & CO2_Water & "," & CO2_Air & "," & PCO2_Gaz_Pressure_Water & "," & PCO2_Gaz_Pressure_Air & "," & PCO2_Humidity
-        Call WriteTagString
-      EndIf
-    EndIf 'If Else Watchdog
-  EndIf 'If PCO2_Sampling is True
-EndSub
-
-
-Sub SampleWinch
-  Buoy_TimeStamp_1990 = Public.TimeStamp(1)
-  WinchMessage = "Entering the Winch Block"
-  MissingCondition = 0
-                        'minus 10sec to not skip a scan planned at Winch_Interval hour (got 3599s and didn't sampled)
-  If (Winch_Last_Sample + (Winch_Interval*60*60) - 10 <= Buoy_TimeStamp_1990) AND Winch_Sampling = false Then
-    WhereAmI = "Starting A Winch"
-    If With_WXT536 <> 0 Then
-      Call CheckWinchAir(Air_Temp) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
-    EndIf
-    
-    If With_Wave <> 0 Then
-      Call CheckWinchWave(Wave_H13, Wave_Period) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
-    EndIf
-          
-    If With_GPS <> 0 Then
-      Call CheckWinchGPS(SOG) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
-    EndIf
-    
-    If With_Power <> 0 Then
-      Call CheckWinchPower(VBatt1, VBatt2) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
-    EndIf
-
-    If MissingCondition = 0 Then
-      Call StartWinch(Depth_for_Winch, Buoy_TimeStamp_1990, GPS_Date, UTC_Date_Hyphen, UTC_Time_Short, UTC_Time_DDot, Lat, Lon, Lat_Hem, Lon_Hem) 
-    EndIf
-  
-  Else If Winch_Sampling = True Then
-    WhereAmI = "Check if the winch is done"
-    Call CheckWinch(WhereAmI)      
-  Else
-    WinchMessage = "Interval not reach"
-  EndIf  
-  
-  TAGString = "[WNCH]" + WinchMessage
-  Call WriteTagString
-EndSub

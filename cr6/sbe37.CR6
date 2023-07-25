@@ -26,6 +26,7 @@ EndTable
 
 '### Sampling ###
 Sub StartSBE37
+  Dim X
   RawSBE37_SalinityTest = ""
   SBE37() = 0
   SerialOpen(SerialSBE37,19200,3,20,50) 'CTD string is around 35 char.
@@ -42,6 +43,7 @@ EndSub
 
 
 Sub CollectSBE37
+  Dim X
   SerialFlush(SerialSBE37)
   For X = 1 To 3 Step 1
     RawSBE37 = ""

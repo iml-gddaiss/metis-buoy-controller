@@ -69,6 +69,8 @@ EndSub
 
 
 Sub CollectWXT536
+    Dim X
+    
     RawR1_Wind = ""
     RawR2_Weather = ""
     RawR3_Rain = ""

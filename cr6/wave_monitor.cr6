@@ -28,6 +28,7 @@ DataTable(FileWave,1,-1)
 
 '### Sampling ###
 Sub CollectWave
+  Dim X
   Wave() = ""
   SerialOpen(SerialWave,19200,3,600,200)
   For X = 1 To 3 Step 1

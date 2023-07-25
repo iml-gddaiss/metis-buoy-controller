@@ -49,6 +49,7 @@ EndTable
 
 '### Sampling ###
 Sub SampleSeafet
+  Dim X
   SerialOpen(SerialSeafet,19200,3,20,900) 'Seafet string is around 100, but bigger buffer for Coef.
   For X = 1 To 3 Step 1
     SerialFlush(SerialSeafet)

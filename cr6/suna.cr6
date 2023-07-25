@@ -51,7 +51,7 @@ Sub StartSUNA
 EndSub
 
 
-Sub CollectSUNA  
+Sub CollectSUNA(WhereAmI)  
   Timer_Value(5) = Timer(5,Sec,4)
   Timer(5,Sec,3) 'Timer 5 Stop and Reset
   If Timer_Value(5) < 12 Then
@@ -67,21 +67,19 @@ Sub CollectSUNA
     RawSUNADark = "NAN"
   EndIf
   
-  If RawSUNADark <> "NAN" AND RawSUNALight <> "NAN" Then
+  If RawSUNADark <> "NAN" Then
     SplitStr(SUNADark(),RawSUNADark,",",8,4)
-    Scan(1,Sec, 0, 1)
-    CallTable FileSUNA_Dark
-    NextScan
+  EndIf
+  
+  If RawSUNALight <> "NAN" Then
     RawSUNALight = "SATSLC"&RawSUNALight
     SplitStr(SUNALight(),RawSUNALight,",",8,4)
-
-    Scan(1,Sec, 0, 1)
-    CallTable FileSUNA_Light
-    NextScan
-     ' it this ok to put in main FIXME JEROME
-    ' TAGString = "[SUNA]" & Dark_Nitrate & "," & Light_Nitrate & "," & Dark_Nitrogen_in_Nitrate & "," & Light_Nitrogen_in_Nitrate & "," & Dark_Bromide & "," & Light_Bromide
-    Call WriteTagString
   EndIf
+  
+  Scan(1,Sec, 0, 1)
+  CallTable FileSUNA_Dark
+  CallTable FileSUNA_Light
+  NextScan
 EndSub
 
 

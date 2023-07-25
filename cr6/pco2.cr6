@@ -14,7 +14,7 @@ Public PCO2_Sampling As Boolean
 
 Dim PCO2WStart
 Dim PCO2WEnd
-Dim PCO2AStart7
+Dim PCO2AStart
 Dim PCO2AEnd
 
 
