@@ -100,6 +100,19 @@ Sub EmptyPCO2
 EndSub
 
 
+Sub PCO2ATable
+  Scan(1,Sec, 0, 1)
+  CallTable FilePCO2A
+  NextScan
+EndSub
+
+
+Sub PCO2WTable
+  Scan(1,Sec, 0, 1)
+  CallTable FilePCO2W
+  NextScan
+EndSub
+
 
 Sub CollectPCO2
   SerialIn(RawPCO2,SerialPCO2,10,"Sample Complete",500)
@@ -134,9 +147,7 @@ Sub CollectPCO2
     PCO2_Gaz_Pressure_Water = PCO2(13)
     PCO2W_Humidity = PCO2(11)
     
-    Scan(1,Sec, 0, 1)
-    CallTable FilePCO2W
-    NextScan
+    Call PCO2WTable
       
     SplitStr(PCO2,RawPCO2_Air,",",14,0)
     PCO2_Type = "A M"
@@ -147,9 +158,7 @@ Sub CollectPCO2
     SerialFlush(SerialPCO2)
     SerialClose(SerialPCO2)
     
-    Scan(1,Sec, 0, 1)
-    CallTable FilePCO2A
-    NextScan
+    Call PCO2ATable
 
     RawPCO2 = ""
     CO2_Water = "#.#"

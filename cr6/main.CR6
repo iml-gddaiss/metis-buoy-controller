@@ -73,8 +73,6 @@ PreserveVariables
 '#M3 Power controller
 '#M4 ADCP
 '#M5 Winch
-Const Yes = True
-Const No = False
 
 Public WhereAmI As String
 Public TAGString As String * 200
@@ -348,7 +346,7 @@ BeginProg
   EndIf 'With_SBE37
     
   ' FIXME Starting pump ?? Testing pump ?
-  If (Salinity > 10 OR Bypass_Salinity = Yes) AND ((With_Well_Pump <> 0 AND Disable_Pump = No) OR With_OCR_R <> 0) Then
+  If (Salinity > 10 OR Bypass_Salinity = True) AND ((With_Well_Pump <> 0 AND Disable_Pump = False) OR With_OCR_R <> 0) Then
     Call StartWellPump
   EndIf
 
@@ -541,7 +539,7 @@ BeginProg
     
 
   'Winch -------------------------------------------------------------------------
-  If With_Winch <> 0 AND (Salinity > 10 OR Bypass_Salinity = Y) Then
+  If With_Winch <> 0 AND (Salinity > 10 OR Bypass_Salinity = True) Then
     Call SampleWinch
   EndIf
 
