@@ -17,12 +17,16 @@ EndTable
 
 
 Sub StartTriplet
-  SerialFlush(SerialTriplet)
-  SerialOpen(SerialTriplet,19200,3,20,500) 'Triplet string is around 100 char.
-  SerialOut(SerialTriplet,CHR(13)&CHR(10),0,2,100)
-  SerialOut(SerialTriplet,"!!!!!!!!","Mem",1,600)
-  SerialOut(SerialTriplet,"$run"&CHR(13),0,1,10)
-  Timer(4,Sec,0) 'Timer#4 Start for Triplet sampling
+  'ECO-Triplet/w (W3) Start
+  If With_Triplet <> 0 Then
+    WhereAmI = "Start Triplet"
+    SerialFlush(SerialTriplet)
+    SerialOpen(SerialTriplet,19200,3,20,500) 'Triplet string is around 100 char.
+    SerialOut(SerialTriplet,CHR(13)&CHR(10),0,2,100)
+    SerialOut(SerialTriplet,"!!!!!!!!","Mem",1,600)
+    SerialOut(SerialTriplet,"$run"&CHR(13),0,1,10)
+    Timer(4,Sec,0) 'Timer#4 Start for Triplet sampling
+  EndIf
 EndSub
 
 
