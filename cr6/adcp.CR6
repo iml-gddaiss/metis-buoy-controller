@@ -50,9 +50,16 @@ EndTable
 
 '### Sampling ###
 Sub StartADCP
-  SerialOpen(SerialADCP,115200,3,0,3000)
+  If With_ADCP <> 0 Then  
+    SerialOpen(SerialADCP,115200,3,0,3000)
+  EndIf
 EndSub
 
+Sub ADCPTable
+  Scan(1,Sec, 0, 1)
+  CallTable FileADCP
+  NextScan
+EndSub
 
 Sub SampleADCP
   Dim X
@@ -73,13 +80,12 @@ Sub SampleADCP
 
   SerialFlush(SerialADCP)
 
-  Scan(1,Sec, 0, 1)
-  CallTable FileADCP
-  NextScan
+  Call ADCPTable
+  
 EndSub
 
 
-Function ADCPTagString As String
+Function ADCPTagString(ADCPDate, ADCPTime, ADCPDir, ADCPMag) As String
     ADCPTagString = "[RDI]" & ADCPDate & "," & ADCPTime & "," & ADCPDir & "," & ADCPMag
 EndFunction
 

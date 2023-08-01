@@ -25,32 +25,43 @@ DataTable (FileWMT700,1,-1)
 EndTable
 
 
+
+Sub WMT700able
+  Scan(1,Sec, 0, 1)
+  CallTable FileWMT700
+  NextScan
+EndSub
+
+
+
 '### Sampling ###
 Sub StartWMT700
-  Tower_Timer = Timer(7,Sec,4) ' mettre un timer stop
-  If Tower_Timer < 8 Then
-    Delay(1,8-Tower_Timer,Sec)
+  If With_WMT700 <> 0 Then
+    Tower_Timer = Timer(7,Sec,4) ' mettre un timer stop
+    If Tower_Timer < 8 Then
+      Delay(1,8-Tower_Timer,Sec)
+    EndIf
+    SerialOut(SerialTower,"$Ameas,1"&CHR(10),"",1,0)
   EndIf
-  SerialOut(SerialTower,"$Ameas,1"&CHR(10),"",1,0)
 EndSub
 
 
 Sub CollectWMT700
-  SerialOut(SerialTower,"$Apoll,1"&CHR(13)&CHR(10),"Sx",1,100)             '
-  SerialInRecord(SerialTower,RawWMT700,&H574D,0,&H0D0A,NBR,101)         '  poll,1 is the WMT700 wind, Sx is the last data sent
-  SerialOut(SerialTower,"$Asleep"&CHR(13)&CHR(10),"",1,0)
+  If With_WMT700 <> 0 Then
 
-  RawWMT700 = Mid(RawWMT700,7,80)    ' Removing the 6 first digit to pass the numerical value for the type of SplitStr
-  
-  If RawWMT700 = "AN" Then
-    RawWMT700 = "NAN"
-  Else
-    SplitStr(WMT700(),RawWMT700,",",6,0)
+    SerialOut(SerialTower,"$Apoll,1"&CHR(13)&CHR(10),"Sx",1,100)             '
+    SerialInRecord(SerialTower,RawWMT700,&H574D,0,&H0D0A,NBR,101)         '  poll,1 is the WMT700 wind, Sx is the last data sent
+    SerialOut(SerialTower,"$Asleep"&CHR(13)&CHR(10),"",1,0)
+
+    RawWMT700 = Mid(RawWMT700,7,80)    ' Removing the 6 first digit to pass the numerical value for the type of SplitStr
+    
+    If RawWMT700 = "AN" Then
+      RawWMT700 = "NAN"
+    Else
+      SplitStr(WMT700(),RawWMT700,",",6,0)
+    EndIf
+    Call WMT700
   EndIf
-
-  Scan(1,Sec, 0, 1)    
-  CallTable FileWMT700
-  NextScan
 EndSub
 
 

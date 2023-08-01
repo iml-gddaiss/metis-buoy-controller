@@ -30,81 +30,93 @@ DataTable(FileGPS,1,-1)
     Sample(1,Mag_Var,IEEE4)
 EndTable
 
+Sub GPSTable
+  Scan(1,Sec, 0, 1)
+  CallTable FileGPS
+  NextScan
+EndSub
+
 
 '### Sampling ###
 Sub SampleGPS
+    'GPS (T4) --------------------------------------------------------------------
     Dim X
-    SerialOpen(SerialGPS,19200,3,20,1000)
-    SerialFlush(SerialGPS)
-    SerialIn(RawGPS,SerialGPS,150,10,80)
-    HVS() = 0 'HVS = GPS_Header, GPS_Time, GPS_Status, Lat, Lat_Hem, Lon, Lon_Hem, Speed_Over_Ground, Course_Over_Ground, GPS_Date, Magnetic_Variation, Mag_Var_Dir, Check_GPS
-    GPS_Vector_X = 0
-    GPS_Vector_Y = 0
-    SOG = 0
-    COG = 0
-    For X = 1 To 10 Step 1
+    
+    If With_GPS <> 0 Then
+        WhereAmI = "Sample GPS"
+        
+        SerialOpen(SerialGPS,19200,3,20,1000)
+        SerialFlush(SerialGPS)
         SerialIn(RawGPS,SerialGPS,150,10,80)
-        SplitStr(HVS(),RawGPS,",",13,5)
-        If Speed_Over_Ground = "" Then
-            COG = 0
-            SOG = 0
+        HVS() = 0 'HVS = GPS_Header, GPS_Time, GPS_Status, Lat, Lat_Hem, Lon, Lon_Hem, Speed_Over_Ground, Course_Over_Ground, GPS_Date, Magnetic_Variation, Mag_Var_Dir, Check_GPS
+        GPS_Vector_X = 0
+        GPS_Vector_Y = 0
+        SOG = 0
+        COG = 0
+        For X = 1 To 10 Step 1
+            SerialIn(RawGPS,SerialGPS,150,10,80)
+            SplitStr(HVS(),RawGPS,",",13,5)
+            If Speed_Over_Ground = "" Then
+                COG = 0
+                SOG = 0
+            Else
+                COG = Course_Over_Ground
+                SOG = Speed_Over_Ground
+            EndIf
+            
+            GPS_Vector_X = GPS_Vector_X + (SOG * COS(COG))
+            GPS_Vector_Y = GPS_Vector_Y + (SOG * SIN(COG))
+        Next
+        
+        SerialClose(SerialGPS)
+        
+        'Putting the CR6 at GPS Date/Time
+        UTC_Time_DDot = Mid(GPS_Time,1,2)&":"&Mid(GPS_Time,3,2)&":"&Mid(GPS_Time,5,2)
+        UTC_Date_Hyphen = "20"&Mid(GPS_Date,5,2)&"-"&Mid(GPS_Date,3,2)&"-"&Mid(GPS_Date,1,2)
+        ClockSet (UTC_Date_Hyphen&" "&UTC_Time_DDOt)
+        
+        'Creating variables with different formats
+        UTC_Time_Short = Mid(ScanDateTime,12,2)&Mid(ScanDateTime,15,2)&Mid(ScanDateTime,18,2)
+        UTC_Time_DDot = Mid(ScanDateTime,12,8)
+        
+        UTC_Date_Slash = Mid(ScanDateTime,1,4)&"/"&Mid(ScanDateTime,6,2)&"/"&Mid(ScanDateTime,9,2)
+        UTC_Date_Hyphen = Mid(ScanDateTime,1,10)
+        UTC_Date_Short = Mid(ScanDateTime,1,4)&Mid(ScanDateTime,6,2)&Mid(ScanDateTime,9,2)
+        
+        'Processing COG and SOG
+        SOG = Round(SQR(PWR(GPS_Vector_X,2)+PWR(GPS_Vector_Y,2))/10,2)
+        COG = Round(ATN2(GPS_Vector_Y,GPS_Vector_X),1)
+        If COG < 0 Then
+            COG = 360 + COG
+        EndIf        
+
+        'Processing Lat/Long & Magnetic Variation                  
+        Latitude = Mid(Lat,1,2)&"°"&Mid(Lat,3,6)&"'"&Lat_Hem
+        Longitude = Mid(Lon,1,3)&"°"&Mid(Lon,4,6)&"'"&Lon_Hem
+
+        ' Converting Magnetic Variation to decimal
+        If Mid(Mag_Var_Dir,1,1) = "W" Then
+            Magnetic_Variation = "-"&Mid(Magnetic_Variation,2,5)
         Else
-            COG = Course_Over_Ground
-            SOG = Speed_Over_Ground
+            Magnetic_Variation = "+"&Mid(Magnetic_Variation,2,5)
+        EndIf
+
+        'Processing Buoy's Speed&Direction 
+        If Speed_Over_Ground = "" Then
+            Speed_Over_Ground = 0
         EndIf
         
-        GPS_Vector_X = GPS_Vector_X + (SOG * COS(COG))
-        GPS_Vector_Y = GPS_Vector_Y + (SOG * SIN(COG))
-    Next
-    
-    SerialClose(SerialGPS)
-    
-    'Putting the CR6 at GPS Date/Time
-    UTC_Time_DDot = Mid(GPS_Time,1,2)&":"&Mid(GPS_Time,3,2)&":"&Mid(GPS_Time,5,2)
-    UTC_Date_Hyphen = "20"&Mid(GPS_Date,5,2)&"-"&Mid(GPS_Date,3,2)&"-"&Mid(GPS_Date,1,2)
-    ClockSet (UTC_Date_Hyphen&" "&UTC_Time_DDOt)
-    
-    'Creating variables with different formats
-    UTC_Time_Short = Mid(ScanDateTime,12,2)&Mid(ScanDateTime,15,2)&Mid(ScanDateTime,18,2)
-    UTC_Time_DDot = Mid(ScanDateTime,12,8)
-    
-    UTC_Date_Slash = Mid(ScanDateTime,1,4)&"/"&Mid(ScanDateTime,6,2)&"/"&Mid(ScanDateTime,9,2)
-    UTC_Date_Hyphen = Mid(ScanDateTime,1,10)
-    UTC_Date_Short = Mid(ScanDateTime,1,4)&Mid(ScanDateTime,6,2)&Mid(ScanDateTime,9,2)
-    
-    'Processing COG and SOG
-    SOG = Round(SQR(PWR(GPS_Vector_X,2)+PWR(GPS_Vector_Y,2))/10,2)
-    COG = Round(ATN2(GPS_Vector_Y,GPS_Vector_X),1)
-    If COG < 0 Then
-        COG = 360 + COG
-    EndIf        
+        If Course_Over_Ground = "" Then
+            Course_Over_Ground = 0
+        EndIf
+        
+        'Putting the String value in Float or Long variables 
+        Mag_Var = Magnetic_Variation  
 
-    'Processing Lat/Long & Magnetic Variation                  
-    Latitude = Mid(Lat,1,2)&"°"&Mid(Lat,3,6)&"'"&Lat_Hem
-    Longitude = Mid(Lon,1,3)&"°"&Mid(Lon,4,6)&"'"&Lon_Hem
-
-    ' Converting Magnetic Variation to decimal
-    If Mid(Mag_Var_Dir,1,1) = "W" Then
-        Magnetic_Variation = "-"&Mid(Magnetic_Variation,2,5)
-    Else
-        Magnetic_Variation = "+"&Mid(Magnetic_Variation,2,5)
+        Call GPSTable
+        
+        WhereAmI = "EndGPS, start Start Tower"
     EndIf
-
-    'Processing Buoy's Speed&Direction 
-    If Speed_Over_Ground = "" Then
-        Speed_Over_Ground = 0
-    EndIf
-    
-    If Course_Over_Ground = "" Then
-        Course_Over_Ground = 0
-    EndIf
-    
-    'Putting the String value in Float or Long variables 
-    Mag_Var = Magnetic_Variation  
-
-    Scan(1,Sec, 0, 1)
-    CallTable FileGPS
-    NextScan
 EndSub
 
 '### Processing ###

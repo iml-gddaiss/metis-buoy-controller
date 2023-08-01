@@ -19,20 +19,29 @@ DataTable (FilePAR,1,-1)
   Sample (1,PAR_Int_Temp,IEEE4)
 EndTable
 
+Sub PARTable
+  Scan(1,Sec, 0, 1)
+  CallTable FilePAR
+  NextScan
+EndSub
 
 '### Sampling ###
 
 Sub StartPAR
-  SerialOpen(SerialPAR,19200,3,20,100)
+  'Open the PAR port if present, sending the data as soon as it's ready
+  If With_PAR <> 0 Then
+    SerialOpen(SerialPAR,19200,3,20,100)
+  EndIf
 EndSub
 
 Sub CollectPAR
-  SerialIn(RawPAR,SerialPAR,10,CHR(13),60)
-  SplitStr(PARSensor(),RawPAR,",",5,4)
-  SerialClose(SerialPAR)
+  If With_PAR <> 0 Then
+    SerialIn(RawPAR,SerialPAR,10,CHR(13),60)
+    SplitStr(PARSensor(),RawPAR,",",5,4)
+    SerialClose(SerialPAR)
+
+    Call PARTable
   
-  Scan(1,Sec, 0, 1)
-  CallTable FilePAR
-  NextScan
+  EndIf
 EndSub
 '### Processing ###

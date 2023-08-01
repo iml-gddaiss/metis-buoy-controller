@@ -4,10 +4,8 @@
 'Modified by: Jerome Guay
 '
 ' Notes: 
-' Start<> subroutine only start the insturment sampling.
-' Sample<> or Collect<> subroutines Call the data file table.
-' Collect<> implies a wait period between for the instrument to sample data.
-'Installed in the buoy, pre-deployment
+' TODO: faire des sub routine pour les commandes envoyer au instrument et le traitement
+' TODO: Convention de nom entre variable, constante, table etc
 '#####################################################################################
 '------------------------------------------------------------------------------
 '----------------------------- Main Program -----------------------------------
@@ -87,7 +85,6 @@ Dim TAGFile As Long
 Dim WinchFile As Long
 Dim ToTransmit As Long
 
-Dim SerialPort
 
 Const SerialTower = 32 'RS485 As WMT700(A), WXT536(2) & Compass(1)
 
@@ -116,17 +113,16 @@ Include "CPU:wxt536.cr6"                    '#T2 Declare WXT536
 Include "CPU:compass.cr6"                   '#T3 Declare Compass
 Include "CPU:gps.cr6"                       '#T4 Declare GPS
 Include "CPU:par.cr6"                       '#T5 Declare PAR
-' Include "CPU:ocri.cr6"                      '#T6 Declare HyperOCR_I 
 Include "CPU:sbe37.cr6"                     '#W1 Declare CTD SBE37 
 Include "CPU:eco_triplet.cr6"               '#W2 Declare ECO-Triplet
 Include "CPU:seafet.cr6"                    '#W3 Declare Seafet 
 Include "CPU:suna.cr6"                      '#W4 Declare SUNA 
 Include "CPU:pco2.cr6"                      '#W5 PCO2
-'#W6 Flowmeter Todo ? Useless ?
-Include "CPU:ocr.cr6"               '#W7 HyperOCR_R 
+Include "CPU:ocr.cr6"                '#W7 HyperOCR_R 
 Include "CPU:wave_monitor.cr6"              '#M1 Wave_Monitor 
 Include "CPU:power_controller.cr6"          '#M3 Power Controller
 Include "CPU:adcp.cr6"                      '#M4 ADCP 
+
 Include "CPU:winch.cr6"                     '#M5 Winch 
 
 '####### Different processing past this point #######
@@ -140,6 +136,7 @@ EndSub
 
 
 Sub CloseCR6SerialPorts
+  Dim SerialPort
   'Close all serial port on CR6 if still open except ADCP
   For SerialPort = 11 To 16 Step 1
     If SerialPort = SerialADCP Then
@@ -154,6 +151,7 @@ EndSub
 
 
 Sub CloseSDM4SerialPorts
+  Dim SerialPort
   'Close all serial port on SDM4, except for PCO2 (40) which must stays on is PCO2 is sampling
   For SerialPort = 32 To 47 Step 1
     If SerialPort = SerialPCO2 AND PCO2_Sampling = true Then
@@ -173,7 +171,8 @@ Sub StartWaterDetectionSensor
 EndSub
 
 
-Sub StartTowerInstruments
+Sub PowerTowerInstruments
+  'Starting the weather instrument as soon as possible to stabilize the OCR, start the PAR sample and initialize the WMT700
   If With_Tower <> 0 Then  
       SW12(SW12_1,1)
       Tower_Switch = True
@@ -183,8 +182,11 @@ EndSub
 
 
 Sub StartTower485
+  'Open the RS485 port if there's one of the intruments
   'Opening SDM and PAR (T5) voltage. 1sec before communication  
-  SerialOpen(SerialTower,19200,51,20,500) 'for 2R! test
+  If With_Tower_485 <> 0 Then
+    SerialOpen(SerialTower,19200,51,20,500) 'for 2R! test
+  EndIf
 EndSub
 
 
@@ -196,10 +198,14 @@ EndSub
 
 
 Sub StartWellPump
-  'Open Switch #2 to control pump for X sec
-  SW12(SW12_2,1)
-  Well_Switch = True
-  Timer(3,Sec,0) 'Start timer #3 for the pump working for min. 30 sec
+  'Starting pump
+  If (Salinity > 10 OR Bypass_Salinity = True) AND ((With_Well_Pump <> 0 AND Disable_Pump = False) OR With_OCR_R <> 0) Then
+    WhereAmI = "Start Well Pump"
+    'Open Switch #2 to control pump for X sec
+    SW12(SW12_2,1)
+    Well_Switch = True
+    Timer(3,Sec,0) 'Start timer #3 for the pump working for min. 30 sec
+  EndIf
 EndSub
 
 
@@ -291,9 +297,7 @@ BeginProg
       
   Call CloseSDM4SerialPorts
 
-  If With_ADCP <> 0 Then  ' why is this not after the Scan ? # Jerome
-    Call StartADCP        
-  EndIf
+  Call StartADCP        ' why is this not after the Scan ? # Jerome
   
   Scan(Buoy_Interval,Min,0,0)
   ScanDateTime = Public.TimeStamp(4,0)
@@ -301,71 +305,32 @@ BeginProg
     
   Call StartWaterDetectionSensor
       
-  'Starting the weather instrument as soon as possible to stabilize the OCR, start the PAR sample and initialize the WMT700
-  Call StartTowerInstruments
+  Call PowerTowerInstruments
 
-  'Open the PAR port if present, sending the data as soon as it's ready
-  If With_PAR <> 0 Then
-    Call StartPAR
-  EndIf
+  Call StartPAR
 
-  'Open the RS485 port if there's one of the intruments
-  If With_Tower_485 <> 0 Then
-    Call StartTower485
-  EndIf
+  Call StartTower485
 
-  'GPS (T4) --------------------------------------------------------------------
-  WhereAmI = "Sample GPS"
-  If With_GPS <> 0 Then
-    Call SampleGPS
-  EndIf
-  WhereAmI = "EndGPS, start Start Tower"
+  Call SampleGPS
+  
+  Call StartWXT536
 
-
-  'WXT536 (T2) Start sampling ---------------------------------------------------
-  If With_WXT536 <> 0 Then
-    Call StartWXT536
-  EndIf 'With_WXT536
-
-
-  If With_WMT700 <> 0 Then
-    Call StartWMT700
-  EndIf
-    
+  Call StartWMT700
+  
   'Start Timer#1 to collect data in 61sec
+  'Note make invidual timers. For each instruments
   If With_WXT536 <> 0 OR With_WMT700 <> 0 OR With_PAR <> 0 Then
     Timer(1,Sec,0) ' TODO Start_WeatherTimer ?
   EndIf
 
-
-  'CTD SBE37 (W1) in salt water to start pump -----------------------------------
-  'Rewrite security so it won't try to sample the CTD if Bypass_Salinity or Disable_Pump are True
-  ' REVIEW THIS TODO
-  If With_SBE37 <> 0 Then
-    Call StartSBE37
-  EndIf 'With_SBE37
+  Call StartSBE37
     
-  ' FIXME Starting pump ?? Testing pump ?
-  If (Salinity > 10 OR Bypass_Salinity = True) AND ((With_Well_Pump <> 0 AND Disable_Pump = False) OR With_OCR_R <> 0) Then
-    Call StartWellPump
-  EndIf
-
-        
-  'ECO-Triplet/w (W3) Start sample ----------------------------------------------
-  WhereAmI = "Start Triplet"
-  If With_Triplet <> 0 Then
-    Call StartTriplet
-  EndIf
-
-
-  'Compass (T3) -----------------------------------------------------------------
-  WhereAmI = "Sample Compass"     ' Use to be after the Delay call in SampleCompass. #Jerome
-  If With_Compass <> 0 Then
-    Call SampleCompass
-  EndIf 'With_Compass
-  WhereAmI = "End Compass, collect power"
-
-
+  Call StartWellPump
+  
+  Call StartTriplet
+  
+  Call SampleCompass(SerialTower)
+  
   'Water Detection ---------------------
   WhereAmI = "Check Water Detection"
   If With_WD_Main <> 0 Then
@@ -527,7 +492,7 @@ BeginProg
   'ADCP -------------------------------------------------------------------------
   If With_ADCP <> 0 Then
     Call SampleADCP
-    TAGString = ADCPTagString()
+    TAGString = ADCPTagString(ADCPDate, ADCPTime, ADCPDir, ADCPMag)
     Call WriteTagString  
   EndIf
       

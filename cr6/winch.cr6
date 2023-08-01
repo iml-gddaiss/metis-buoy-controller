@@ -19,6 +19,7 @@ Public Winch_Last_Sample As Long
 Public Winch_Sampling As Boolean
 Public WinchString As String * 50
 Public WinchFileName As String * 50
+Public WinchComplete as Boolean
 
 Dim Winch_Date_Hyphen As String
 Dim Winch_Date_Slash As String
@@ -124,7 +125,7 @@ Sub CheckWinch(WhereAmI)
     EndIf
 EndSub
 
-Sub CollectWinch(WhereAmI)      
+Sub CollectWinch(WhereAmI)      13, Wave_Per
     If WinchMessage = "Winch Complete" Then
         Winch_Sampling = False
         

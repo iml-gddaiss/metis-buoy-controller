@@ -1,0 +1,7 @@
+. General
+.. Est-ce que les variables (alias) préservent leur dernière valeur entre les scans.
+.. Ne pas mettre en parameters ce qui est dans le BuoyConfig ou le WhereAmI. Mais le reste oui ?
+. Compass
+.. Make Proper Timer
+.. Le code va planter si le compass retourne que des NAN
+.. Pourquoi un délais de 400ms

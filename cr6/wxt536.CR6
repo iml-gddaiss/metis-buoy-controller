@@ -50,68 +50,80 @@ DataTable(FileWXT536,1,-1) 'Set table size to # of records, or -1 to autoallocat
 EndTable
 
 
+Sub WXT536Table
+    Scan(1,Sec, 0, 1)
+    CallTable FileWXT536
+    NextScan
+EndSub
+
+
 '### Sampling ###
 Sub StartWXT536
-    RealTime(Buoy_Time) 'Collecting buoy time to see if it's time to reset the rain/hail accumulation
-	'Timer(6,Hr,0) 'Start the timer if it isn't started
-	RainReset_Timer = Timer(6,Hr,4)
-	    
-    ' Reset Rain if 00:00 or active for more than 24h
-	If UTC_Time_DDot = "00:00:00" OR RainReset_Timer >= 24 Then
-	    SerialOut(SerialTower,CHR(13)&CHR(10)&"2XZRU"&CHR(13)&CHR(10),"",1,0)
-        SerialOut(SerialTower,CHR(13)&CHR(10)&"2XZRI"&CHR(13)&CHR(10),"",1,0)
-        Timer(6,Hr,2) 'Timer #6 Reset&Start
-    EndIf	
-	    
-    'Reset wind & weather measurements    
-    SerialOut(SerialTower,CHR(13)&CHR(10)&"2XZM"&CHR(13)&CHR(10),"",1,0)    
+    If With_WXT536 <> 0 Then
+        RealTime(Buoy_Time) 'Collecting buoy time to see if it's time to reset the rain/hail accumulation
+        'Timer(6,Hr,0) 'Start the timer if it isn't started
+        RainReset_Timer = Timer(6,Hr,4)
+            
+        ' Reset Rain if 00:00 or active for more than 24h
+        If UTC_Time_DDot = "00:00:00" OR RainReset_Timer >= 24 Then
+            SerialOut(SerialTower,CHR(13)&CHR(10)&"2XZRU"&CHR(13)&CHR(10),"",1,0)
+            SerialOut(SerialTower,CHR(13)&CHR(10)&"2XZRI"&CHR(13)&CHR(10),"",1,0)
+            Timer(6,Hr,2) 'Timer #6 Reset&Start
+        EndIf	
+            
+        'Reset wind & weather measurements    
+        SerialOut(SerialTower,CHR(13)&CHR(10)&"2XZM"&CHR(13)&CHR(10),"",1,0)    
+    EndIf
 EndSub
 
 
 Sub CollectWXT536
+    'WXT536 (T2) Start sampling ---------------------------------------------------
     Dim X
     
-    RawR1_Wind = ""
-    RawR2_Weather = ""
-    RawR3_Rain = ""
-
-    For X = 1 To 3 Step 1
-        SerialOut(SerialTower,CHR(13)&CHR(10),0,1,10)
-        If RawR1_Wind = "" Then
-            SerialOut(SerialTower,"2R1!",0,1,10)
-            SerialIn(RawR1_Wind,SerialTower,20,13,80)
-            RawR1_Wind = Mid(RawR1_Wind,5,80)
-            SplitStr(WXT536_Wind(),RawR1_Wind,",",6,0)
-            If WXT536_Wind(6) = "" Then
-            RawR1_Wind = ""
-            EndIf
-    EndIf
-
-    If RawR2_Weather = "" Then
-        SerialOut(SerialTower,"2R2!",0,1,10)
-        SerialIn(RawR2_Weather,SerialTower,20,13,30)
-        RawR2_Weather = Mid(RawR2_Weather,5,30)
-        SplitStr(WXT536_Weather(),RawR2_Weather,",",3,0)
-        If WXT536_Weather(3) = "" Then
+    If With_WXT536 <> 0 Then
+        
+        RawR1_Wind = ""
         RawR2_Weather = ""
-        EndIf
-    EndIf
-
-    If RawR3_Rain = "" Then
-        SerialOut(SerialTower,"2R3!",0,1,10)
-        SerialIn(RawR3_Rain,SerialTower,20,13,80)
-        RawR3_Rain = Mid(RawR3_Rain,5,80)
-        SplitStr(WXT536_Rain(),RawR3_Rain,",",6,0)
-        If WXT536_Rain(6) = "" Then
         RawR3_Rain = ""
+
+        For X = 1 To 3 Step 1
+            SerialOut(SerialTower,CHR(13)&CHR(10),0,1,10)
+            If RawR1_Wind = "" Then
+                SerialOut(SerialTower,"2R1!",0,1,10)
+                SerialIn(RawR1_Wind,SerialTower,20,13,80)
+                RawR1_Wind = Mid(RawR1_Wind,5,80)
+                SplitStr(WXT536_Wind(),RawR1_Wind,",",6,0)
+                If WXT536_Wind(6) = "" Then
+                RawR1_Wind = ""
+                EndIf
         EndIf
+
+        If RawR2_Weather = "" Then
+            SerialOut(SerialTower,"2R2!",0,1,10)
+            SerialIn(RawR2_Weather,SerialTower,20,13,30)
+            RawR2_Weather = Mid(RawR2_Weather,5,30)
+            SplitStr(WXT536_Weather(),RawR2_Weather,",",3,0)
+            If WXT536_Weather(3) = "" Then
+            RawR2_Weather = ""
+            EndIf
+        EndIf
+
+        If RawR3_Rain = "" Then
+            SerialOut(SerialTower,"2R3!",0,1,10)
+            SerialIn(RawR3_Rain,SerialTower,20,13,80)
+            RawR3_Rain = Mid(RawR3_Rain,5,80)
+            SplitStr(WXT536_Rain(),RawR3_Rain,",",6,0)
+            If WXT536_Rain(6) = "" Then
+            RawR3_Rain = ""
+            EndIf
+        EndIf
+
+        Next X
+
+        Call WXT536Table
+    
     EndIf
-
-    Next X
-
-    Scan(1,Sec, 0, 1)
-    CallTable FileWXT536
-    NextScan
 EndSub
 
 
