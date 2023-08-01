@@ -41,7 +41,7 @@ Sub CheckCompassTimer
 EndSub
 
 '### Sampling ###
-Sub ResetCompassValues(SerialTower)
+Sub ResetCompassValues
   'Resetting the compass & Heading values
   Compass() = 0 'Compass(3) = Heading, Pitch, Roll
   Heading_Vec() = 0 'Heading_Vec(2) = Heading_x, Heading_y
@@ -59,7 +59,7 @@ Function HexaSign(RawSign) as String * 1
 EndFunction
 
 
-Sub CollectCompass60s(SerialTower)
+Sub CollectCompass60s
   Dim X, Y
   Dim ASCIIString As String * 100
   Dim HeadingBuff 
@@ -115,15 +115,15 @@ Sub ApplyMagneticCorrection(Heading, Mag_Var)
 EndSub
 
 
-Sub SampleCompass(SerialTower)
+Sub SampleCompass
   If With_Compass <> 0 Then
     WhereAmI = "Sample Compass"   
     
     Call CheckCompassTimer
     
-    Call ResetCompassValues(SerialTower)
+    Call ResetCompassValues
     
-    Call CollectCompass60s(SerialTower)
+    Call CollectCompass60s
       
     Call AverageCompass(Roll, Pitch, Heading, Heading_y, Heading_x)
 

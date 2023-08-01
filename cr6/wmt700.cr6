@@ -26,7 +26,7 @@ EndTable
 
 
 
-Sub WMT700able
+Sub WMT700Table
   Scan(1,Sec, 0, 1)
   CallTable FileWMT700
   NextScan
@@ -60,7 +60,9 @@ Sub CollectWMT700
     Else
       SplitStr(WMT700(),RawWMT700,",",6,0)
     EndIf
-    Call WMT700
+    
+    Call WMT700Table
+  
   EndIf
 EndSub
 

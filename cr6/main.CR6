@@ -131,7 +131,7 @@ Include "CPU:weather.cr6"                   ' Weather variables
 
 Function InitTagString(UTC_Date_Hyphen, UTC_Time_DDot, Latitude, Longitude, Heading, Pitch, Roll, COG, SOG, Water_Detection_Main)
   ' Buoy TAG with name, GPS, Compass, Flow & WaterDetection
-  BuoyTagString = "[INIT]" & Buoy_Name & "," & UTC_Date_Hyphen & "," & UTC_Time_DDot & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
+  InitTagString = "[INIT]" & Buoy_Name & "," & UTC_Date_Hyphen & "," & UTC_Time_DDot & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
 EndFunction
 
 Sub OpenTAGSFiles(UTC_Date_Short, UTC_Time_Short)
@@ -293,7 +293,7 @@ Sub SampleWinch
   
   Else If Winch_Sampling = True Then
     WhereAmI = "Check if the winch is done"
-    Call CheckWinch(WhereAmI)      
+    Call CheckWinch
   Else
     WinchMessage = "Interval not reach"
   EndIf  
@@ -343,7 +343,7 @@ BeginProg
   
   Call StartTriplet
   
-  Call SampleCompass(SerialTower)
+  Call SampleCompass
   
   Call CheckWaterDetection
 
@@ -353,7 +353,7 @@ BeginProg
   Call WriteTagString
     
   Call SamplePowerController(TAGString)
-    
+
   Call CollectTriplet(TAGString)
      
   '------------------------------------------------------------------------------
@@ -523,7 +523,7 @@ BeginProg
   FileClose(TAGFile)
   FileClose(ToTransmit)
 
-  CollectWinch(WhereAmI)
+  CollectWinch
   
   WhereAmI = "Scan end"
   NextScan

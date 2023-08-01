@@ -41,7 +41,7 @@ Sub StartTriplet
   EndIf
 EndSub
 
-Sub CheckCompassTimer 
+Sub CheckTripletTimer 
   Dim TripletTimer
   
   TripletTimer = Timer(4, Sec, 4)
@@ -57,11 +57,11 @@ EndSub
 Sub CollectTriplet(TAGString)
   'ECO-Triplet/w (W3) collect ---------------------------------------------------
   If With_Triplet <> 0 Then
+    WhereAmI = "Collect triplet"
+    
     RawTriplet = ""
     
     Call CheckTripletTimer
-    
-    WhereAmI = "Collect triplet"
     
     SerialInRecord(SerialTriplet,RawTriplet,&H4242,0,&H0D0A,NBR,01)
     
