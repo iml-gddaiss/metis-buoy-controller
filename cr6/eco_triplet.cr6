@@ -16,6 +16,18 @@ DataTable(FileTriplet,1,-1)
 EndTable
 
 
+Sub TripleTable
+  Scan(1,Sec, 0, 1)
+  CallTable FileTriplet
+  NextScan
+EndSub
+
+'### Sampling ###
+
+Function TripletTagString as String
+  TripletTagString = "[TRP1]" & Scattering & "," & Chlorophyll & "," & FDOM
+EndFunction
+
 Sub StartTriplet
   'ECO-Triplet/w (W3) Start
   If With_Triplet <> 0 Then
@@ -29,27 +41,42 @@ Sub StartTriplet
   EndIf
 EndSub
 
-
-Sub CollectTriplet
-  RawTriplet = ""
-  Triplet_Timer = Timer(4,Sec,4)
-  Timer(4,Sec,3) 'Timer #4 Stop&Reset
+Sub CheckCompassTimer 
+  Dim TripletTimer
   
-  If Triplet_Timer < 17 Then
-    Delay(1,17-Triplet_Timer,Sec)
+  TripletTimer = Timer(4, Sec, 4)
+  Timer(4, Sec, 3) 'Timer #4 Stop&Reset
+  
+  If TripletTimer < 17 Then
+    Delay(1, 17-TripletTimer, Sec)
   EndIf
-  
-  WhereAmI = "Collect triplet"
-  SerialInRecord(SerialTriplet,RawTriplet,&H4242,0,&H0D0A,NBR,01)
-  SerialClose(SerialTriplet)
-  RawTriplet = "BB"+RawTriplet
-  SplitStr(Triplet(),RawTriplet,CHR(09),11,4)
-  'Getting the values in long (0.000) from scientific values (0.00E+00) 
-  Scattering = Round(Sct_Value,7)
-  Chlorophyll = Chl_Value
-  FDOM = FDOM_Value
 
-  Scan(1,Sec, 0, 1)
-  CallTable FileTriplet
-  NextScan
+EndSub
+
+
+Sub CollectTriplet(TAGString)
+  'ECO-Triplet/w (W3) collect ---------------------------------------------------
+  If With_Triplet <> 0 Then
+    RawTriplet = ""
+    
+    Call CheckTripletTimer
+    
+    WhereAmI = "Collect triplet"
+    
+    SerialInRecord(SerialTriplet,RawTriplet,&H4242,0,&H0D0A,NBR,01)
+    
+    SerialClose(SerialTriplet)
+    
+    RawTriplet = "BB"+RawTriplet
+    SplitStr(Triplet(),RawTriplet,CHR(09),11,4)
+    'Getting the values in long (0.000) from scientific values (0.00E+00) 
+    Scattering = Round(Sct_Value,7)
+    Chlorophyll = Chl_Value
+    FDOM = FDOM_Value
+    
+    Call TripleTable
+    
+    TAGString = TripletTagString()
+    Call WriteTagString ' ------------------------------------------------> DEFINED IN MAIN
+  EndIf
 EndSub

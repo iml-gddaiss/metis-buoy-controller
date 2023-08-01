@@ -129,6 +129,17 @@ Include "CPU:winch.cr6"                     '#M5 Winch
 'Wind compensation by Compass and GPS
 Include "CPU:weather.cr6"                   ' Weather variables  
 
+Function InitTagString(UTC_Date_Hyphen, UTC_Time_DDot, Latitude, Longitude, Heading, Pitch, Roll, COG, SOG, Water_Detection_Main)
+  ' Buoy TAG with name, GPS, Compass, Flow & WaterDetection
+  BuoyTagString = "[INIT]" & Buoy_Name & "," & UTC_Date_Hyphen & "," & UTC_Time_DDot & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
+EndFunction
+
+Sub OpenTAGSFiles(UTC_Date_Short, UTC_Time_Short)
+  ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & UTC_Date_Short & UTC_Time_Short & ".dat","a",-1)
+  TAGFile = FileOpen("CRD:" & Buoy_Name & "_TAGFile.txt","a",-1)
+EndSub
+
+
 Sub WriteTagString
   FileWrite(TAGFile,TAGString & CHR(10),0)
   FileWrite(ToTransmit,TAGString & CHR(10),0)
@@ -191,9 +202,12 @@ EndSub
 
 
 Sub CheckWaterDetection
-  Water_Detection_Main = 0
-  VoltSe(Water_Detection_Main,1,AutoRange,U1,0,0,15000,1,0)
-  PortSet(C4,0)
+  If With_WD_Main <> 0 Then
+    WhereAmI = "Check Water Detection"
+    Water_Detection_Main = 0
+    VoltSe(Water_Detection_Main,1,AutoRange,U1,0,0,15000,1,0)
+    PortSet(C4,0)
+  EndIf
 EndSub
 
 
@@ -331,36 +345,17 @@ BeginProg
   
   Call SampleCompass(SerialTower)
   
-  'Water Detection ---------------------
-  WhereAmI = "Check Water Detection"
-  If With_WD_Main <> 0 Then
-    Call CheckWaterDetection
-  EndIf
+  Call CheckWaterDetection
 
-  'Buoy TAG with name, GPS, Compass, Flow & WaterDetection
-  TAGString = "[INIT]" & Buoy_Name & "," & UTC_Date_Hyphen & "," & UTC_Time_DDot & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
-  ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & UTC_Date_Short & UTC_Time_Short & ".dat","a",-1)
-  TAGFile = FileOpen("CRD:" & Buoy_Name & "_TAGFile.txt","a",-1)
-  Call WriteTagString
+  Call OpenTAGSFiles(UTC_Date_Short, UTC_Time_Short)
   
-  'Power (M3) -------------------------------------------------------------------
-  WhereAmI = "Sample Power Controller"
-  If With_Power <> 0 Then
-    Call SamplePowerController
-    TAGString = "[POWR]" & VBatt1 & "," & ABatt1 & "," & VBatt2 & "," & ABatt2 & "," & VSolar & "," & ASolar & "," & AMain & "," & ATurbine & "," & AWinch & "," & PM_RH & "," & PowerString(11)
-    Call WriteTagString
-  EndIf
-  WhereAmI = "End Power Controller"
-
-  'ECO-Triplet/w (W3) collect ---------------------------------------------------
-  WhereAmI = "Collect triplet"
-  If With_Triplet <> 0 Then
-    Call CollectTriplet
-    TAGString = "[TRP1]" & Scattering & "," & Chlorophyll & "," & FDOM
-    Call WriteTagString
-  EndIf 'With_Triplet
-  WhereAmI = "End Triplet"
-      
+  TAGString = InitTagString(UTC_Date_Hyphen, UTC_Time_DDot, Latitude, Longitude, Heading, Pitch, Roll, COG, SOG, Water_Detection_Main)
+  Call WriteTagString
+    
+  Call SamplePowerController(TAGString)
+    
+  Call CollectTriplet(TAGString)
+     
   '------------------------------------------------------------------------------
   'Pumped sensor (SBE37, Seafet & SUNA) -----------------------------------------
   WhereAmI = "See if pump is running 30sec"
