@@ -353,49 +353,32 @@ BeginProg
   Call WriteTagString
     
   Call SamplePowerController(TAGString)
+  Call WriteTagString
 
   Call CollectTriplet(TAGString)
+  Call WriteTagString
      
   '------------------------------------------------------------------------------
   'Pumped sensor (SBE37, Seafet & SUNA) -----------------------------------------
-  WhereAmI = "See if pump is running 30sec"
   ' If Well_Switch = True AND (With_SBE37 + With_Seafet + With_SUNA) <> 0 Then # Jerome July 2023
   If Well_Switch = True AND (With_Well_Pump <> 0) Then
+    WhereAmI = "See if pump is running 30sec"
     Call CheckWellPump 
+    WhereAmI = "Pump ran 30sec"
   EndIf 
-  WhereAmI = "Pump ran 30sec"
-
-  'SUNA (W4) start --------------------------------------------------------------
-  WhereAmI = "Starting SUNA"
-  If With_SUNA <> 0 Then
-    Call StartSUNA
-  EndIf
-      
-
-  Call SampleOCRs(WhereAmI, Well_Switch)
   
-
-  'Collect OCR_I ---------------
-  WhereAmI = "Sample OCRI"
-  If With_OCR_I <> 0 Then
-    Call SampleOCRI
-  EndIf
-  WhereAmI = "End OCRI"
-      
-  'SBE37 (W1) -------------------------------------------------------------------
-  WhereAmI = "Collecting CTD"
-  If With_SBE37 <> 0 Then
-    Call CollectSBE37
-    TAGString = "[CTD]" & Water_Temp & "," & Conductivity & "," & Salinity & "," & Density
-    Call WriteTagString
-  EndIf
-  WhereAmI = "CTD's finished"
+  Call StartSUNA
+  
+  Call SampleOCRs(Well_Switch)  
+  
+  Call CollectSBE37(TAGString)
+  Call WriteTagString
+  
     
   'Seafet (W2) --------------------------------------------------------------------
   WhereAmI = "Sample Seafet"
   If With_Seafet <> 0 Then
-    Call SampleSeafet
-    TAGString = "[PHPRO]" & Ext_pH_P & "," & Int_pH_P & "," & Error_Flag & "," & Ext_pH & "," & Int_pH
+    Call SampleSeafet(TAGString)
     Call WriteTagString
   EndIf 'With_Seafet
   WhereAmI = "End Seafet"

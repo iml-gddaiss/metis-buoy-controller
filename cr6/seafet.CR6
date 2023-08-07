@@ -10,15 +10,13 @@ Public Seafet_Pro(2) As Float : Alias Seafet_Pro = Ext_pH_P, Int_pH_P
 
 
 'Constant to auto-proceed the pH value with Temp and Sal from CTD
-Const R = 8.3144621 'Universal Gas constant in J/Kmol
-Const F = 96485.365 'Faraday constant
-Const Kelvin = 273.15
+Const GasConstantR = 8.3144621 'Universal Gas constant in J/Kmol
+Const FaradayConstant = 96485.365 'Faraday constant
+Const KelvinToCelsius = 273.15
 
 Public Coeff_Exp(4) As String : Alias Coeff_Exp = K0_Int_Exp, K2_Int_Exp, K0_Ext_Exp, K2_Ext_Exp
 Public Coeff_Raw As String * 300
 Public K0_Int, K2_Int, K0_Ext, K2_Ext As Float
-Dim Snernst, Clt, log_yHClT, St, Water_Temp_K, I, Adh
-Dim Ks_Tab(6) : Alias Ks_Tab = Ks1, Ks2, Ks3, Ks4, Ks5, Ks
 
 '### Units ###
 
@@ -46,11 +44,29 @@ DataTable (FileSeafet_Pro,1,-1)
   Sample (1,K2_Ext,IEEE4)
 EndTable
 
+Sub SeafetTable
+  Scan(1,Sec, 0, 1)
+  CallTable FileSeafet
+  NextScan
+EndSub
 
-'### Sampling ###
-Sub SampleSeafet
+Sub Seafet_ProTable
+  Scan(1,Sec, 0, 1)
+  CallTable FileSeafet_Pro
+  NextScan
+EndSub
+
+Function PHTagString as String
+  PHTagString = "[PH]" & Ext_pH & "," & Int_pH & "," & Error_Flag      
+EndFunction
+
+Function PHPROTagString as String
+  PHPROTagString = "[PHPRO]" & Ext_pH_P & "," & Int_pH_P & "," & Error_Flag & "," & Ext_pH & "," & Int_pH
+EndFunction
+
+
+Sub CollectSeafet
   Dim X
-  SerialOpen(SerialSeafet,19200,3,20,900) 'Seafet string is around 100, but bigger buffer for Coef.
   For X = 1 To 3 Step 1
     SerialFlush(SerialSeafet)
     RawSeafet = ""
@@ -73,107 +89,119 @@ Sub SampleSeafet
     EndIf
   
   Next X
+EndSub
+
+
+Sub CollectSeafet_Pro
+  Dim X
+  For X = 1 To 5 Step 1
+    If K0_Int_Exp = "" OR K0_Int = "NAN" Then
+      SerialFlush(SerialSeafet)
+      SerialOut(SerialSeafet,CHR(13),"S>",2,50)
+      SerialOut(SerialSeafet,"K0"&CHR(13),"",1,0)
+      SerialIn(K0_Int_Exp,SerialSeafet,100,39,40)
+      SerialIn(K0_Int_Exp,SerialSeafet,100,39,20)
+      If Len(K0_Int_Exp) <> 13 OR Mid(K0_Int_Exp,10,1) <> "e" Then
+        K0_Int_Exp = ""
+      EndIf                 
+    EndIf
     
-  If Error_Flag = 0000 Then
+    If K2_Int_Exp = "" OR K2_Int = "NAN" Then
+      SerialFlush(SerialSeafet)
+      SerialOut(SerialSeafet,CHR(13),"S>",2,50)
+      SerialOut(SerialSeafet,"K2"&CHR(13),"",1,0)
+      SerialIn(K2_Int_Exp,SerialSeafet,100,39,40)
+      SerialIn(K2_Int_Exp,SerialSeafet,100,39,20)
+      If Len(K2_Int_Exp) <> 13 OR Mid(K2_Int_Exp,10,1) <> "e" Then
+        K2_Int_Exp = ""
+      EndIf            
+    EndIf
+    
+    If K0_Ext_Exp = "" OR K0_Ext = "NAN" Then
+      SerialFlush(SerialSeafet)
+      SerialOut(SerialSeafet,CHR(13),"S>",2,50)
+      SerialOut(SerialSeafet,"KDF0"&CHR(13),"",1,0)
+      SerialIn(K0_Ext_Exp,SerialSeafet,100,39,40)
+      SerialIn(K0_Ext_Exp,SerialSeafet,100,39,20)
+      If Len(K0_Ext_Exp) <> 13 OR Mid(K0_Ext_Exp,10,1) <> "e" Then
+        K0_Ext_Exp = ""
+      EndIf
+    EndIf
+    
+    If K2_Ext_Exp = "" OR K2_Ext = "NAN" Then
+      SerialFlush(SerialSeafet)
+      SerialOut(SerialSeafet,CHR(13),"S>",2,50)
+      SerialOut(SerialSeafet,"KDF2"&CHR(13),"",1,0)
+      SerialIn(K2_Ext_Exp,SerialSeafet,100,39,40)
+      SerialIn(K2_Ext_Exp,SerialSeafet,100,39,20)
+      If Len(K2_Ext_Exp) <> 13 OR Mid(K2_Ext_Exp,10,1) <> "e" Then
+        K2_Ext_Exp = ""
+      EndIf
+    EndIf
+    
+    K0_Int = K0_Int_Exp
+    K2_Int = K2_Int_Exp
+    K0_Ext = K0_Ext_Exp
+    K2_Ext = K2_Ext_Exp
+  Next X           
+EndSub
+
+
+Sub Seafet_ProCorrection(Water_Temp, Salinity)
+  Dim Snernst, Clt, log_yHClT, St, Water_Temp_K, I, Adh
+  Dim Ks_Tab(6) : Alias Ks_Tab = Ks1, Ks2, Ks3, Ks4, Ks5, Ks
+    
+  Water_Temp_K = KelvinToCelsius + Water_Temp
+  Snernst = (GasConstantR*Water_Temp_K*LN(10))/FaradayConstant
+  Clt = (0.99889/35.453)*(Salinity/1.80655)*(1000/(1000-(1.005*Salinity)))
+  I = (19.924*Salinity)/(1000-(1.005*Salinity))
+  Adh = (0.0000034286*(Water_Temp^2))+(0.00067524*Water_Temp)+0.49172143
+  log_yHClT = (-Adh*SQR(I))/(1+(1.394*SQR(I)))+((0.08885-(0.000111*Water_Temp))*I)
+  St = (0.1400/96.062)*(Salinity/1.80655)
+  Ks1 = (-4276.1/Water_Temp_K)+141.328-(23.093*LN(Water_Temp_K))
+  Ks2 = ((-13856/Water_Temp_K)+324.57-(47.986*LN(Water_Temp_K)))*SQR(I)
+  Ks3 = ((35474/Water_Temp_K)-771.54+(114.723*LN(Water_Temp_K)))*I
+  Ks4 = (2698/Water_Temp_K)*I^1.5
+  Ks5 = (1776/Water_Temp_K)*I^2
+  Ks = (1-(0.001005*Salinity))*EXP(Ks1+Ks2+Ks3-Ks4+Ks5)
+  
+  Int_pH_P = Round((CTYPE(Volt_Int_pH,Float) - K0_Int - (K2_Int*Water_Temp))/Snernst,4)
+  Ext_pH_P = Round(((CTYPE(Volt_Ext_pH,Float) - K0_Ext - (K2_Ext*Water_Temp))/Snernst) + LOG(Clt) + (2*log_yHClT) - LOG(1+(St/Ks)) - LOG((1000-(1.005*Salinity))/1000),4)
+
+EndSub
+
+Sub SampleSeafet_Pro(TAGString, Water_Temp, Salinity)
+  Call CollectSeafet_Pro
+
+  Call Seafet_ProCorrection(Water_Temp, Salinity)  
+
+  If Int_pH_P <> "NAN" AND Ext_pH_P <> "NAN" Then
+    Call SeaFet_ProTable
+    TAGString = PHPROTagString()
+  EndIf 
+
+EndSub
+
+
+'### Sampling ###
+Sub SampleSeafet(TAGString, Water_Temp, Salinity)
+
+  SerialOpen(SerialSeafet,19200,3,20,900) 'Seafet string is around 100, but bigger buffer for Coef.
+  
+  Call CollectSeafet
+      
+  If Error_Flag = "0000" Then ' Jerome 0000 -> "0000" Is it supposed to be a string ? TODO FIXME
     Error_Flag = 0
   Else
     Error_Flag = 1
   EndIf
   
-  TAGString = "[PH]" & Ext_pH & "," & Int_pH & "," & Error_Flag      
-    
+  TAGString = PHTagString()
+  
   If Seafet_Auto_Correction <> 0 AND Salinity > 10 Then
-    K0_Int_Exp = ""
-    K2_Int_Exp = ""
-    K0_Ext_Exp = ""
-    K2_Ext_Exp = ""
-    K0_Int = ""
-    K2_Int = ""
-    K0_Ext = ""
-    K2_Ext = ""
-    
-
-    For X = 1 To 5 Step 1
-      If K0_Int_Exp = "" OR K0_Int = "NAN" Then
-        SerialFlush(SerialSeafet)
-        SerialOut(SerialSeafet,CHR(13),"S>",2,50)
-        SerialOut(SerialSeafet,"K0"&CHR(13),"",1,0)
-        SerialIn(K0_Int_Exp,SerialSeafet,100,39,40)
-        SerialIn(K0_Int_Exp,SerialSeafet,100,39,20)
-        If Len(K0_Int_Exp) <> 13 OR Mid(K0_Int_Exp,10,1) <> "e" Then
-          K0_Int_Exp = ""
-        EndIf                 
-      EndIf
-      
-      If K2_Int_Exp = "" OR K2_Int = "NAN" Then
-        SerialFlush(SerialSeafet)
-        SerialOut(SerialSeafet,CHR(13),"S>",2,50)
-        SerialOut(SerialSeafet,"K2"&CHR(13),"",1,0)
-        SerialIn(K2_Int_Exp,SerialSeafet,100,39,40)
-        SerialIn(K2_Int_Exp,SerialSeafet,100,39,20)
-        If Len(K2_Int_Exp) <> 13 OR Mid(K2_Int_Exp,10,1) <> "e" Then
-          K2_Int_Exp = ""
-        EndIf            
-      EndIf
-      
-      If K0_Ext_Exp = "" OR K0_Ext = "NAN" Then
-        SerialFlush(SerialSeafet)
-        SerialOut(SerialSeafet,CHR(13),"S>",2,50)
-        SerialOut(SerialSeafet,"KDF0"&CHR(13),"",1,0)
-        SerialIn(K0_Ext_Exp,SerialSeafet,100,39,40)
-        SerialIn(K0_Ext_Exp,SerialSeafet,100,39,20)
-        If Len(K0_Ext_Exp) <> 13 OR Mid(K0_Ext_Exp,10,1) <> "e" Then
-          K0_Ext_Exp = ""
-        EndIf
-      EndIf
-      
-      If K2_Ext_Exp = "" OR K2_Ext = "NAN" Then
-        SerialFlush(SerialSeafet)
-        SerialOut(SerialSeafet,CHR(13),"S>",2,50)
-        SerialOut(SerialSeafet,"KDF2"&CHR(13),"",1,0)
-        SerialIn(K2_Ext_Exp,SerialSeafet,100,39,40)
-        SerialIn(K2_Ext_Exp,SerialSeafet,100,39,20)
-        If Len(K2_Ext_Exp) <> 13 OR Mid(K2_Ext_Exp,10,1) <> "e" Then
-          K2_Ext_Exp = ""
-        EndIf
-      EndIf
-      
-    K0_Int = K0_Int_Exp
-    K2_Int = K2_Int_Exp
-    K0_Ext = K0_Ext_Exp
-    K2_Ext = K2_Ext_Exp
-
-    Next X           
-    
-    Water_Temp_K = Kelvin + Water_Temp
-    Snernst = (R*Water_Temp_K*LN(10))/F
-    Clt = (0.99889/35.453)*(Salinity/1.80655)*(1000/(1000-(1.005*Salinity)))
-    I = (19.924*Salinity)/(1000-(1.005*Salinity))
-    Adh = (0.0000034286*(Water_Temp^2))+(0.00067524*Water_Temp)+0.49172143
-    log_yHClT = (-Adh*SQR(I))/(1+(1.394*SQR(I)))+((0.08885-(0.000111*Water_Temp))*I)
-    St = (0.1400/96.062)*(Salinity/1.80655)
-    Ks1 = (-4276.1/Water_Temp_K)+141.328-(23.093*LN(Water_Temp_K))
-    Ks2 = ((-13856/Water_Temp_K)+324.57-(47.986*LN(Water_Temp_K)))*SQR(I)
-    Ks3 = ((35474/Water_Temp_K)-771.54+(114.723*LN(Water_Temp_K)))*I
-    Ks4 = (2698/Water_Temp_K)*I^1.5
-    Ks5 = (1776/Water_Temp_K)*I^2
-    Ks = (1-(0.001005*Salinity))*EXP(Ks1+Ks2+Ks3-Ks4+Ks5)
-    
-    Int_pH_P = Round((CTYPE(Volt_Int_pH,Float) - K0_Int - (K2_Int*Water_Temp))/Snernst,4)
-    Ext_pH_P = Round(((CTYPE(Volt_Ext_pH,Float) - K0_Ext - (K2_Ext*Water_Temp))/Snernst) + LOG(Clt) + (2*log_yHClT) - LOG(1+(St/Ks)) - LOG((1000-(1.005*Salinity))/1000),4)
+    Call SampleSeafet_Pro(TAGString, Water_Temp, Salinity)
+  EndIf
   
-    If Int_pH_P <> "NAN" AND Ext_pH_P <> "NAN" Then
-      Scan(1,Sec, 0, 1)
-      CallTable FileSeafet_Pro
-      NextScan
-      ' TAGString = "[PHPRO]" & Ext_pH_P & "," & Int_pH_P & "," & Error_Flag & "," & Ext_pH & "," & Int_pH ' it this ok to put in main FIXME jerome
-    EndIf 
-  EndIf 'Auto_Correction
-  
-  Scan(1,Sec, 0, 1)
-  CallTable FileSeafet
-  NextScan
+  Call SeafetTable
+
 EndSub
-
-
-'### Processing ###

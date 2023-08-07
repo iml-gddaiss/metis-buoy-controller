@@ -55,7 +55,6 @@ EndSub
 
 
 Sub CollectTriplet(TAGString)
-  'ECO-Triplet/w (W3) collect ---------------------------------------------------
   If With_Triplet <> 0 Then
     WhereAmI = "Collect triplet"
     
@@ -77,6 +76,5 @@ Sub CollectTriplet(TAGString)
     Call TripleTable
     
     TAGString = TripletTagString()
-    Call WriteTagString ' ------------------------------------------------> DEFINED IN MAIN
   EndIf
 EndSub

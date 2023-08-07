@@ -5,3 +5,7 @@
 .. Make Proper Timer
 .. Le code va planter si le compass retourne que des NAN
 .. Pourquoi un délais de 400ms
+. OCRs
+.. Nothing done with the OCR strings ?
+. Seafet
+.. Est-ce que recevoir la PHPROTagString serait pertinent même en cas de NAN pour voir qu'il y a un erreur ?

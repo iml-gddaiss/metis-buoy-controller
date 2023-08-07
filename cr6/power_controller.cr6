@@ -70,7 +70,7 @@ Sub SamplePowerController(TAGString)
     SerialClose(SerialPower)
     
     If VBatt1 > VBatt2 Then
-      VBatt_to_SD = VBatt1
+      VBatt_to_SD = VBatt1 
     Else
       VBatt_to_SD = VBatt2
     EndIf
@@ -78,7 +78,6 @@ Sub SamplePowerController(TAGString)
     Call PowerTable
 
     TAGString = PowerTagString()
-    Call WriteTagString ' ------------------------------------------------> DEFINED IN MAIN
   EndIf
 EndSub
 

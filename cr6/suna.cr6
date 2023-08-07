@@ -42,16 +42,19 @@ DataTable(FileSUNA_Light,1,-1)
 
 '### Sampling ###
 Sub StartSUNA
-  SerialOpen(SerialSUNA,19200,3,20,250)
-  SerialOut(SerialSUNA,"$","CMD?",1,400)
-  SerialOut(SerialSUNA,"measure 1"&CHR(13),CHR(10),1,50)
-  SerialIn(RawSUNADark,SerialSUNA,150,CHR(13),80) 'The Dark sample is nearly auto, then at least 12sec for the Light one
-    
-  Timer(5,Sec,0) 'Timer #5 Start for at least 12 sec
+  WhereAmI = "Starting SUNA"
+  If With_SUNA <> 0 Then
+    SerialOpen(SerialSUNA,19200,3,20,250)
+    SerialOut(SerialSUNA,"$","CMD?",1,400)
+    SerialOut(SerialSUNA,"measure 1"&CHR(13),CHR(10),1,50)
+    SerialIn(RawSUNADark,SerialSUNA,150,CHR(13),80) 'The Dark sample is nearly auto, then at least 12sec for the Light one
+      
+    Timer(5,Sec,0) 'Timer #5 Start for at least 12 sec
+  EndIf
 EndSub
 
 
-Sub CollectSUNA(WhereAmI)  
+Sub CollectSUNA
   Timer_Value(5) = Timer(5,Sec,4)
   Timer(5,Sec,3) 'Timer 5 Stop and Reset
   If Timer_Value(5) < 12 Then
