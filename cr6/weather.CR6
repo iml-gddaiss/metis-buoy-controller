@@ -1,7 +1,7 @@
 Dim WindTAG As String
 Dim Wind_Dir_Vec(6) As Float : Alias Wind_Dir_Vec = Dir_Min_x, Dir_Min_y, Dir_Ave_x, Dir_Ave_y, Dir_Max_x, Dir_Max_y
 Dim Wind_Spd_Vec(6) As Float : Alias Wind_Spd_Vec = Spd_Min_x, Spd_Min_y, Spd_Ave_x, Spd_Ave_y, Spd_Max_x, Spd_Max_y
-Dim Buoy_Direction_Vector(2) As Float : Alias Buoy_Direction_Vector = Buoy_SOG_x, Buoy_SOG_y
+
 
 
 ' Weather manipulation with selection of better wind and compensation
@@ -31,33 +31,17 @@ DataTable (Weather,1,-1)
   Sample (1,Hail_Total,IEEE4)
   Sample (1,Hail_Duration,IEEE4)
   Sample (1,Hail_Intensity,IEEE4)
-  EndTable
-
-
-' Raw data from the instruments
-
-DataTable (Raw,1,-1)
-  DataInterval(0,0,Sec,10)
-  Sample (1,RawR1_Wind,String)
-  Sample (1,RawR2_Weather,String)
-  Sample (1,RawR3_Rain,String)
-  Sample (1,RawWMT700,String)
-  Sample (1,RawGPS,String)
-  Sample (1,RawPAR,String)  
-  Sample (1,RawWave,String)
-  Sample (1,RawPower,String)
-  Sample (1,RawSBE37,String)
-  Sample (1,RawTriplet,String)
-  Sample (1,RawSeafet,String)  
-  Sample (1,RawSUNADark,String)
-  Sample (1,RawSUNALight,String)
-  Sample (1,RawPCO2_Water,String)
-  Sample (1,RawPCO2_Air,String)
-  Sample (1,WinchMessage,String)
 EndTable
 
 
-Sub SelectWindInstrument
+Sub WeatherTable
+  Scan(1,Sec, 0, 1)
+  CallTable Weather
+  NextScan
+EndSub
+
+
+Sub SelectWeatherInstrument
   If WMT700(5) = CHR(00) OR WMT700(5) = 0 Then  ' If there's data from WMT700, taking them as Wind
     Wind() = WXT536_Wind()
     WindTAG = "[W536]"                    ' Otherwise take the WXT536
@@ -68,60 +52,87 @@ Sub SelectWindInstrument
 EndSub
 
 
-Sub ProcessWeather
-  Dim W                                    ' Small loop to correct the wind direction
-  For W = 1 To 3                           ' with the heading (which is already corrected with magnetic
-    Wind(W) = Wind(W)+Heading              ' declinaison from the GPS
-    If Wind(W) >=  360 Then                '
-      Wind(W) = Round(Wind(W) - 360,2)     '
-    ElseIf Wind(W) < 0 Then              '
-      Wind(W) = Round(Wind(W) + 360,2)   '
-    EndIf                              '
-  Next                                   '
+Sub WindCorrection(GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)
+  Dim X
+  if GPS_SOG_X <> "NAN" AND GPS_SOG_Y <> "NAN" ' TODO FIXME is this ok ?
+    For X = 1 To 3                           ' with the heading (which is already corrected with magnetic
+      Wind(X) = Wind(X)+Heading              ' declinaison from the GPS
+      If Wind(X) >=  360 Then                '
+        Wind(X) = Round(Wind(X) - 360,2)     '
+      ElseIf Wind(X) < 0 Then              '
+        Wind(X) = Round(Wind(X) + 360,2)   '
+      EndIf                              '
+    Next                                   '
 
-  'Wind = Wind_Dir_Min, Wind_Dir_Ave, Wind_Dir_Max, Wind_Spd_Min, Wind_Spd_Ave, Wind_Spd_Max
-  '             (1)          (2)          (3)            (4)          (5)            (6)
+    'Wind = Wind_Dir_Min, Wind_Dir_Ave, Wind_Dir_Max, Wind_Spd_Min, Wind_Spd_Ave, Wind_Spd_Max
+    '             (1)          (2)          (3)            (4)          (5)            (6)
 
-  'Finding speed vector (x,y) with direction from Wind_Direction_Average
-  'With compensation from Pitch/Roll and Buoy's displacement
-  Spd_Min_x = ((Wind(4)/COS(Pitch))*SIN(Wind(2))) + Buoy_SOG_x
-  Spd_Min_y = ((Wind(4)/COS(Roll))*COS(Wind(2))) + Buoy_SOG_y
-  Wind_Spd_Min = Round(SQR(PWR(Spd_Min_x,2)+PWR(Spd_Min_y,2)),2)
+    'Finding speed vector (x,y) with direction from Wind_Direction_Average
+    'With compensation from Pitch/Roll and Buoy's displacement
+    Spd_Min_x = ((Wind(4)/COS(Pitch))*SIN(Wind(2))) + GPS_SOG_X
+    Spd_Min_y = ((Wind(4)/COS(Roll))*COS(Wind(2))) + GPS_SOG_Y
+    Wind_Spd_Min = Round(SQR(PWR(Spd_Min_x,2)+PWR(Spd_Min_y,2)),2)
+    
+    Spd_Ave_x = ((Wind(5)/COS(Pitch))*SIN(Wind(2)))+ GPS_SOG_X
+    Spd_Ave_y = ((Wind(5)/COS(Roll))*COS(Wind(2)))+ GPS_SOG_Y
+    Wind_Spd_Ave = Round(SQR(PWR(Spd_Ave_x,2)+PWR(Spd_Ave_y,2)),2)
+    
+    Spd_Max_x = ((Wind(6)/COS(Pitch))*SIN(Wind(2)))+ GPS_SOG_X
+    Spd_Max_y = ((Wind(6)/COS(Roll))*COS(Wind(2)))+ GPS_SOG_Y
+    Wind_Spd_Max = Round(SQR(PWR(Spd_Max_x,2)+PWR(Spd_Max_y,2)),2)
+    
+    'Finding direction vector (x,y) with speed from Wind_Speed_Average
+    Dir_Min_x = ((Wind(5)/COS(Pitch))*SIN(Wind(1))) + GPS_SOG_X
+    Dir_Min_y = ((Wind(5)/COS(Roll))*COS(Wind(1))) + GPS_SOG_Y
+    
+    Dir_Ave_x = ((Wind(5)/COS(Pitch))*SIN(Wind(2))) + GPS_SOG_X
+    Dir_Ave_y = ((Wind(5)/COS(Roll))*COS(Wind(2))) + GPS_SOG_Y
+    
+    Dir_Max_x = ((Wind(5)/COS(Pitch))*SIN(Wind(3))) + GPS_SOG_X
+    Dir_Max_y = ((Wind(5)/COS(Roll))*COS(Wind(3))) + GPS_SOG_Y
+    
+    'Finding the final directions with tan-1(opp/adj) with absolute value, then
+    'putting correction for the appropriate quadrant
+    
+    
+    For X = 1 To 3
+      If Wind_Dir_Vec((X*2)-1) >= 0 AND Wind_Dir_Vec(X*2) >= 0 Then
+        Wind(X) = Round(ATN(Wind_Dir_Vec((X*2)-1) / Wind_Dir_Vec(X*2)),2)        
+      ElseIf Wind_Dir_Vec((X*2)-1) < 0 AND Wind_Dir_Vec(X*2) >= 0 Then
+        Wind(X) = Round(ATN(Wind_Spd_Vec(X*2) / ABS(Wind_Dir_Vec((X*2)-1))),2)+270          
+      ElseIf Wind_Dir_Vec((X*2)-1) < 0 AND Wind_Spd_Vec(X*2) < 0 Then
+        Wind(X) = Round(ATN(Wind_Dir_Vec((X*2)-1) / Wind_Dir_Vec(X*2)),2)+180           
+      ElseIf Wind_Dir_Vec((X*2)-1) >= 0 AND Wind_Dir_Vec(X*2) < 0 Then
+        Wind(X) = Round(ATN(ABS(Wind_Dir_Vec(X*2)) / Wind_Dir_Vec((X*2)-1)),2)+90
+      EndIf
+    Next
   
-  Spd_Ave_x = ((Wind(5)/COS(Pitch))*SIN(Wind(2)))+ Buoy_SOG_x
-  Spd_Ave_y = ((Wind(5)/COS(Roll))*COS(Wind(2)))+ Buoy_SOG_y
-  Wind_Spd_Ave = Round(SQR(PWR(Spd_Ave_x,2)+PWR(Spd_Ave_y,2)),2)
-  
-  Spd_Max_x = ((Wind(6)/COS(Pitch))*SIN(Wind(2)))+ Buoy_SOG_x
-  Spd_Max_y = ((Wind(6)/COS(Roll))*COS(Wind(2)))+ Buoy_SOG_y
-  Wind_Spd_Max = Round(SQR(PWR(Spd_Max_x,2)+PWR(Spd_Max_y,2)),2)
-  
-  'Finding direction vector (x,y) with speed from Wind_Speed_Average
-  Dir_Min_x = ((Wind(5)/COS(Pitch))*SIN(Wind(1))) + Buoy_SOG_x
-  Dir_Min_y = ((Wind(5)/COS(Roll))*COS(Wind(1))) + Buoy_SOG_y
-  
-  Dir_Ave_x = ((Wind(5)/COS(Pitch))*SIN(Wind(2))) + Buoy_SOG_x
-  Dir_Ave_y = ((Wind(5)/COS(Roll))*COS(Wind(2))) + Buoy_SOG_y
-  
-  Dir_Max_x = ((Wind(5)/COS(Pitch))*SIN(Wind(3))) + Buoy_SOG_x
-  Dir_Max_y = ((Wind(5)/COS(Roll))*COS(Wind(3))) + Buoy_SOG_y
-  
-  'Finding the final directions with tan-1(opp/adj) with absolute value, then
-  'putting correction for the appropriate quadrant
-  Dim A
-  For A = 1 To 3
-    If Wind_Dir_Vec((A*2)-1) >= 0 AND Wind_Dir_Vec(A*2) >= 0 Then
-      Wind(A) = Round(ATN(Wind_Dir_Vec((A*2)-1) / Wind_Dir_Vec(A*2)),2)        
-    ElseIf Wind_Dir_Vec((A*2)-1) < 0 AND Wind_Dir_Vec(A*2) >= 0 Then
-      Wind(A) = Round(ATN(Wind_Spd_Vec(A*2) / ABS(Wind_Dir_Vec((A*2)-1))),2)+270          
-    ElseIf Wind_Dir_Vec((A*2)-1) < 0 AND Wind_Spd_Vec(A*2) < 0 Then
-      Wind(A) = Round(ATN(Wind_Dir_Vec((A*2)-1) / Wind_Dir_Vec(A*2)),2)+180           
-    ElseIf Wind_Dir_Vec((A*2)-1) >= 0 AND Wind_Dir_Vec(A*2) < 0 Then
-      Wind(A) = Round(ATN(ABS(Wind_Dir_Vec(A*2)) / Wind_Dir_Vec((A*2)-1)),2)+90
-    EndIf
-  Next
+  EndIf
+EndSub
 
-  Scan(1,Sec, 0, 1)
-  CallTable Weather
-  NextScan
+Function WindTagString as String
+  WindTagString = WindTAG & Wind_Dir_Min & "," & Wind_Dir_Ave & "," & Wind_Dir_Max & "," & Wind_Spd_Min & "," & Wind_Spd_Ave & "," & Wind_Spd_Max
+EndFunction
+
+
+Function ATMSTagString as String
+  ATMSTagString = "[ATMS]" & Air_Temp & "," & Air_Humidity & "," & Air_Pressure & "," & PAR & "," & Rain_Total & "," & Rain_Duration & "," & Rain_Intensity
+EndFunction
+
+
+
+Sub CollectWeather(GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)
+  If (With_WMT700 <> 0 OR With_WXT536 <> 0) AND With_GPS <> 0 AND Pitch <> "NAN" AND Roll <> "NAN" Then 
+    WhereAmI = "Processing Weather"
+    Call WindCorrection(GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)
+    
+    Call WeatherTable
+
+    TAGString = WindTagString()
+    Call WriteTagString '------------------------------------- Defined in main.cr6
+    
+    TAGString = ATMSTagString()
+    Call WriteTagString '------------------------------------- Defined in main.cr6
+    WhereAmI = "Finish Weather"
+  EndIf
 EndSub

@@ -144,6 +144,28 @@ Include "CPU:winch.cr6"                     '#M5 Winch
 'Wind compensation by Compass and GPS
 Include "CPU:weather.cr6"                   ' Weather variables  
 
+' Raw data from the instruments
+
+DataTable (Raw,1,-1)
+  DataInterval(0,0,Sec,10)
+  Sample (1,RawR1_Wind,String)
+  Sample (1,RawR2_Weather,String)
+  Sample (1,RawR3_Rain,String)
+  Sample (1,RawWMT700,String)
+  Sample (1,RawGPS,String)
+  Sample (1,RawPAR,String)  
+  Sample (1,RawWave,String)
+  Sample (1,RawPower,String)
+  Sample (1,RawSBE37,String)
+  Sample (1,RawTriplet,String)
+  Sample (1,RawSeafet,String)  
+  Sample (1,RawSUNADark,String)
+  Sample (1,RawSUNALight,String)
+  Sample (1,RawPCO2_Water,String)
+  Sample (1,RawPCO2_Air,String)
+  Sample (1,WinchMessage,String)
+EndTable
+
 
 Function InitTagString(UTC_Date_Hyphen, UTC_Time_DDot, Latitude, Longitude, Heading, Pitch, Roll, COG, SOG, Water_Detection_Main)
   ' Buoy TAG with name, GPS, Compass, Flow & WaterDetection
@@ -277,7 +299,7 @@ Sub SamplePCO2
     'Watchdog if there's no data in 1Hour (if power disconnected during sampling)
                         'sec
     If (PCO2_Last_Sample + 3600) < Buoy_TimeStamp_1990 Then
-      Call EmptyPCO2 '  Change le nom #jerome July 2023
+      Call EmptyPCO2Table '  Change le nom #jerome July 2023
     Else
       Call CollectPCO2
       If RawPCO2_Water <> "" AND RawPCO2_Air <> "" Then 'TODO FIXME ME: Vérifier avec Anthony. C'est la seule place qui n'envoie pas le tags en cas de NA data ? #jerome July 2023
@@ -416,41 +438,15 @@ BeginProg
   Call CloseTower485
 
   'Creating Weather file if Wind, GPS & Compass ---------------------------------   
-  WhereAmI = "Processing Weather"
-  Call SelectWindInstrument   
+  
+  Call SelectWeatherInstrument   
       
-  If (With_WMT700 <> 0 OR With_WXT536 <> 0) AND With_GPS <> 0 AND Pitch <> "NAN" AND Roll <> "NAN" Then 
-    Call ProcessWeather
-    
-    TAGString = WindTAG & Wind_Dir_Min & "," & Wind_Dir_Ave & "," & Wind_Dir_Max & "," & Wind_Spd_Min & "," & Wind_Spd_Ave & "," & Wind_Spd_Max
-    Call WriteTagString
-    
-    TAGString = "[ATMS]" & Air_Temp & "," & Air_Humidity & "," & Air_Pressure & "," & PAR & "," & Rain_Total & "," & Rain_Duration & "," & Rain_Intensity
-    Call WriteTagString
-  EndIf 'Creating weather file
-  WhereAmI = "Finish Weather"
-      
+  Call CollectWeather(GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)     
 
-  'Wave -------------------------------------------------------------------------
-  RawWave = ""
-  WhereAmI = "Collect Wave"
-  If With_Wave <> 0 Then
-    Call CollectWave    
-    TAGString = "[WAVE]" & Wave_Date & "," & Wave_Time & "," & Wave_Period & "," & Wave_Hm0 & "," & Wave_H13 & "," & Wave_Hmax
-    FileWrite(ToTransmit,TAGString,0)
-    FileWrite(TAGFile,TAGString,0)
-  EndIf
-  WhereAmI = "Finish Wave"
-       
+  Call CollectWave           
 
-  'ADCP -------------------------------------------------------------------------
-  If With_ADCP <> 0 Then
-    Call SampleADCP
-    TAGString = ADCPTagString(ADCPDate, ADCPTime, ADCPDir, ADCPMag)
-    Call WriteTagString  
-  EndIf
-      
-
+  Call CollectADCP
+  
   'PCO2 -------------------------------------------------------------------------
   If With_PCO2 <> 0 AND (Salinity > 10 OR Bypass_Salinity = True) Then 'Security for PCO2 pump if not in water
     Call SamplePCO2

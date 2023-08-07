@@ -24,28 +24,47 @@ DataTable(FileWave,1,-1)
   Sample (1,Wave_Hm0,IEEE4)
   Sample (1,Wave_H13,IEEE4)
   Sample (1,Wave_Hmax,IEEE4)
- EndTable
+EndTable
 
-'### Sampling ###
-Sub CollectWave
-  Dim X
-  Wave() = ""
-  SerialOpen(SerialWave,19200,3,600,200)
-  For X = 1 To 3 Step 1
-    SerialOut(SerialWave,CHR(13)&CHR(10),"CMD >>",2,200)
-    SerialOut(SerialWave,"slt "&Buoy_Name&CHR(13)&CHR(10),",",1,100)
-    SerialIn(RawWave,SerialWave,50,CHR(13),60)
-    SplitStr(Wave(),RawWave,",",6,5)
-    If Len(RawWave) > 38 AND Wave(6) <> "" Then
-      ExitFor
-    EndIf        
-  Next X
-  
-  SerialClose(SerialWave)
+
+Sub WaveTable
   Scan(1,Sec, 0, 1)
   CallTable FileWave
   NextScan
 
+EndSub
+
+Function WaveTagString  As String
+  WaveTagString = "[WAVE]" & Wave_Date & "," & Wave_Time & "," & Wave_Period & "," & Wave_Hm0 & "," & Wave_H13 & "," & Wave_Hmax
+EndFunction
+
+'### Sampling ###
+Sub CollectWave(TAGString)
+  Dim X
+  If With_Wave <> 0 Then
+    RawWave = ""
+    WhereAmI = "Collect Wave"
+    Wave() = ""
+    SerialOpen(SerialWave,19200,3,600,200)
+    For X = 1 To 3 Step 1
+      SerialOut(SerialWave,CHR(13)&CHR(10),"CMD >>",2,200)
+      SerialOut(SerialWave,"slt "&Buoy_Name&CHR(13)&CHR(10),",",1,100)
+      SerialIn(RawWave,SerialWave,50,CHR(13),60)
+      SplitStr(Wave(),RawWave,",",6,5)
+      If Len(RawWave) > 38 AND Wave(6) <> "" Then
+        ExitFor
+      EndIf        
+    Next X
+    
+    SerialClose(SerialWave)
+
+    Call WaveTable
+    
+    TAGString = WaveTagString()
+    Call WriteTagString '------------------------------------- Defined in main.cr6
+
+    WhereAmI = "Finish Wave"
+  EndIf
 EndSub
 
 

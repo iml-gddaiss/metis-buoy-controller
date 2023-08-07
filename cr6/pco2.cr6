@@ -67,29 +67,7 @@ DataTable(FilePCO2A,1,-1)
 EndTable
 
 
-'### Sampling ###
-
-Sub StartPCO2
-  RawPCO2 = ""
-  RawPCO2_Water = ""
-  RawPCO2_Air = ""
-  
-  SerialOpen(SerialPCO2,19200,3,20,500)
-  Delay(1,1,Sec)
-  SerialFlush(SerialPCO2)
-  SerialOut(SerialPCO2,CHR(27),"",2,50)
-  Delay (1,500,mSec)
-  SerialOut(SerialPCO2,CHR(27),"",1,0)
-  Delay (1,500,mSec)
-  SerialOut(SerialPCO2,"1","",1,0)
-  Delay (1,500,mSec)
-  SerialOut(SerialPCO2,"s","",1,0)
-  SerialFlush(SerialPCO2)
-  PCO2_Sampling = true
-  PCO2_Last_Sample = Public.TimeStamp(1)
-EndSub
-
-Sub EmptyPCO2
+Sub EmptyPCO2Table
   Scan(1,Sec, 0, 1)
   CallTable FilePCO2W
   CallTable FilePCO2A
@@ -112,6 +90,31 @@ Sub PCO2WTable
   CallTable FilePCO2W
   NextScan
 EndSub
+
+
+'### Sampling ###
+
+Sub StartPCO2
+  RawPCO2 = ""
+  RawPCO2_Water = ""
+  RawPCO2_Air = ""
+  
+  SerialOpen(SerialPCO2,19200,3,20,500)
+  Delay(1,1,Sec)
+  SerialFlush(SerialPCO2)
+  SerialOut(SerialPCO2,CHR(27),"",2,50)
+  Delay (1,500,mSec)
+  SerialOut(SerialPCO2,CHR(27),"",1,0)
+  Delay (1,500,mSec)
+  SerialOut(SerialPCO2,"1","",1,0)
+  Delay (1,500,mSec)
+  SerialOut(SerialPCO2,"s","",1,0)
+  SerialFlush(SerialPCO2)
+  PCO2_Sampling = true
+  PCO2_Last_Sample = Public.TimeStamp(1)
+EndSub
+
+
 
 
 Sub CollectPCO2

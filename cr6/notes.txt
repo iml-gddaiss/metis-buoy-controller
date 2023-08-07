@@ -9,3 +9,7 @@
 .. Nothing done with the OCR strings ?
 . Seafet
 .. Est-ce que recevoir la PHPROTagString serait pertinent même en cas de NAN pour voir qu'il y a un erreur ?
+. Weather-GPS
+.. Buoy_DIrection_Vector not assign anywhere ???? But used (FIXED in GPS)
+.. Are the units fine ? (knots)
+.. TODO Add flag for processed or not ? Wind correction
