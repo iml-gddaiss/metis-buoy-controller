@@ -35,6 +35,7 @@ Sub StartPAR
 EndSub
 
 Sub CollectPAR
+  WhereAmI = "Collect PAR"
   If With_PAR <> 0 Then
     SerialIn(RawPAR,SerialPAR,10,CHR(13),60)
     SplitStr(PARSensor(),RawPAR,",",5,4)

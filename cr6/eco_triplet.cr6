@@ -76,5 +76,6 @@ Sub CollectTriplet(TAGString)
     Call TripleTable
     
     TAGString = TripletTagString()
+    Call WriteTagString '------------------------------------- Defined in main.cr6
   EndIf
 EndSub

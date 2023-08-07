@@ -92,6 +92,7 @@ Sub CollectSBE37(TAGString)
     Call SBE37Table
 
     TAGString = SBE37TagString()
+    Call WriteTagString '------------------------------------- Defined in main.cr6
   EndIf
   WhereAmI = "SBE37 finished"
 EndSub

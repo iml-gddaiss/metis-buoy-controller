@@ -78,6 +78,8 @@ Sub SamplePowerController(TAGString)
     Call PowerTable
 
     TAGString = PowerTagString()
+    Call WriteTagString '------------------------------------- Defined in main.cr6
+  
   EndIf
 EndSub
 

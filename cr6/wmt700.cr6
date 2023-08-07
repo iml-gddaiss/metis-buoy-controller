@@ -36,10 +36,12 @@ EndSub
 
 '### Sampling ###
 Sub StartWMT700
+  Dim WMT700Timer
+  
   If With_WMT700 <> 0 Then
-    Tower_Timer = Timer(7,Sec,4) ' mettre un timer stop
-    If Tower_Timer < 8 Then
-      Delay(1,8-Tower_Timer,Sec)
+    WMT700Timer = Timer(7,Sec,4) ' mettre un timer stop
+    If WMT700Timer < 8 Then
+      Delay(1,8-WMT700Timer,Sec)
     EndIf
     SerialOut(SerialTower,"$Ameas,1"&CHR(10),"",1,0)
   EndIf
@@ -48,9 +50,10 @@ EndSub
 
 Sub CollectWMT700
   If With_WMT700 <> 0 Then
+    WhereAmI = "Collect WMT700"
 
-    SerialOut(SerialTower,"$Apoll,1"&CHR(13)&CHR(10),"Sx",1,100)             '
-    SerialInRecord(SerialTower,RawWMT700,&H574D,0,&H0D0A,NBR,101)         '  poll,1 is the WMT700 wind, Sx is the last data sent
+    SerialOut(SerialTower,"$Apoll,1"&CHR(13)&CHR(10),"Sx",1,100) 
+    SerialInRecord(SerialTower,RawWMT700,&H574D,0,&H0D0A,NBR,101)  '  poll,1 is the WMT700 wind, Sx is the last data sent
     SerialOut(SerialTower,"$Asleep"&CHR(13)&CHR(10),"",1,0)
 
     RawWMT700 = Mid(RawWMT700,7,80)    ' Removing the 6 first digit to pass the numerical value for the type of SplitStr
@@ -62,7 +65,8 @@ Sub CollectWMT700
     EndIf
     
     Call WMT700Table
-  
+
+    WhereAmI = "Finish WMT700"
   EndIf
 EndSub
 

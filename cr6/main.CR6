@@ -106,6 +106,21 @@ Public Send_Break_to_ADCP = false
 Const WD_Channel = U1 'Voltage reading
 Public Water_Detection_Main 
 
+
+Sub OpenTAGSFiles(UTC_Date_Short, UTC_Time_Short)
+  ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & UTC_Date_Short & UTC_Time_Short & ".dat","a",-1)
+  TAGFile = FileOpen("CRD:" & Buoy_Name & "_TAGFile.txt","a",-1)
+EndSub
+
+
+Sub WriteTagString 'Use in imported CR6 Files
+  FileWrite(TAGFile,TAGString & CHR(10),0)
+  FileWrite(ToTransmit,TAGString & CHR(10),0)
+EndSub
+
+
+
+
 '###### DECLARING INSUTRMENTS #####
 ' Instrument serial a declered in their respective cr6 files.
 Include "CPU:wmt700.cr6"                    '#T1 Declare WMT700
@@ -129,21 +144,12 @@ Include "CPU:winch.cr6"                     '#M5 Winch
 'Wind compensation by Compass and GPS
 Include "CPU:weather.cr6"                   ' Weather variables  
 
+
 Function InitTagString(UTC_Date_Hyphen, UTC_Time_DDot, Latitude, Longitude, Heading, Pitch, Roll, COG, SOG, Water_Detection_Main)
   ' Buoy TAG with name, GPS, Compass, Flow & WaterDetection
   InitTagString = "[INIT]" & Buoy_Name & "," & UTC_Date_Hyphen & "," & UTC_Time_DDot & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
 EndFunction
 
-Sub OpenTAGSFiles(UTC_Date_Short, UTC_Time_Short)
-  ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & UTC_Date_Short & UTC_Time_Short & ".dat","a",-1)
-  TAGFile = FileOpen("CRD:" & Buoy_Name & "_TAGFile.txt","a",-1)
-EndSub
-
-
-Sub WriteTagString
-  FileWrite(TAGFile,TAGString & CHR(10),0)
-  FileWrite(ToTransmit,TAGString & CHR(10),0)
-EndSub
 
 
 Sub CloseCR6SerialPorts
@@ -201,6 +207,16 @@ Sub StartTower485
 EndSub
 
 
+Sub CloseTower485
+  If With_Tower_485 <> 0 Then
+    SerialClose(SerialTower)
+    SW12(SW12_1,0)
+    Tower_Switch = False
+    WhereAmI = "Close Tower"
+  EndIf	  
+EndSub
+
+
 Sub CheckWaterDetection
   If With_WD_Main <> 0 Then
     WhereAmI = "Check Water Detection"
@@ -224,17 +240,26 @@ EndSub
 
 
 Sub CheckWellPump
-  Well_Timer = Timer(3,Sec,4)
-  Timer(3,Sec,3) 'Timer #3 Stop and Reset
-  If Well_Timer < 30 Then
-    Delay(1,30-Well_Timer,Sec)
+  Dim WellTimer
+  
+  If Well_Switch = True AND (With_Well_Pump <> 0) Then
+    WhereAmI = "See if pump is running 30sec"
+    WellTimer = Timer(3,Sec,4)
+    Timer(3,Sec,3) 'Timer #3 Stop and Reset
+    If WellTimer < 30 Then
+      Delay(1,30-WellTimer,Sec)
+    EndIf
+    WhereAmI = "Pump ran 30sec"
   EndIf
 EndSub
 
 
 Sub CloseWellPump
-  SW12(SW12_2,0)
-  Well_Switch = False
+  WhereAmI = "Close pump"
+  If Well_Switch = True Then
+    SW12(SW12_2,0)
+    Well_Switch = False
+  EndIf
 EndSub
 
 
@@ -353,51 +378,22 @@ BeginProg
   Call WriteTagString
     
   Call SamplePowerController(TAGString)
-  Call WriteTagString
 
   Call CollectTriplet(TAGString)
-  Call WriteTagString
      
-  '------------------------------------------------------------------------------
-  'Pumped sensor (SBE37, Seafet & SUNA) -----------------------------------------
-  ' If Well_Switch = True AND (With_SBE37 + With_Seafet + With_SUNA) <> 0 Then # Jerome July 2023
-  If Well_Switch = True AND (With_Well_Pump <> 0) Then
-    WhereAmI = "See if pump is running 30sec"
-    Call CheckWellPump 
-    WhereAmI = "Pump ran 30sec"
-  EndIf 
-  
+  Call CheckWellPump   'Pumped sensor (SBE37, Seafet & SUNA) 
+
   Call StartSUNA
   
   Call SampleOCRs(Well_Switch)  
   
   Call CollectSBE37(TAGString)
-  Call WriteTagString
   
-    
-  'Seafet (W2) --------------------------------------------------------------------
-  WhereAmI = "Sample Seafet"
-  If With_Seafet <> 0 Then
-    Call SampleSeafet(TAGString)
-    Call WriteTagString
-  EndIf 'With_Seafet
-  WhereAmI = "End Seafet"
+  Call SampleSeafet(TAGString, Water_Temp, Salinity)
 
+  Call CollectSUNA(TAGString)
 
-  'SUNA (W4) collect data ------------------------------------------------------------
-  WhereAmI = "Collecting SUNA"
-  If With_SUNA <> 0 Then
-    Call CollectSUNA(WhereAmI)
-    TAGString = "[SUNA]" & Dark_Nitrate & "," & Light_Nitrate & "," & Dark_Nitrogen_in_Nitrate & "," & Light_Nitrogen_in_Nitrate & "," & Dark_Bromide & "," & Light_Bromide
-    Call WriteTagString
-  EndIf
-  WhereAmI = "End SUNA"
-
-  'Pumped sensor are done, close pump -------------------------------------------
-  WhereAmI = "Close pump"
-  If Well_Switch = True Then
-    Call CloseWellPump
-  EndIf
+  Call CloseWellPump 'Pumped sensor are done, close pump
     
   'PAR and Delay for WMT700 and WXT536 ------------------------------------------
   WhereAmI = "See if weather is done"
@@ -411,34 +407,14 @@ BeginProg
     Timer(1,Sec,3) 'Stop and reset on Timer#1
   EndIf
     
-  WhereAmI = "Collect PAR"
-  If With_PAR <> 0 Then
-    Call CollectPAR
-  EndIf
-    
+  Call CollectPAR
 
-  'WMT700 and WXT536 Polling Sample--- ------------------------------------------
-  WhereAmI = "Collect WXT536"
-  If With_WXT536 <> 0 Then
-    Call CollectWXT536
-  EndIf
-  WhereAmI = "Finish WXT536"
-
-  WhereAmI = "Collect WMT700"                                                                     '      
-  If With_WMT700 <> 0 Then    
-    Call CollectWMT700
-  EndIf
-  WhereAmI = "Finish WMT700"
-    
-  'Closing Tower's Serial -----------
-  If With_Tower_485 <> 0 Then
-    SerialClose(SerialTower)
-    SW12(SW12_1,0)
-    Tower_Switch = False
-    WhereAmI = "Close Tower"
-  EndIf	  
-
+  Call CollectWXT536
   
+  Call CollectWMT700
+  
+  Call CloseTower485
+
   'Creating Weather file if Wind, GPS & Compass ---------------------------------   
   WhereAmI = "Processing Weather"
   Call SelectWindInstrument   
