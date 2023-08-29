@@ -121,7 +121,7 @@ EndFunction
 
 
 
-Sub CollectWeather(GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)
+Sub CollectWeather(TAGString, GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)
   If (With_WMT700 <> 0 OR With_WXT536 <> 0) AND With_GPS <> 0 AND Pitch <> "NAN" AND Roll <> "NAN" Then 
     WhereAmI = "Processing Weather"
     Call WindCorrection(GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)

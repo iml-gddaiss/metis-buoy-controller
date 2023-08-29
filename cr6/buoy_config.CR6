@@ -31,4 +31,5 @@ ConstTable (Buoy_Config,0)
     Const Disable_Pump = 0 
     Const Seafet_Auto_Correction = -1 
 
+    Const With_Logging = 1
 EndConstTable

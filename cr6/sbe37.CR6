@@ -121,7 +121,7 @@ EndSub
 '   WhereAmI = "SBE37 finished"
 ' EndSub
 
-Sub CollectSBE37
+Sub CollectSBE37(TAGString)
   Dim X
   If With_SBE37 <> 0 Then
     SerialFlush(SerialSBE37)
@@ -148,7 +148,10 @@ Sub CollectSBE37
 
     Call SBE37Table
   
+    TAGString = SBE37TagString()
+    Call WriteTagString '------------------------------------- Defined in main.cr6
   EndIf
+  WhereAmI = "SBE37 finished"
 EndSub
 
 

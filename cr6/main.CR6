@@ -443,11 +443,11 @@ BeginProg
   
   Call SelectWeatherInstrument   
       
-  Call CollectWeather(GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)     
+  Call CollectWeather(TAGString, GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)     
 
-  Call CollectWave           
+  Call CollectWave(TAGString)           
 
-  Call CollectADCP
+  Call CollectADCP(TAGString)
   
   'PCO2 -------------------------------------------------------------------------
   If With_PCO2 <> 0 AND (Salinity > 10 OR Bypass_Salinity = True) Then 'Security for PCO2 pump if not in water
