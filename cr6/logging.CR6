@@ -1,9 +1,7 @@
 Sub logging(log_message)
-    public out_string as String * 100
     if With_Logging <> 0 Then
-        out_string = "["& Public.Timestamp(4,1)"] "&log_message&CHR(10)
-        SerialOpen(SerialLogging, 9600,3,0,3000)
-        SerialOut(SerialLogging,out_string,"",0,100,0)
-        SerialClose(SerialLogging)
+        SerialOpen(ComRS232, 9600,3,0,3000)
+        SerialOut(ComRS232,log_message&CHR(10),"",0,100,0)
+        SerialClose(ComRS232)
     Endif
 EndSub

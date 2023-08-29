@@ -1,36 +1,33 @@
-ConstTable (Serials,0)
-    Const SerialLogging = CPI 'RS232
 
-    Const SerialADCP = 12 'U3-U4
+Const SerialADCP = 12 'U3-U4
 
-    Const SerialWinch = 13 'U5-U6
+Const SerialWinch = 13 'U5-U6
 
-    Const SerialGPS = 16 'U11-U12 (trouble with GPS on SDM)
+Const SerialGPS = 16 'U11-U12 (trouble with GPS on SDM)
 
-    '## Address 4 ?##
-    Const SerialTower = 32 'RS485 As WMT700(A), WXT536(2) & Compass(1)
-    Const SerialPAR = 33 'RS232
-    Const SerialOCRI = 34
-    ' 35
+'## Address 4 ?##
+Const SerialTower = 32 'RS485 As WMT700(A), WXT536(2) & Compass(1)
+Const SerialPAR = 33 'RS232
+Const SerialOCRI = 34
+' 35
 
-    '## Address 4 ##
-    Const SerialSBE37 = 36 'RS232
-    Const SerialTriplet = 37 'RS232
-    Const SerialSeafet = 38 'RS232
-    Const SerialOCRR = 39 'RS232
-    '## -------  ##
+'## Address 4 ##
+Const SerialSBE37 = 36 'RS232
+Const SerialTriplet = 37 'RS232
+Const SerialSeafet = 38 'RS232
+Const SerialOCRR = 39 'RS232
+'## -------  ##
 
-    '## Address 8 ##
-    Const SerialPCO2 = 40 'RS232
-    Const SerialSUNA = 41 'RS232
-    ' 42
-    ' 43
-    '## -------  ##
+'## Address 8 ##
+Const SerialPCO2 = 40 'RS232
+Const SerialSUNA = 41 'RS232
+' 42
+' 43
+'## -------  ##
 
-    '## Address 8 ##
-    ' 44
-    Const SerialPower = 45 'RS485
-    Const SerialWave = 46 'RS232
-    ' 47 Does Not Exist
-    '## -------  ##
-EndConstTable
+'## Address 8 ##
+' 44
+Const SerialPower = 45 'RS485
+Const SerialWave = 46 'RS232
+' 47 Does Not Exist
+'## -------  ##
