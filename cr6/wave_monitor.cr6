@@ -1,6 +1,6 @@
 'Wave related code
 '### Serial Port ###
-Const SerialWave = 46 'RS232
+' Const SerialWave = 46 'RS232
 
 
 '### Data Variables ###

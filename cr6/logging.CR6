@@ -1,0 +1,9 @@
+Sub logging(log_message)
+    public out_string as String * 100
+    if With_logging <> 0 Then
+        out_string = "["& Public.Timestamp(4,1)"] "&log_message&CHR(10)
+        SerialOpen(SerialLogging, 9600,3,0,3000)
+        SerialOut(SerialLogging,out_string,"",0,100,0)
+        SerialClose(SerialLogging)
+    Endif
+EndSub

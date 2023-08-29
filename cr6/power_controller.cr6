@@ -1,6 +1,6 @@
 'Power Controller related code
 '### Serial Port ###
-Const SerialPower = 45 'RS485
+' Const SerialPower = 45 'RS485
 
 
 '### Data Variables ###

@@ -1,6 +1,6 @@
 ' GPS related code
 '### Serial Port ###
-Const SerialGPS = 16 'U11-U12 (trouble with GPS on SDM)
+' Const SerialGPS = 16 'U11-U12 (trouble with GPS on SDM)
 
 
 '### Data Variables ###

@@ -1,6 +1,6 @@
 'Winch related code
 '### Serial Port ###
-Const SerialWinch = 13 'U5-U6
+' Const SerialWinch = 13 'U5-U6
 
 
 '### Data Variables ###

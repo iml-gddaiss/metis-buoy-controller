@@ -1,6 +1,6 @@
 ' adcp related code
 '### Serial Port ###
-Const SerialADCP = 12 'U3-U4
+' Const SerialADCP = 12 'U3-U4
 
 
 '### Data Variables ###

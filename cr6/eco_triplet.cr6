@@ -1,4 +1,4 @@
-Const SerialTriplet = 37 'RS232
+' Const SerialTriplet = 37 'RS232
 
 Dim RawTriplet As String * 200
 

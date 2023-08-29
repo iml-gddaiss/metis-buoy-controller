@@ -1,6 +1,6 @@
 'Suna related code
 '### Serial Port ###
-Const SerialSUNA = 41 'RS232
+' Const SerialSUNA = 41 'RS232
 
 
 '### Data Variables ###

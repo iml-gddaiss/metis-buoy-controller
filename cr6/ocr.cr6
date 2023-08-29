@@ -1,8 +1,8 @@
 'OCR related code
 '### Serial Port ###
 
-Const SerialOCRI = 34
-Const SerialOCRR = 39 'RS232
+' Const SerialOCRI = 34
+' Const SerialOCRR = 39 'RS232
 
 
 

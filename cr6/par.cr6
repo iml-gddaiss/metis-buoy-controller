@@ -1,6 +1,6 @@
 'PAR related code
 '### Serial Port ###
-Const SerialPAR = 33 'RS232
+' Const SerialPAR = 33 'RS232
 
 
 '### Data Variables ###

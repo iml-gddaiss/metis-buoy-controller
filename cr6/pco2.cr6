@@ -1,6 +1,6 @@
 'PCO2 related code
 '### Serial Port ###
-Const SerialPCO2 = 40 'RS232
+' Const SerialPCO2 = 40 'RS232
 
 
 '### Data Variables ###

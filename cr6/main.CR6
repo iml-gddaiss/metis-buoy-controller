@@ -86,10 +86,12 @@ Dim WinchFile As Long
 Dim ToTransmit As Long
 
 
-Const SerialTower = 32 'RS485 As WMT700(A), WXT536(2) & Compass(1)
+' Const SerialTower = 32 'RS485 As WMT700(A), WXT536(2) & Compass(1)
 
 'Instruments state
 Include "CPU:buoy_config.cr6"                     '#   Declare Buoy Config
+Include "CPU:serials.cr6"
+Include "CPU:logging.cr6"                         '#   Logging module
 
 ' With_Tower_485 : Tower 485 com port TODO
 Const With_Tower_485 = With_WXT536 + With_WMT700 + With_Compass       

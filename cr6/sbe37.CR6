@@ -1,6 +1,6 @@
 ' SBE37 related code
 '### Serial Port ###
-Const SerialSBE37 = 36 'RS232
+' Const SerialSBE37 = 36 'RS232
 
 '### Data Variables ###
 Dim RawSBE37_SalinityTest As String * 40
@@ -37,24 +37,48 @@ Function SBE37TagString as String
 EndFunction
 
 
+' '### Sampling ###
+' Sub StartSBE37
+'   'CTD SBE37 (W1) in salt water to start pump -----------------------------------
+'   'Rewrite security so it won't try to sample the CTD if Bypass_Salinity or Disable_Pump are True
+'   ' REVIEW THIS TODO
+'   Dim X
+
+'   WhereAmI = "Starting SBE 37"
+'   If With_SBE37 <> 0 Then
+'     RawSBE37_SalinityTest = ""
+'     SBE37() = 0
+'     SerialOpen(SerialSBE37,19200,3,20,50) 'CTD string is around 35 char.
+'     For X = 1 To 3 Step 1
+'       SerialOut(SerialSBE37,CHR(13),"S>",1,50)
+'       SerialOut(SerialSBE37,"ts"&CHR(13)," ",1,400)
+'       SerialIn(RawSBE37_SalinityTest,SerialSBE37,300,CHR(83),40) 
+'       SplitStr(SBE37,RawSBE37_SalinityTest,",",4,0)
+'       If Salinity > 10 AND Len(RawSBE37_SalinityTest) = 39 Then
+'         ExitFor
+'       EndIf
+'     Next X
+'   EndIf  
+' EndSub
+
 '### Sampling ###
 Sub StartSBE37
   'CTD SBE37 (W1) in salt water to start pump -----------------------------------
   'Rewrite security so it won't try to sample the CTD if Bypass_Salinity or Disable_Pump are True
   ' REVIEW THIS TODO
   Dim X
-
-  WhereAmI = "Starting SBE 37"
   If With_SBE37 <> 0 Then
     RawSBE37_SalinityTest = ""
     SBE37() = 0
     SerialOpen(SerialSBE37,19200,3,20,50) 'CTD string is around 35 char.
     For X = 1 To 3 Step 1
       SerialOut(SerialSBE37,CHR(13),"S>",1,50)
-      SerialOut(SerialSBE37,"ts"&CHR(13)," ",1,400)
-      SerialIn(RawSBE37_SalinityTest,SerialSBE37,300,CHR(83),40) 
+      SerialOut(SerialSBE37,"ts"&CHR(13),CHR(10),1,50)
+      SerialIn(RawSBE37_SalinityTest,SerialSBE37,400,13,120) 
       SplitStr(SBE37,RawSBE37_SalinityTest,",",4,0)
-      If Salinity > 10 AND Len(RawSBE37_SalinityTest) = 39 Then
+      SerialOut(SerialSBE37,Len(RawSBE37_SalinityTest),CHR(10),1,50)
+      'If Salinity > 10 AND Len(RawSBE37_SalinityTest) = 39 Then
+      If Len(RawSBE37_SalinityTest) > 0 Then
         ExitFor
       EndIf
     Next X
@@ -62,10 +86,43 @@ Sub StartSBE37
 EndSub
 
 
-Sub CollectSBE37(TAGString)
-  Dim X
+' Sub CollectSBE37(TAGString)
+'   Dim X
   
-  WhereAmI = "Collecting SBE37"
+'   WhereAmI = "Collecting SBE37"
+'   If With_SBE37 <> 0 Then
+'     SerialFlush(SerialSBE37)
+'     For X = 1 To 3 Step 1
+'       RawSBE37 = ""
+'       SBE37() = ""
+'       SerialOut(SerialSBE37,CHR(13),"S>",1,50)
+      
+'       If X = 1 Then
+'         SerialOut(SerialSBE37,"tss"&CHR(13)," ",1,400)
+'       Else
+'         SerialOut(SerialSBE37,"sl"&CHR(13)," ",1,400)
+'       EndIf
+      
+'       SerialIn(RawSBE37,SerialSBE37,400,83,60)
+'       SplitStr(SBE37,RawSBE37,",",4,0)
+'       If Len(RawSBE37) = 39 AND SBE37(4) <> "" Then
+'         ExitFor
+'       EndIf
+    
+'     Next X
+      
+'     SerialClose(SerialSBE37)
+
+'     Call SBE37Table
+
+'     TAGString = SBE37TagString()
+'     Call WriteTagString '------------------------------------- Defined in main.cr6
+'   EndIf
+'   WhereAmI = "SBE37 finished"
+' EndSub
+
+Sub CollectSBE37
+  Dim X
   If With_SBE37 <> 0 Then
     SerialFlush(SerialSBE37)
     For X = 1 To 3 Step 1
@@ -74,14 +131,14 @@ Sub CollectSBE37(TAGString)
       SerialOut(SerialSBE37,CHR(13),"S>",1,50)
       
       If X = 1 Then
-        SerialOut(SerialSBE37,"tss"&CHR(13)," ",1,400)
+        SerialOut(SerialSBE37,"tss"&CHR(13),CHR(10),1,50)
       Else
-        SerialOut(SerialSBE37,"sl"&CHR(13)," ",1,400)
+        SerialOut(SerialSBE37,"sl"&CHR(13),CHR(10),1,50)
       EndIf
       
-      SerialIn(RawSBE37,SerialSBE37,400,83,60)
+      SerialIn(RawSBE37,SerialSBE37,400,13,60)
       SplitStr(SBE37,RawSBE37,",",4,0)
-      If Len(RawSBE37) = 39 AND SBE37(4) <> "" Then
+      If Len(RawSBE37) > 0 AND SBE37(4) <> "" Then
         ExitFor
       EndIf
     
@@ -90,12 +147,10 @@ Sub CollectSBE37(TAGString)
     SerialClose(SerialSBE37)
 
     Call SBE37Table
-
-    TAGString = SBE37TagString()
-    Call WriteTagString '------------------------------------- Defined in main.cr6
+  
   EndIf
-  WhereAmI = "SBE37 finished"
 EndSub
+
 
 
 '### Processing ###

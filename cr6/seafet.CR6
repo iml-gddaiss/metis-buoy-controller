@@ -1,6 +1,6 @@
 'SEAFET related code
 '### Serial Port ###
-Const SerialSeafet = 38 'RS232
+' Const SerialSeafet = 38 'RS232
 
 '### Data Variables ###
 Public RawSeafet As String * 120
