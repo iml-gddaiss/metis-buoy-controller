@@ -1,4 +1,4 @@
-
+Const SerialLogging = 1 ' RS232 CPI
 Const SerialADCP = 12 'U3-U4
 
 Const SerialWinch = 13 'U5-U6
@@ -12,7 +12,7 @@ Const SerialOCRI = 34
 ' 35
 
 '## Address 4 ##
-Const SerialSBE37 = 36 'RS232
+Const SerialSBE37 = 44 '36 'RS232
 Const SerialTriplet = 37 'RS232
 Const SerialSeafet = 38 'RS232
 Const SerialOCRR = 39 'RS232

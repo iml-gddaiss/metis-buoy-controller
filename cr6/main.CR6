@@ -365,6 +365,8 @@ BeginProg
   Scan(Buoy_Interval,Min,0,0)
   ScanDateTime = Public.TimeStamp(4,0)
   WhereAmI = "Initializing instrument"
+
+  Call logging("Scan Start: ")
     
   Call StartWaterDetectionSensor
       

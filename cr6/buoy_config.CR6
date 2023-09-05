@@ -1,30 +1,30 @@
 ConstTable (Buoy_Config,0)
     Const Buoy_Name = "PMZA-RIKI" 
-    Const Buoy_Interval = 30
+    Const Buoy_Interval = 2
     Const PCO2_Interval = 12
     Const Winch_Interval = 5
     Const Depth_for_Winch = 210
 
     Const Instrument_installed = "As Follow" 
-    Const With_GPS = 1
-    Const With_WMT700 = 1
-    Const With_WXT536 = 1
-    Const With_Compass = 1
-    Const With_PAR = 1
-    Const With_OCR_I = 1
+    Const With_GPS = 0
+    Const With_WMT700 = 0
+    Const With_WXT536 = 0
+    Const With_Compass = 0
+    Const With_PAR = 0
+    Const With_OCR_I = 0
 
     Const With_SBE37 = 1
-    Const With_Seafet = 1
-    Const With_Triplet = 1
-    Const With_SUNA = 1
-    Const With_PCO2 = 1
-    Const With_OCR_R = 1
+    Const With_Seafet = 0
+    Const With_Triplet = 0
+    Const With_SUNA = 0
+    Const With_PCO2 = 0
+    Const With_OCR_R = 0
 
-    Const With_Wave = 1
-    Const With_ADCP = 1
-    Const With_Winch = 1
-    Const With_WD_Main = 1
-    Const With_Power = 1
+    Const With_Wave = 0
+    Const With_ADCP = 0
+    Const With_Winch = 0
+    Const With_WD_Main = 0
+    Const With_Power = 0
 
     Const Buoy_Config = "As Follow" 
     Const Bypass_Salinity = 0

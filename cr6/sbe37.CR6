@@ -68,6 +68,8 @@ Sub StartSBE37
   ' REVIEW THIS TODO
   Dim X
   If With_SBE37 <> 0 Then
+    WhereAmI = "Starting SBE37"
+    Call logging("Starting SBE37")
     RawSBE37_SalinityTest = ""
     SBE37() = 0
     SerialOpen(SerialSBE37,19200,3,20,50) 'CTD string is around 35 char.
@@ -77,6 +79,8 @@ Sub StartSBE37
       SerialIn(RawSBE37_SalinityTest,SerialSBE37,400,13,120) 
       SplitStr(SBE37,RawSBE37_SalinityTest,",",4,0)
       SerialOut(SerialSBE37,Len(RawSBE37_SalinityTest),CHR(10),1,50)
+      Call logging("SBE attemp: " & X)
+      Call logging("Len(RawSBE37_SalinityTest): " & Len(RawSBE37_SalinityTest))
       'If Salinity > 10 AND Len(RawSBE37_SalinityTest) = 39 Then
       If Len(RawSBE37_SalinityTest) > 0 Then
         ExitFor
@@ -124,6 +128,8 @@ EndSub
 Sub CollectSBE37(TAGString)
   Dim X
   If With_SBE37 <> 0 Then
+    WhereAmI = "Collecting SBE37"
+    Call logging("Collecting SBE37")
     SerialFlush(SerialSBE37)
     For X = 1 To 3 Step 1
       RawSBE37 = ""
@@ -138,6 +144,8 @@ Sub CollectSBE37(TAGString)
       
       SerialIn(RawSBE37,SerialSBE37,400,13,60)
       SplitStr(SBE37,RawSBE37,",",4,0)
+      Call logging("SBE attemp: " & X)
+      Call logging("Len(RawSBE37): " & Len(RawSBE37) & "SBE37(4): " & SBE37(4))
       If Len(RawSBE37) > 0 AND SBE37(4) <> "" Then
         ExitFor
       EndIf
@@ -150,8 +158,9 @@ Sub CollectSBE37(TAGString)
   
     TAGString = SBE37TagString()
     Call WriteTagString '------------------------------------- Defined in main.cr6
+    WhereAmI = "SBE37 finished"
   EndIf
-  WhereAmI = "SBE37 finished"
+  
 EndSub
 
 

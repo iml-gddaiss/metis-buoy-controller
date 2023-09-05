@@ -1,7 +1,7 @@
-Sub logging(log_message)
+Sub logging(log_message As String * 2000)
     if With_Logging <> 0 Then
-        SerialOpen(ComRS232, 9600,3,0,3000)
-        SerialOut(ComRS232,log_message&CHR(10),"",0,100,0)
-        SerialClose(ComRS232)
+        SerialOpen(SerialLogging, 115200,0,0,10000)
+        SerialOut(SerialLogging, Public.TImestamp(4,1) & " - " & log_message & CHR(13) & CHR(10),"",0,1000)
+        SerialClose(SerialLogging)
     Endif
 EndSub
