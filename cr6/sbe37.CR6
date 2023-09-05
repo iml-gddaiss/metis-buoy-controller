@@ -57,7 +57,6 @@ Sub StartSBE37
       SerialOut(SerialSBE37,"ts"&CHR(13),CHR(10),1,50)
       SerialIn(RawSBE37_SalinityTest,SerialSBE37,400,13,120) 
       SplitStr(SBE37,RawSBE37_SalinityTest,",",4,0)
-      SerialOut(SerialSBE37,Len(RawSBE37_SalinityTest),CHR(10),1,50)
       
       Call logging("SBE attempt: " & X)
       Call logging("RawSBE37: `" & RawSBE37_SalinityTest & "`")
