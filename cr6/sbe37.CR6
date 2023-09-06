@@ -3,9 +3,10 @@
 ' Const SerialSBE37 = 36 'RS232
 
 '### Data Variables ###
-Dim RawSBE37_SalinityTest As String * 40
 Dim RawSBE37 As String * 40
+Const SBE37_RawSample_Length = 38
 
+Public SBE37_In_SaltWater as Boolean
 Public SBE37(4) As Float : Alias SBE37 = Water_Temp,Conductivity,Salinity,Density
 
 '### Units ###
@@ -37,57 +38,70 @@ Function SBE37TagString as String
 EndFunction
 
 
-
-'### Sampling ###
-Sub StartSBE37
+Sub SBE37SalinityCheck
+' Sub StartSBE37
   'CTD SBE37 (W1) in salt water to start pump -----------------------------------
   'Rewrite security so it won't try to sample the CTD if Bypass_Salinity or Disable_Pump are True
   ' REVIEW THIS TODO
   Dim X
+  Dim RawSBE37_Test As String * 40
+  Dim SBE37_Test(4) as Float
+  
   If With_SBE37 <> 0 Then
-    WhereAmI = "Starting SBE37"
+    WhereAmI = "SBE37 Salinity Check"
+    Call logging("SBE37 Salinity Check")
     
-    Call logging("Starting SBE37")
-    
-    RawSBE37_SalinityTest = ""
+    RawSBE37_Test = ""
     SBE37() = 0
-    SerialOpen(SerialSBE37,19200,3,20,50) 'CTD string is around 35 char.
+    SerialOpen(SerialSBE37,19200,3,20,50) 'CTD string is 38 char.
+    SerialFlush(SerialSBE37) 
+    
     For X = 1 To 3 Step 1
-      SerialOut(SerialSBE37,CHR(13),"S>",1,50)
-      SerialOut(SerialSBE37,"ts"&CHR(13),CHR(10),1,50)
-      SerialIn(RawSBE37_SalinityTest,SerialSBE37,400,13,120) 
-      SplitStr(SBE37,RawSBE37_SalinityTest,",",4,0)
+      SerialOut(SerialSBE37,CHR(13),"S>",1,50)          ' Contact SBE37, expect `S>`
+      SerialOut(SerialSBE37,"ts"&CHR(13),CHR(10),1,50)  ' Send: `Take, Send` sample command.
+      SerialIn(RawSBE37_Test,SerialSBE37,400,13,120) 
+      SplitStr(SBE37_Test, RawSBE37_Test,",",4,0)
       
       Call logging("SBE attempt: " & X)
-      Call logging("RawSBE37: `" & RawSBE37_SalinityTest & "`")
-      Call logging("Len(RawSBE37_SalinityTest): " & Len(RawSBE37_SalinityTest))
+      Call logging("RawSBE37: `" & RawSBE37_Test & "`")
+      Call logging("Len(RawSBE37_Test): " & Len(RawSBE37_Test))
       
-      'If Salinity > 10 AND Len(RawSBE37_SalinityTest) = 39 Then
-      If Len(RawSBE37_SalinityTest) > 0 Then
-        ExitFor
+      If SBE37_Test(3) > 10 AND Len(RawSBE37_Test) = SBE37_RawSample_Length Then
+        SBE37_In_SaltWater = True
+        Call logging("SBE37_In_SaltWater: " & SBE37_In_SaltWater)
+        ExitSub
       EndIf
     Next X
+    
+    SBE37_In_SaltWater = False
+    Call logging("SBE37_In_SaltWater: " & SBE37_In_SaltWater)
+
+    SerialClose(SerialSBE37)
   EndIf  
 EndSub
 
 
-Sub CollectSBE37(TAGString)
+'### Sampling ###
+
+Sub SampleSBE37(TAGString)
   Dim X
   If With_SBE37 <> 0 Then
-    WhereAmI = "Collecting SBE37"
+    WhereAmI = "Sampling SBE37"
+    Call logging("Sampling SBE37")
     
-    Call logging("Collecting SBE37")
     
-    SerialFlush(SerialSBE37)
     For X = 1 To 3 Step 1
       RawSBE37 = ""
       SBE37() = ""
-      SerialOut(SerialSBE37,CHR(13),"S>",1,50)
+      SerialOpen(SerialSBE37,19200,3,20,50) 'CTD string is 
+      SerialFlush(SerialSBE37)
+      
+      SerialOut(SerialSBE37,CHR(13),"S>",1,50             ' Contact SBE37, expect `S>`
       
       If X = 1 Then
-        SerialOut(SerialSBE37,"tss"&CHR(13),CHR(10),1,50)
+        SerialOut(SerialSBE37,"tss"&CHR(13),CHR(10),1,50) ' Send: `Take, Store, Send` sample Command.
       Else
-        SerialOut(SerialSBE37,"sl"&CHR(13),CHR(10),1,50)
+        SerialOut(SerialSBE37,"sl"&CHR(13),CHR(10),1,50)  ' Send: `Send Last` command
       EndIf
       
       SerialIn(RawSBE37,SerialSBE37,400,13,60)
@@ -97,7 +111,7 @@ Sub CollectSBE37(TAGString)
       Call logging("RawSBE37: `" & RawSBE37 & "`")
       Call logging("Len(RawSBE37): " & Len(RawSBE37) & ", SBE37(4): " & SBE37(4))
       
-      If Len(RawSBE37) > 0 AND SBE37(4) <> "" Then
+      If Len(RawSBE37) = SBE37_RawSample_Length AND SBE37(4) <> "" Then ' Check String length and that at least values were sent.
         ExitFor
       EndIf
     
@@ -109,7 +123,7 @@ Sub CollectSBE37(TAGString)
   
     TAGString = SBE37TagString()
     Call WriteTagString '------------------------------------- Defined in main.cr6
-    WhereAmI = "SBE37 finished"
+    WhereAmI = "SBE37 Sampling finished"
   EndIf
   
 EndSub

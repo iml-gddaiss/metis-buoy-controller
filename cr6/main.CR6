@@ -251,10 +251,11 @@ Sub CheckWaterDetection
 EndSub
 
 
-Sub StartWellPump
+Sub StartWellPump(SBE37_In_SaltWater)
   'Starting pump
-  If (Salinity > 10 OR Bypass_Salinity = True) AND ((With_Well_Pump <> 0 AND Disable_Pump = False) OR With_OCR_R <> 0) Then
+  If (SBE37_In_SaltWater OR Bypass_Salinity) AND ((With_Well_Pump <> 0 AND Disable_Pump = False) OR With_OCR_R <> 0) Then
     WhereAmI = "Start Well Pump"
+    Call logging("Starting Well Pump")
     'Open Switch #2 to control pump for X sec
     SW12(SW12_2,1)
     Well_Switch = True
@@ -266,7 +267,7 @@ EndSub
 Sub CheckWellPump
   Dim WellTimer
   
-  If Well_Switch = True AND (With_Well_Pump <> 0) Then
+  If Well_Switch AND (With_Well_Pump <> 0) Then
     WhereAmI = "See if pump is running 30sec"
     WellTimer = Timer(3,Sec,4)
     Timer(3,Sec,3) 'Timer #3 Stop and Reset
@@ -388,7 +389,7 @@ BeginProg
     Timer(1,Sec,0) ' TODO Start_WeatherTimer ?
   EndIf
 
-  Call StartSBE37
+  Call SBE37SalinityCheck
     
   Call StartWellPump
   
@@ -413,7 +414,7 @@ BeginProg
   
   Call SampleOCRs(Well_Switch)  
   
-  Call CollectSBE37(TAGString)
+  Call SampleSBE37(TAGString)
   
   Call SampleSeafet(TAGString, Water_Temp, Salinity)
 
