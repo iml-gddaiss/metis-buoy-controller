@@ -5,31 +5,31 @@ ConstTable (Buoy_Config,0)
     Const Winch_Interval = 5
     Const Depth_for_Winch = 210
 
-    Const Instrument_installed = "As Follow" 
-    Const With_GPS = 0
-    Const With_WMT700 = 0
-    Const With_WXT536 = 0
-    Const With_Compass = 0
-    Const With_PAR = 0
-    Const With_OCR_I = 0
+    Const Instrument_installed = "As Follow" ' ??? Jérôme
+    Const With_GPS = false
+    Const With_WMT700 = false
+    Const With_WXT536 = false
+    Const With_Compass = false
+    Const With_PAR = false
+    Const With_OCR_I = false
 
-    Const With_SBE37 = 1
-    Const With_Seafet = 0
-    Const With_Triplet = 0
-    Const With_SUNA = 0
-    Const With_PCO2 = 0
-    Const With_OCR_R = 0
+    Const With_SBE37 = True
+    Const With_Seafet = false
+    Const With_Triplet = false
+    Const With_SUNA = false
+    Const With_PCO2 = false
+    Const With_OCR_R = false
 
-    Const With_Wave = 0
-    Const With_ADCP = 0
-    Const With_Winch = 0
-    Const With_WD_Main = 0
-    Const With_Power = 0
+    Const With_Wave = false
+    Const With_ADCP = false
+    Const With_Winch = false
+    Const With_WD_Main = false
+    Const With_Power = false
 
     Const Buoy_Config = "As Follow" 
-    Const Bypass_Salinity = 0
-    Const Disable_Pump = 0 
-    Const Seafet_Auto_Correction = -1 
+    Const Bypass_Salinity = false
+    Const Disable_Pump = false
+    Const Seafet_Auto_Correction = true
 
-    Const With_Logging = 1
+    Const With_Logging = true
 EndConstTable

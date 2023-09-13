@@ -116,7 +116,7 @@ EndSub
 
 
 Sub SampleCompass
-  If With_Compass <> 0 Then
+  If With_Compass Then
     WhereAmI = "Sample Compass"   
     
     Call CheckCompassTimer

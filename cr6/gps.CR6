@@ -44,7 +44,7 @@ EndSub
 Sub SampleGPS
     Dim X
     
-    If With_GPS <> 0 Then
+    If With_GPS Then
         WhereAmI = "Sample GPS"
         
         SerialOpen(SerialGPS,19200,3,20,1000)

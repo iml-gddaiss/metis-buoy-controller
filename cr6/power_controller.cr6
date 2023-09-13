@@ -60,7 +60,7 @@ EndSub
 
 Sub SamplePowerController(TAGString)
   
-  If With_Power <> 0 Then
+  If With_Power Then
     WhereAmI = "Sample Power Controller"
       
     SerialOpen(SerialPower,19200,51,600,200)

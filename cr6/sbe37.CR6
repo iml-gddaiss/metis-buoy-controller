@@ -45,10 +45,6 @@ EndSub
 
 
 Sub SBE37SalinityCheck
-' Sub StartSBE37
-  'CTD SBE37 (W1) in salt water to start pump -----------------------------------
-  'Rewrite security so it won't try to sample the CTD if Bypass_Salinity or Disable_Pump are True
-  ' REVIEW THIS TODO
   Dim X
   Dim RawSBE37_Test As String * 40
   Dim SBE37_Test(4) as Float
@@ -58,7 +54,7 @@ Sub SBE37SalinityCheck
     Call logging("SBE37 Salinity Check")
     
     RawSBE37_Test = ""
-    SBE37() = 0 ' FIXME 0 or ""
+    SBE37() = "" ' FIXME 0 or ""
     
     Call StartSBE37
     
@@ -99,7 +95,7 @@ Sub SampleSBE37(TAGString)
     Call logging("Sampling SBE37")
     
     RawSBE37 = ""
-    SBE37() = "" ' FIXME 0 or ""
+    SBE37() = ""
     
     Call StartSBE37
     

@@ -74,11 +74,13 @@ PreserveVariables
 
 Public WhereAmI As String
 Public TAGString As String * 200
-Dim Well_Switch As Boolean
-Dim Tower_Switch As Boolean
+
+Dim Well_IsPowered As Boolean  ' Well_Switch
+Dim Tower_IsPowered As Boolean ' Tower_Switch
 Dim Timer_Value(9) As Long : Alias Timer_Value = Weather_Timer, GPS_Timer, Well_Timer, Triplet_Timer, SUNA_Timer, RainReset_Timer, Tower_Timer
 Dim NBR 'NBytesReturned ' 
 Dim Buoy_Time(9) : Alias Buoy_Time = Buoy_Year, Buoy_Month, Buoy_Date, Buoy_Hour, Buoy_Minute, Buoy_Second, Buoy_Millisecond, Buoy_DayofWeek, Buoy_DayofYear
+
 Public ScanDateTime As String
 
 Dim TAGFile As Long
@@ -88,17 +90,17 @@ Dim ToTransmit As Long
 
 ' Const SerialTower = 32 'RS485 As WMT700(A), WXT536(2) & Compass(1)
 
-'Instruments state
+' Instruments state
 Include "CPU:buoy_config.cr6"                     '#   Declare Buoy Config
 Include "CPU:serials.cr6"
 Include "CPU:logging.cr6"                         '#   Logging module
+Include "CPU:timer.cr6"                         '#   Timer Values module
 
-' With_Tower_485 : Tower 485 com port TODO
-Const With_Tower_485 = With_WXT536 + With_WMT700 + With_Compass       
-' With_Tower : Tower Power TODO
-Const With_Tower = With_PAR + With_WMT700 + With_Compass + With_OCR_I
-' With_Well : Well Pump TODO
-Const With_Well_Pump = With_SBE37 + With_Seafet + With_SUNA
+' Configuration Flags
+Const With_Tower_485 = With_WXT536 OR With_WMT700 OR With_Compass       
+Const With_Tower = With_PAR OR With_WMT700 OR With_Compass OR With_OCR_I
+Const With_Weather = With_WXT536 OR With_WMT700 OR With_PAR
+Const With_Well_Pump = With_SBE37 OR With_Seafet OR With_SUNA OR With_OCR_R
 
 Public Manual_Tower_Switch = false
 Public Manual_Well_Switch = false
@@ -206,7 +208,7 @@ EndSub
 
 Sub StartWaterDetectionSensor
  '5V to the Water Detection sensor, sample taked at the end --------------------
-  If With_WD_Main <> 0 Then
+  If With_WD_Main Then
     PortSet(C4,1)
   EndIf
 EndSub
@@ -214,9 +216,9 @@ EndSub
 
 Sub PowerTowerInstruments
   'Starting the weather instrument as soon as possible to stabilize the OCR, start the PAR sample and initialize the WMT700
-  If With_Tower <> 0 Then  
+  If With_Tower Then  
       SW12(SW12_1,1)
-      Tower_Switch = True
+      Tower_IsPowered = True
       Tower_Timer = Timer(7,Sec,0)  'WMT700 power up delay
       Call logging("Tower Instrument Powered Up")
   EndIf
@@ -226,24 +228,24 @@ EndSub
 Sub StartTower485
   'Open the RS485 port if there's one of the intruments
   'Opening SDM and PAR (T5) voltage. 1sec before communication  
-  If With_Tower_485 <> 0 Then
+  If With_Tower_485 Then
     SerialOpen(SerialTower,19200,51,20,500) 'for 2R! test
   EndIf
 EndSub
 
 
 Sub CloseTower485
-  If With_Tower_485 <> 0 Then
+  If With_Tower_485 Then
     SerialClose(SerialTower)
     SW12(SW12_1,0)
-    Tower_Switch = False
+    Tower_IsPowered = False
     WhereAmI = "Close Tower"
   EndIf	  
 EndSub
 
 
 Sub CheckWaterDetection
-  If With_WD_Main <> 0 Then
+  If With_WD_Main Then
     WhereAmI = "Check Water Detection"
     Water_Detection_Main = 0
     VoltSe(Water_Detection_Main,1,AutoRange,U1,0,0,15000,1,0)
@@ -254,12 +256,12 @@ EndSub
 
 Sub StartWellPump(SBE37_In_SaltWater)
   'Starting pump
-  If (SBE37_In_SaltWater OR Bypass_Salinity) AND ((With_Well_Pump <> 0 AND NOT Disable_Pump) OR With_OCR_R <> 0) Then
+  If (SBE37_In_SaltWater OR Bypass_Salinity) AND (With_Well_Pump AND NOT Disable_Pump) Then
     WhereAmI = "Start Well Pump"
     Call logging("Starting Well Pump")
     'Open Switch #2 to control pump for X sec
     SW12(SW12_2,1)
-    Well_Switch = True
+    Well_IsPowered = True
     Timer(3,Sec,0) 'Start timer #3 for the pump working for min. 30 sec
   EndIf
 EndSub
@@ -268,7 +270,7 @@ EndSub
 Sub CheckWellPump
   Dim WellTimer
   
-  If Well_Switch AND (With_Well_Pump <> 0) Then
+  If Well_IsPowered Then
     WhereAmI = "See if pump is running 30sec"
     WellTimer = Timer(3,Sec,4)
     Timer(3,Sec,3) 'Timer #3 Stop and Reset
@@ -282,9 +284,9 @@ EndSub
 
 Sub CloseWellPump
   WhereAmI = "Close pump"
-  If Well_Switch = True Then
+  If Well_IsPowered Then
     SW12(SW12_2,0)
-    Well_Switch = False
+    Well_IsPowered = False
   EndIf
 EndSub
 
@@ -299,7 +301,7 @@ Sub SamplePCO2
     Call StartPCO2
   EndIf
   
-  If PCO2_Sampling = true Then
+  If PCO2_Sampling Then
     'Watchdog if there's no data in 1Hour (if power disconnected during sampling)
                         'sec
     If (PCO2_Last_Sample + 3600) < Buoy_TimeStamp_1990 Then
@@ -320,21 +322,21 @@ Sub SampleWinch
   WinchMessage = "Entering the Winch Block"
   MissingCondition = 0
                         'minus 10sec to not skip a scan planned at Winch_Interval hour (got 3599s and didn't sampled)
-  If (Winch_Last_Sample + (Winch_Interval*60*60) - 10 <= Buoy_TimeStamp_1990) AND Winch_Sampling = false Then
+  If (Winch_Last_Sample + (Winch_Interval*60*60) - 10 <= Buoy_TimeStamp_1990) AND Winch_Sampling Then
     WhereAmI = "Starting A Winch"
-    If With_WXT536 <> 0 Then
+    If With_WXT536 Then
       Call CheckWinchAir(Air_Temp) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
     EndIf
     
-    If With_Wave <> 0 Then
+    If With_Wave 0 Then
       Call CheckWinchWave(Wave_H13, Wave_Period) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
     EndIf
           
-    If With_GPS <> 0 Then
+    If With_GPS Then
       Call CheckWinchGPS(SOG) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
     EndIf
     
-    If With_Power <> 0 Then
+    If With_Power Then
       Call CheckWinchPower(VBatt1, VBatt2) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
     EndIf
 
@@ -342,7 +344,7 @@ Sub SampleWinch
       Call StartWinch(Buoy_TimeStamp_1990, GPS_Date, UTC_Date_Hyphen, UTC_Time_Short, UTC_Time_DDot, Lat, Lon, Lat_Hem, Lon_Hem) 
     EndIf
   
-  Else If Winch_Sampling = True Then
+  ElseIf Winch_Sampling Then
     WhereAmI = "Check if the winch is done"
     Call CheckWinch
   Else
@@ -384,11 +386,7 @@ BeginProg
 
   Call StartWMT700
   
-  'Start Timer#1 to collect data in 61sec
-  'Note make invidual timers. For each instruments
-  If With_WXT536 <> 0 OR With_WMT700 <> 0 OR With_PAR <> 0 Then
-    Timer(1,Sec,0) ' TODO Start_WeatherTimer ?
-  EndIf
+  Call StartWeatherTimer
 
   Call SBE37SalinityCheck
     
@@ -413,7 +411,7 @@ BeginProg
 
   Call StartSUNA
   
-  Call SampleOCRs(Well_Switch)  
+  Call SampleOCRs
   
   Call SampleSBE37(TAGString)
   
@@ -423,17 +421,7 @@ BeginProg
 
   Call CloseWellPump 'Pumped sensor are done, close pump
     
-  'PAR and Delay for WMT700 and WXT536 ------------------------------------------
-  WhereAmI = "See if weather is done"
-  If With_PAR <> 0 OR With_WMT700 <> 0 OR With_WXT536 <> 0 Then
-    Timer(1,Sec,1)' Weather_Timer
-    Weather_Timer = Timer(1,Sec,4)
-    'Delay to make sure the instruments are sampling for at 61sec
-    If Weather_Timer < 61 Then  
-      Delay (1,61-Weather_Timer,Sec)
-      EndIf
-    Timer(1,Sec,3) 'Stop and reset on Timer#1
-  EndIf
+  Call WaitForWeatherTimer
     
   Call CollectPAR
 
@@ -454,13 +442,13 @@ BeginProg
   Call CollectADCP(TAGString)
   
   'PCO2 -------------------------------------------------------------------------
-  If With_PCO2 <> 0 AND (Salinity > 10 OR Bypass_Salinity = True) Then 'Security for PCO2 pump if not in water
+  If With_PCO2 AND (Salinity > 10 OR Bypass_Salinity) Then 'Security for PCO2 pump if not in water
     Call SamplePCO2
   EndIf 'If there's a PCO2 and salinity (or bypass)
     
 
   'Winch -------------------------------------------------------------------------
-  If With_Winch <> 0 AND (Salinity > 10 OR Bypass_Salinity = True) Then
+  If With_Winch AND (Salinity > 10 OR Bypass_Salinity) Then
     Call SampleWinch
   EndIf
 
@@ -491,27 +479,27 @@ BeginProg
 	
   SlowSequence
     Scan(1,Sec,0,0)
-      If Manual_Tower_Switch = true AND Tower_Switch = false Then
+      If Manual_Tower_Switch AND Not Tower_IsPowered Then
         SW12(SW12_1,1)
-        Tower_Switch = true
+        Tower_IsPowered = true
       EndIf
         
-      If Manual_Tower_Switch = false AND Tower_Switch = true Then
+      If Not Manual_Tower_Switch AND Tower_IsPowered Then
         SW12(SW12_1,0)
-        Tower_Switch = false
+        Tower_IsPowered = false
       EndIf
       
-      If Manual_Well_Switch = true AND Well_Switch = false Then
+      If Manual_Well_Switch AND Not Well_IsPowered Then
         SW12(SW12_2,1)
-        Well_Switch = true
+        Well_IsPowered = true
       EndIf
         
-      If Manual_Well_Switch = false AND Well_Switch = true Then
+      If Not Manual_Well_Switch AND Well_IsPowered Then
         SW12(SW12_2,0)
-        Well_Switch = false
+        Well_IsPowered = false
       EndIf
       
-      If Send_Break_to_ADCP = true Then
+      If Send_Break_to_ADCP Then
         SerialBrk(SerialADCP,200)
         Send_Break_to_ADCP = false
       EndIf

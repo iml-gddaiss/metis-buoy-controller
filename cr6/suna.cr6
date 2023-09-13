@@ -54,7 +54,7 @@ EndFunction
 
 '### Sampling ###
 Sub StartSUNA
-  If With_SUNA <> 0 Then
+  If With_SUNA Then
     WhereAmI = "Starting SUNA"
     SerialOpen(SerialSUNA,19200,3,20,250)
     SerialOut(SerialSUNA,"$","CMD?",1,400)
@@ -67,7 +67,7 @@ EndSub
 
 
 Sub CollectSUNA(TAGString)
-  If With_SUNA <> 0 Then
+  If With_SUNA Then
     Timer_Value(5) = Timer(5,Sec,4)
     Timer(5,Sec,3) 'Timer 5 Stop and Reset
     If Timer_Value(5) < 12 Then

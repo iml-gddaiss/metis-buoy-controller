@@ -38,7 +38,7 @@ EndSub
 Sub StartWMT700
   Dim WMT700Timer
   
-  If With_WMT700 <> 0 Then
+  If With_WMT700 Then
     WMT700Timer = Timer(7,Sec,4) ' mettre un timer stop
     If WMT700Timer < 8 Then
       Delay(1,8-WMT700Timer,Sec)
@@ -49,7 +49,7 @@ EndSub
 
 
 Sub CollectWMT700
-  If With_WMT700 <> 0 Then
+  If With_WMT700 Then
     WhereAmI = "Collect WMT700"
 
     SerialOut(SerialTower,"$Apoll,1"&CHR(13)&CHR(10),"Sx",1,100) 

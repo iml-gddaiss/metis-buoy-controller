@@ -107,23 +107,23 @@ Sub HyperOCRTable
 EndSub
 
 
-Sub SampleOCRs(Well_Switch)
+Sub SampleOCRs
   Dim call_table = false
   
-  If With_OCR_R <> 0 AND Well_Switch = True Then
+  If With_OCR_R AND Well_IsPowered Then
     WhereAmI = "Sample OCR R"
     Call SampleOCRR
     call_table = true
   EndIf
   
-  If With_OCR_I <> 0 Then
+  If With_OCR_I Then
     WhereAmI = "Sample OCR I"
     Call SampleOCRI
     call_table = true
   EndIf
   
 
-  If call_table = true Then
+  If call_table Then
     Call HyperOCRTable
     WhereAmI = "End OCR"
   EndIf

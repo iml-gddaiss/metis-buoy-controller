@@ -185,7 +185,7 @@ EndSub
 
 '### Sampling ###
 Sub SampleSeafet(TAGString, Water_Temp, Salinity)
-  If With_Seafet <> 0 Then
+  If With_Seafet Then
     WhereAmI = "Sample Seafet"
     SerialOpen(SerialSeafet,19200,3,20,900) 'Seafet string is around 100, but bigger buffer for Coef.
     

@@ -28,39 +28,47 @@ Function TripletTagString as String
   TripletTagString = "[TRP1]" & Scattering & "," & Chlorophyll & "," & FDOM
 EndFunction
 
-Sub StartTriplet
-  'ECO-Triplet/w (W3) Start
-  If With_Triplet <> 0 Then
-    WhereAmI = "Start Triplet"
-    SerialFlush(SerialTriplet)
-    SerialOpen(SerialTriplet,19200,3,20,500) 'Triplet string is around 100 char.
-    SerialOut(SerialTriplet,CHR(13)&CHR(10),0,2,100)
-    SerialOut(SerialTriplet,"!!!!!!!!","Mem",1,600)
-    SerialOut(SerialTriplet,"$run"&CHR(13),0,1,10)
-    Timer(4,Sec,0) 'Timer#4 Start for Triplet sampling
-  EndIf
+
+Sub StartTripletTimer
+  Timer(Triplet_Timer, Sec, 0)
 EndSub
 
-Sub CheckTripletTimer 
-  Dim TripletTimer
+
+Sub WaitForTripletTimer 
+  Dim Time_Left
   
-  TripletTimer = Timer(4, Sec, 4)
-  Timer(4, Sec, 3) 'Timer #4 Stop&Reset
-  
-  If TripletTimer < 17 Then
+  Time_Left = Timer(Triplet_Timer, Sec, 3)
+   
+  If Time_Left < 17 Then
     Delay(1, 17-TripletTimer, Sec)
   EndIf
 
 EndSub
 
+Sub StartTriplet
+  'ECO-Triplet/w (W3) Start
+  If With_Triplet Then
+    WhereAmI = "Start Triplet"
+    Call logging("Start Triplet")
+    SerialFlush(SerialTriplet)
+    SerialOpen(SerialTriplet,19200,3,20,500) 'Triplet string is around 100 char.
+    SerialOut(SerialTriplet,CHR(13)&CHR(10),0,2,100)
+    SerialOut(SerialTriplet,"!!!!!!!!","Mem",1,600)
+    SerialOut(SerialTriplet,"$run"&CHR(13),0,1,10)
+    
+    Call StartTripletTimer
+
+  EndIf
+EndSub
+
 
 Sub CollectTriplet(TAGString)
-  If With_Triplet <> 0 Then
+  If With_Triplet Then
     WhereAmI = "Collect triplet"
     
     RawTriplet = ""
     
-    Call CheckTripletTimer
+    Call WaitForTripletTimer
     
     SerialInRecord(SerialTriplet,RawTriplet,&H4242,0,&H0D0A,NBR,01)
     

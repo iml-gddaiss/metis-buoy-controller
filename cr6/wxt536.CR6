@@ -59,7 +59,7 @@ EndSub
 
 '### Sampling ###
 Sub StartWXT536
-  If With_WXT536 <> 0 Then
+  If With_WXT536 Then
     RealTime(Buoy_Time) 'Collecting buoy time to see if it's time to reset the rain/hail accumulation
     'Timer(6,Hr,0) 'Start the timer if it isn't started
     RainReset_Timer = Timer(6,Hr,4)
@@ -80,7 +80,7 @@ EndSub
 Sub CollectWXT536
   Dim X
   WhereAmI = "Collect WXT536"
-  If With_WXT536 <> 0 Then
+  If With_WXT536 Then
       
     RawR1_Wind = ""
     RawR2_Weather = ""
