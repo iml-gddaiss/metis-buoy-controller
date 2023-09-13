@@ -253,7 +253,7 @@ EndSub
 
 Sub StartWellPump(SBE37_In_SaltWater)
   'Starting pump
-  If (SBE37_In_SaltWater OR Bypass_Salinity) AND ((With_Well_Pump <> 0 AND Disable_Pump = False) OR With_OCR_R <> 0) Then
+  If (SBE37_In_SaltWater OR Bypass_Salinity) AND ((With_Well_Pump <> 0 AND NOT Disable_Pump) OR With_OCR_R <> 0) Then
     WhereAmI = "Start Well Pump"
     Call logging("Starting Well Pump")
     'Open Switch #2 to control pump for X sec
@@ -391,7 +391,7 @@ BeginProg
 
   Call SBE37SalinityCheck
     
-  Call StartWellPump
+  Call StartWellPump(SBE37_In_Saltwater)
   
   Call StartTriplet
   

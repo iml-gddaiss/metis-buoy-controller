@@ -6,7 +6,7 @@
 Dim RawSBE37 As String * 40
 Const SBE37_RawSample_Length = 38
 
-Public SBE37_In_SaltWater as Boolean
+Public SBE37_In_Saltwater As Boolean
 Public SBE37(4) As Float : Alias SBE37 = Water_Temp,Conductivity,Salinity,Density
 
 '### Units ###
@@ -67,14 +67,14 @@ Sub SBE37SalinityCheck
       Call logging("Len(RawSBE37_Test): " & Len(RawSBE37_Test))
       
       If SBE37_Test(3) > 10 AND Len(RawSBE37_Test) = SBE37_RawSample_Length Then
-        SBE37_In_SaltWater = True
-        Call logging("SBE37_In_SaltWater: " & SBE37_In_SaltWater)
+        SBE37_In_Saltwater = true
+        Call logging("SBE37_In_Saltwater: " & SBE37_In_Saltwater)
         ExitSub
       EndIf
     Next X
     
-    SBE37_In_SaltWater = False
-    Call logging("SBE37_In_SaltWater: " & SBE37_In_SaltWater)
+    SBE37_In_Saltwater = false
+    Call logging("SBE37_In_Saltwater: " & SBE37_In_Saltwater)
 
     SerialClose(SerialSBE37)
   EndIf  
@@ -96,7 +96,7 @@ Sub SampleSBE37(TAGString)
       SerialOpen(SerialSBE37,19200,3,20,50) 'CTD string is 
       SerialFlush(SerialSBE37)
       
-      SerialOut(SerialSBE37,CHR(13),"S>",1,50             ' Contact SBE37, expect `S>`
+      SerialOut(SerialSBE37,CHR(13),"S>",1,50)            ' Contact SBE37, expect `S>`
       
       If X = 1 Then
         SerialOut(SerialSBE37,"tss"&CHR(13),CHR(10),1,50) ' Send: `Take, Store, Send` sample Command.

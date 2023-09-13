@@ -1,6 +1,7 @@
+.TODO
+TagString table 
 . General
-.. Est-ce que les variables (alias) préservent leur dernière valeur entre les scans.
-.. Ne pas mettre en parameters ce qui est dans le BuoyConfig ou le WhereAmI. Mais le reste oui ?
+.. Les arguments des SubRoutine devrait avoir des noms différents des variables Public.
 . Compass
 .. Make Proper Timer
 .. Le code va planter si le compass retourne que des NAN
