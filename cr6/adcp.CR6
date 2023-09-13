@@ -63,7 +63,9 @@ EndFunction
 '### Sampling ###
 Sub StartADCP
   If With_ADCP <> 0 Then  
+    Call logging("Starting ADCP")
     SerialOpen(SerialADCP,115200,3,0,3000)
+    SerialFlush(SerialADCP)
   EndIf
 EndSub
 
@@ -83,7 +85,7 @@ Sub CollectADCP(TAGString)
         RawADCP(X) = Replace(RawADCP(X)," ",",")
       EndIf
     Next X
-    
+    Call logging("Raw ADCP: `" & RawADCP & "`")
     SplitStr(ADCPHeader,RawADCP(1)," ",3,5)
     SplitStr(ADCPBin1,RawADCP(5),",",11,5)
 

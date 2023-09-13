@@ -218,6 +218,7 @@ Sub PowerTowerInstruments
       SW12(SW12_1,1)
       Tower_Switch = True
       Tower_Timer = Timer(7,Sec,0)  'WMT700 power up delay
+      Call logging("Tower Instrument Powered Up")
   EndIf
 EndSub
 

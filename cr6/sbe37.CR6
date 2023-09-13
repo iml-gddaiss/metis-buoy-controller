@@ -37,6 +37,12 @@ Function SBE37TagString as String
   SBE37TagString = "[CTD]" & Water_Temp & "," & Conductivity & "," & Salinity & "," & Density
 EndFunction
 
+Sub StartSBE37
+  Call logging("Starting SBE37")
+  SerialOpen(SerialSBE37,19200,3,20,50) 'CTD string is 38 char.
+  SerialFlush(SerialSBE37) 
+EndSub
+
 
 Sub SBE37SalinityCheck
 ' Sub StartSBE37
@@ -52,9 +58,9 @@ Sub SBE37SalinityCheck
     Call logging("SBE37 Salinity Check")
     
     RawSBE37_Test = ""
-    SBE37() = 0
-    SerialOpen(SerialSBE37,19200,3,20,50) 'CTD string is 38 char.
-    SerialFlush(SerialSBE37) 
+    SBE37() = 0 ' FIXME 0 or ""
+    
+    Call StartSBE37
     
     For X = 1 To 3 Step 1
       SerialOut(SerialSBE37,CHR(13),"S>",1,50)          ' Contact SBE37, expect `S>`
@@ -84,23 +90,26 @@ EndSub
 '### Sampling ###
 
 Sub SampleSBE37(TAGString)
+  ' If the data were not received after sending the `tss` command,
+  ' we assume that the CTD has received the `tss` command thus, we send 
+  ' the `sl` command. Otherwise the ctd internal storage will have duplicate sample.
   Dim X
   If With_SBE37 <> 0 Then
     WhereAmI = "Sampling SBE37"
     Call logging("Sampling SBE37")
     
+    RawSBE37 = ""
+    SBE37() = "" ' FIXME 0 or ""
+    
+    Call StartSBE37
     
     For X = 1 To 3 Step 1
-      RawSBE37 = ""
-      SBE37() = ""
-      SerialOpen(SerialSBE37,19200,3,20,50) 'CTD string is 
-      SerialFlush(SerialSBE37)
       
       SerialOut(SerialSBE37,CHR(13),"S>",1,50)            ' Contact SBE37, expect `S>`
       
       If X = 1 Then
         SerialOut(SerialSBE37,"tss"&CHR(13),CHR(10),1,50) ' Send: `Take, Store, Send` sample Command.
-      Else
+      Else                                                
         SerialOut(SerialSBE37,"sl"&CHR(13),CHR(10),1,50)  ' Send: `Send Last` command
       EndIf
       
@@ -127,7 +136,3 @@ Sub SampleSBE37(TAGString)
   EndIf
   
 EndSub
-
-
-
-'### Processing ###
