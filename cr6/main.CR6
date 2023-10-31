@@ -328,7 +328,7 @@ Sub SampleWinch
       Call CheckWinchAir(Air_Temp) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
     EndIf
     
-    If With_Wave 0 Then
+    If With_Wave Then
       Call CheckWinchWave(Wave_H13, Wave_Period) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
     EndIf
           

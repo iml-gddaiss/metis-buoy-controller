@@ -1,3 +1,4 @@
-Const Weather_Timer = 1
+' Timer are already declared as cte. This is weird
+Weather_Timer = 1
 
-Const Triplet_Timer = 4
+Triplet_Timer = 4
