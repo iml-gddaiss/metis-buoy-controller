@@ -17,6 +17,8 @@
 . General
 .. Les arguments des SubRoutine devrait avoir des noms différents des variables Public.
 
+.. What is going on with rain timer not being started
+
 . Compass
 .. Make Proper Timer
 .. Le code va planter si le compass retourne que des NAN

@@ -61,18 +61,14 @@ Sub StartSUNA
     SerialOut(SerialSUNA,"measure 1"&CHR(13),CHR(10),1,50)
     SerialIn(RawSUNADark,SerialSUNA,150,CHR(13),80) 'The Dark sample is nearly auto, then at least 12sec for the Light one
       
-    Timer(5,Sec,0) 'Timer #5 Start for at least 12 sec
+    Timer(Suna_Timer,Sec,2) 'Timer #5 Start for at least 12 sec
   EndIf
 EndSub
 
 
 Sub CollectSUNA(TAGString)
   If With_SUNA Then
-    Timer_Value(5) = Timer(5,Sec,4)
-    Timer(5,Sec,3) 'Timer 5 Stop and Reset
-    If Timer_Value(5) < 12 Then
-      Delay(1,12-Timer_Value(5),Sec)
-    EndIf   
+    Call TimerDelay(Suna_Timer, 12, Sec)
     
     WhereAmI = "Collect SUNA"  
     SerialInRecord(SerialSUNA,RawSUNALight,&H4C43,0,&H0D0A,NBR,101)

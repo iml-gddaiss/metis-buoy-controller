@@ -30,15 +30,6 @@ Sub CompassTable
   NextScan
 EndSub
 
-'######################################### Change this with proper Timer +++++++++++++++++++++++++++++++++++++++++++++++++
-Sub CheckCompassTimer 
-  Dim CompassTimer
-  CompassTimer = Timer(7,Sec,4)
-  
-  If CompassTimer < 4 Then
-    Delay(1,4-CompassTimer,Sec)
-  EndIf
-EndSub
 
 '### Sampling ###
 Sub ResetCompassValues
@@ -119,7 +110,7 @@ Sub SampleCompass
   If With_Compass Then
     WhereAmI = "Sample Compass"   
     
-    Call CheckCompassTimer
+    Call TimerDelay(Tower_Timer, 4, Sec)
     
     Call ResetCompassValues
     

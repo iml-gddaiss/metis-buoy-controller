@@ -44,21 +44,9 @@ EndSub
 Sub StartWeatherTimer
   'Start Timer#1 to collect data in 61sec
   If With_Weather Then
-    Timer(Weather_Timer, Sec,0)
+    Timer(Weather_Timer, Sec,2)
   EndIf
 EndSub
-
-Sub WaitForWeatherTimer
-  Dim Time_Left
-  
-   With_Weather Then
-    Time_Left = Timer(Weather_Timer, Sec, 3)' Weather_Timer  
-    If Time_Left < 61 Then  
-      Delay (Weather_Timer, 61 - Time_Left, Sec)
-    EndIf
-  EndIf
-EndSub
-
 
 Sub SelectWeatherInstrument
   If WMT700(5) = CHR(00) OR WMT700(5) = 0 Then  ' If there's data from WMT700, taking them as Wind

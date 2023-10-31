@@ -1,4 +1,18 @@
-' Timer are already declared as cte. This is weird
-Weather_Timer = 1
 
-Triplet_Timer = 4
+Dim Weather_Timer = 1
+
+Dim Pump_Timer = 3
+Dim Triplet_Timer = 4
+Dim Suna_Timer = 5
+Dim RainReset_Timer = 6
+Dim Tower_Timer = 7
+
+
+Sub TimerDelay(TimerNo, TDelay, TUnits)
+    ' Wait for the TimerNo to reach the TDelay
+    Dim Time_Left
+    Time_Left = Timer(TimerNo, TUnits,4)
+    If Time_Left < TDelay Then
+        Delay(1,TDelay-Time_Left, TUnits)
+    EndIf
+EndSub

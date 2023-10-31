@@ -77,7 +77,6 @@ Public TAGString As String * 200
 
 Dim Well_IsPowered As Boolean  ' Well_Switch
 Dim Tower_IsPowered As Boolean ' Tower_Switch
-Dim Timer_Value(9) As Long : Alias Timer_Value = Weather_Timer, GPS_Timer, Well_Timer, Triplet_Timer, SUNA_Timer, RainReset_Timer, Tower_Timer
 Dim NBR 'NBytesReturned ' 
 Dim Buoy_Time(9) : Alias Buoy_Time = Buoy_Year, Buoy_Month, Buoy_Date, Buoy_Hour, Buoy_Minute, Buoy_Second, Buoy_Millisecond, Buoy_DayofWeek, Buoy_DayofYear
 
@@ -219,7 +218,7 @@ Sub PowerTowerInstruments
   If With_Tower Then
       SW12(SW12_1,1) ' -----------------> FIMXE SW12(SW12_1, 0) ???
       Tower_IsPowered = True
-      Tower_Timer = Timer(7,Sec,0)  'WMT700 power up delay
+      Timer(Tower_Timer,Sec,0)  'WMT700 power up delay
       Call logging("Tower Instrument Powered Up")
   EndIf
 EndSub
@@ -262,7 +261,9 @@ Sub PowerWellPump(_SBE37_In_SaltWater_)
     'Open Switch #2 to control pump for X sec
     SW12(SW12_2,1) ' -----------------> FIMXE SW12(SW12_1, 0) ???
     Well_IsPowered = True
-    Timer(3,Sec,0) 'Start timer #3 for the pump working for min. 30 sec
+    
+    Timer(Pump_Timer,Sec,2) 'Start timer #3 for the pump working for min. 30 sec
+  
   EndIf
 EndSub
 
@@ -272,11 +273,7 @@ Sub CheckWellPump
   
   If Well_IsPowered Then
     WhereAmI = "See if pump is running 30sec"
-    WellTimer = Timer(3,Sec,4)
-    Timer(3,Sec,3) 'Timer #3 Stop and Reset
-    If WellTimer < 30 Then
-      Delay(1,30-WellTimer,Sec)
-    EndIf
+    Call TimerDelay(Pump_Timer, 61, Sec)
     WhereAmI = "Pump ran 30sec"
   EndIf
 EndSub
@@ -365,8 +362,13 @@ BeginProg
   Call CloseSDM4SerialPorts
 
   Call StartADCP        ' why is this not after the Scan ? # Jerome
+
+  Timer(2, Sec, 0) ' TODO TEST FOR TIMER RESET
   
   Scan(Buoy_Interval,Min,0,0)
+
+  Call logging("Timer 2 value" & Timer(2, Sec, 4)) ' TODO TEST FOR TIMER RESET
+
   ScanDateTime = Public.TimeStamp(4,0)
   WhereAmI = "Initializing instrument"
 
@@ -421,7 +423,7 @@ BeginProg
 
   Call StopWellPump 'Pumped sensor are done, close pump
     
-  Call WaitForWeatherTimer
+  Call TimerDelay(Weather_Timer, 61, Sec)
     
   Call CollectPAR
 

@@ -30,14 +30,11 @@ Sub SampleOCRR
   WhereAmI = "Sample OCRR"
   
   Dim X, Y
-  Dim OCRRTimer
+  Dim Time_Left
   
   SerialOpen(SerialOCRR,19200,3,0,800)
   
-  OCRRTimer = Timer(3,Sec,4)
-  If OCRRTimer < 8 Then
-    Delay(1,8-OCRRTimer,Sec)
-  EndIf
+  Call TimerDelay(Pump_Timer, 3, Sec)
   
   SerialFlush(SerialOCRR)
   StringOCRR = ""
@@ -68,13 +65,10 @@ Sub SampleOCRI
   WhereAmI = "Sample OCRI"
  
   Dim X, Y
-  Dim OCRITimer
   
   SerialOpen(SerialOCRI,19200,51,0,800)
-  OCRITimer = Timer(7,Sec,4)
-  If OCRITimer < 8 Then
-    Delay(1,8-OCRITimer,Sec)
-  EndIf
+  
+  Call TimerDelay(Tower_Timer, 8, Sec)
   
   SerialFlush(SerialOCRI)
   StringOCRI = ""

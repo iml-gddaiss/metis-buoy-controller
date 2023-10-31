@@ -36,13 +36,10 @@ EndSub
 
 '### Sampling ###
 Sub StartWMT700
-  Dim WMT700Timer
+  Dim Time_Left
   
   If With_WMT700 Then
-    WMT700Timer = Timer(7,Sec,4) ' mettre un timer stop
-    If WMT700Timer < 8 Then
-      Delay(1,8-WMT700Timer,Sec)
-    EndIf
+    Call TimerDelay(Tower_Timer, 8, Sec)
     SerialOut(SerialTower,"$Ameas,1"&CHR(10),"",1,0)
   EndIf
 EndSub

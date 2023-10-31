@@ -30,20 +30,9 @@ EndFunction
 
 
 Sub StartTripletTimer
-  Timer(Triplet_Timer, Sec, 0)
+  Timer(Triplet_Timer, Sec, 2)
 EndSub
 
-
-Sub WaitForTripletTimer 
-  Dim Time_Left
-  
-  Time_Left = Timer(Triplet_Timer, Sec, 3)
-   
-  If Time_Left < 17 Then
-    Delay(1, 17-TripletTimer, Sec)
-  EndIf
-
-EndSub
 
 Sub StartTriplet
   'ECO-Triplet/w (W3) Start
@@ -68,7 +57,7 @@ Sub CollectTriplet(TAGString)
     
     RawTriplet = ""
     
-    Call WaitForTripletTimer
+    Call TimerDelay(Triplet_Timer, 17, Sec)
     
     SerialInRecord(SerialTriplet,RawTriplet,&H4242,0,&H0D0A,NBR,01)
     
