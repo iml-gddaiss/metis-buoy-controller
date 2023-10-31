@@ -49,7 +49,7 @@ Sub SBE37SalinityCheck
   Dim RawSBE37_Test As String * 40
   Dim SBE37_Test(4) as Float
   
-  If With_SBE37 <> 0 Then
+  If With_SBE37 Then
     WhereAmI = "SBE37 Salinity Check"
     Call logging("SBE37 Salinity Check")
     
@@ -90,7 +90,7 @@ Sub SampleSBE37(TAGString)
   ' we assume that the CTD has received the `tss` command thus, we send 
   ' the `sl` command. Otherwise the ctd internal storage will have duplicate sample.
   Dim X
-  If With_SBE37 <> 0 Then
+  If With_SBE37 Then
     WhereAmI = "Sampling SBE37"
     Call logging("Sampling SBE37")
     

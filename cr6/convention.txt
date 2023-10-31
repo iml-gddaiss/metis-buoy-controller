@@ -1,0 +1,11 @@
+Convention sur les noms des variables, funcitons et subroutine
+
+SubRoutine:
+
+Power<>: Power-up a device or devices.
+Stop<>: ... Power-down device or devices.
+Start<>: Open Serial Port -> maybe change to Open<>
+Close<>: ... close Serial
+Check<>: ...
+
+Update<>Table: Call the CallTable within its own Scan

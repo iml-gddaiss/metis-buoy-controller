@@ -1,15 +1,33 @@
-.TODO
-TagString table 
+.PROJECT TODO
+
+.. Ne pas ajuster l’heure du Campbell si le GPS n’est pas présent
+.. Envoyer des alarmes/emails/texto lorsque la bouée est hors position (dérive)
+.. Envoyer des alarmes/emails lorsque les batteries sont basses
+.. Ajouter un fichier qui contiendrait tous les profils de winch (comme le TagFile.dat qui contient toutes les transmissions), pour qu’on puisse supprimer les fichiers de transmission et de profil unique.
+.. Tester l’enregistrement des DataTable sur le carte µSD, pour voir si ça s’ajoute dans le « Connect > File Control » ou si ça reste transparent.
+
+.. PortFlags
+... BatteryLow = Voltage < BatteryLow_Thres
+... GPSOffPosition = ... (OnTheLoose, WeGotARunner)
+... WaterInfiltration(x3) = ...
+
+.MISC TODO
+.. TagString table 
+
 . General
 .. Les arguments des SubRoutine devrait avoir des noms différents des variables Public.
+
 . Compass
 .. Make Proper Timer
 .. Le code va planter si le compass retourne que des NAN
 .. Pourquoi un délais de 400ms
+
 . OCRs
 .. Nothing done with the OCR strings ?
+
 . Seafet
 .. Est-ce que recevoir la PHPROTagString serait pertinent même en cas de NAN pour voir qu'il y a un erreur ?
+
 . Weather-GPS
 .. Buoy_DIrection_Vector not assign anywhere ???? But used (FIXED in GPS)
 .. Are the units fine ? (knots)

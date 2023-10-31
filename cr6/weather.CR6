@@ -72,6 +72,7 @@ EndSub
 
 
 Sub WindCorrection(GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)
+  ''' TODO Use CRBAIS FUNCTION -> WindVector
   Dim X
   if GPS_SOG_X <> "NAN" AND GPS_SOG_Y <> "NAN" ' TODO FIXME is this ok ?
     For X = 1 To 3                           ' with the heading (which is already corrected with magnetic

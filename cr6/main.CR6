@@ -111,8 +111,8 @@ Const WD_Channel = U1 'Voltage reading
 Public Water_Detection_Main 
 
 
-Sub OpenTAGSFiles(UTC_Date_Short, UTC_Time_Short)
-  ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & UTC_Date_Short & UTC_Time_Short & ".dat","a",-1)
+Sub OpenTAGSFiles(_UTC_Date_Short_, _UTC_Time_Short_)
+  ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & _UTC_Date_Short_ & _UTC_Time_Short_ & ".dat","a",-1)
   TAGFile = FileOpen("CRD:" & Buoy_Name & "_TAGFile.txt","a",-1)
 EndSub
 
@@ -171,9 +171,9 @@ DataTable (Raw,1,-1)
 EndTable
 
 
-Function InitTagString(UTC_Date_Hyphen, UTC_Time_DDot, Latitude, Longitude, Heading, Pitch, Roll, COG, SOG, Water_Detection_Main)
+Function InitTagString(_UTC_Date_Hyphen_, _UTC_Time_DDot_, _Latitude_, _Longitude_, _Heading_, _Pitch_, _Roll_, _COG_, _SOG_, _Water_Detection_Main_)
   ' Buoy TAG with name, GPS, Compass, Flow & WaterDetection
-  InitTagString = "[INIT]" & Buoy_Name & "," & UTC_Date_Hyphen & "," & UTC_Time_DDot & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
+  InitTagString = "[INIT]" & Buoy_Name & "," & _UTC_Date_Hyphen_ & "," & _UTC_Time_DDot_ & "," & _Latitude_ & "," & _Longitude_ & "," & _Heading_ & "," & _Pitch_ & "," & _Roll_ & "," & _COG_ & "," & _SOG_ & "," & _Water_Detection_Main_
 EndFunction
 
 
@@ -206,7 +206,7 @@ Sub CloseSDM4SerialPorts
 EndSub
 
 
-Sub StartWaterDetectionSensor
+Sub PowerWaterDetectionSensor
  '5V to the Water Detection sensor, sample taked at the end --------------------
   If With_WD_Main Then
     PortSet(C4,1)
@@ -216,8 +216,8 @@ EndSub
 
 Sub PowerTowerInstruments
   'Starting the weather instrument as soon as possible to stabilize the OCR, start the PAR sample and initialize the WMT700
-  If With_Tower Then  
-      SW12(SW12_1,1)
+  If With_Tower Then
+      SW12(SW12_1,1) ' -----------------> FIMXE SW12(SW12_1, 0) ???
       Tower_IsPowered = True
       Tower_Timer = Timer(7,Sec,0)  'WMT700 power up delay
       Call logging("Tower Instrument Powered Up")
@@ -254,13 +254,13 @@ Sub CheckWaterDetection
 EndSub
 
 
-Sub StartWellPump(SBE37_In_SaltWater)
+Sub PowerWellPump(_SBE37_In_SaltWater_)
   'Starting pump
-  If (SBE37_In_SaltWater OR Bypass_Salinity) AND (With_Well_Pump AND NOT Disable_Pump) Then
+  If (_SBE37_In_SaltWater_ OR Bypass_Salinity) AND (With_Well_Pump AND NOT Disable_Pump) Then
     WhereAmI = "Start Well Pump"
     Call logging("Starting Well Pump")
     'Open Switch #2 to control pump for X sec
-    SW12(SW12_2,1)
+    SW12(SW12_2,1) ' -----------------> FIMXE SW12(SW12_1, 0) ???
     Well_IsPowered = True
     Timer(3,Sec,0) 'Start timer #3 for the pump working for min. 30 sec
   EndIf
@@ -282,7 +282,7 @@ Sub CheckWellPump
 EndSub
 
 
-Sub CloseWellPump
+Sub StopWellPump
   WhereAmI = "Close pump"
   If Well_IsPowered Then
     SW12(SW12_2,0)
@@ -372,7 +372,7 @@ BeginProg
 
   Call logging("Scan Start: ")
     
-  Call StartWaterDetectionSensor
+  Call PowerWaterDetectionSensor
       
   Call PowerTowerInstruments
 
@@ -390,7 +390,7 @@ BeginProg
 
   Call SBE37SalinityCheck
     
-  Call StartWellPump(SBE37_In_Saltwater)
+  Call PowerWellPump(SBE37_In_Saltwater)
   
   Call StartTriplet
   
@@ -419,7 +419,7 @@ BeginProg
 
   Call CollectSUNA(TAGString)
 
-  Call CloseWellPump 'Pumped sensor are done, close pump
+  Call StopWellPump 'Pumped sensor are done, close pump
     
   Call WaitForWeatherTimer
     
