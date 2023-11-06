@@ -68,7 +68,7 @@ Sub SampleOCRI
   
   SerialOpen(SerialOCRI,19200,51,0,800)
   
-  Call TimerDelay_Sec(Tower_Timer, 8
+  Call TimerDelay_Sec(Tower_Timer, 8)
   
   SerialFlush(SerialOCRI)
   StringOCRI = ""

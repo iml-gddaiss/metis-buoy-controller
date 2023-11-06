@@ -268,7 +268,7 @@ EndSub
 Sub CheckWellPump
   Dim WellTimer
   
-  If Well_IsPowered Then
+  If Well_IsPowered and With_Well_Pump Then
     WhereAmI = "See if pump is running 30sec"
     Call TimerDelay_Sec(Pump_Timer, 61)
     WhereAmI = "Pump ran 30sec"
@@ -415,8 +415,10 @@ BeginProg
   Call CollectSUNA(TAGString)
 
   Call StopWellPump 'Pumped sensor are done, close pump
-    
-  Call TimerDelay_Sec(Weather_Timer, 61)
+  
+  If With_Weather Then
+    Call TimerDelay_Sec(Weather_Timer, 61)
+  EndIf 
     
   Call CollectPAR
 

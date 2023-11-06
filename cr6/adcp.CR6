@@ -69,48 +69,22 @@ Sub StartADCP
   EndIf
 EndSub
  
-
-''' control sequence: dump until `\n\n` then read until the next `\n\n`. `\n` -> CHR(10)
 Sub CollectADCP(TAGString)
-  ''' Serial Reading Process
-  ''' 1: Read each line until nothing is left.
-  ''' 1.1: Split the line in 11 (num_cols) and appends it to a string seprated with comma.
-  ''' 2: Makes Data String
-  ''' 3: Flush Serial
-  Dim RawBuffer As String * 100
-  Dim RawBin(11) As Float
-  Dim row
-  Dim col
-  Dim num_cols = 11
-  
-  If With_ADCP Then  
-    row = 1
-    Do
-      SerialIn(RawBuffer, SerialADCP, 10, 10, 100)
-      
-      If Len(RawBuffer) = 0 Then
-        ExitDo
+  Dim X, Y
+  If With_ADCP Then
+    Call logging("Collecting ADCP") 
+    For X = 1 To 31 Step 1
+      SerialIn(RawADCP(X),SerialADCP,10,10,100)
+      Call logging("Row " & X & ": " & RawADCP(X))
+      If X > 3 Then
+        For Y = 1 To 4 Step 1 'Removes all single spaces (up to 8 space -> 1)
+          RawADCP(X) = Replace(RawADCP(X),"  "," ")
+        Next Y
+        RawADCP(X) = LTrim(RawADCP(X))
+       RawADCP(X) = Replace(RawADCP(X)," ",",")
       EndIf
-      
-      SplitStr(RawBin, RawBuffer, " ", num_cols, 10)
+    Next X
 
-      Call logging("ADCP raw bin:" & RawBin)
-      
-      For col = 1 To num_cols
-        RawADCP(row) &= RawBin(col)
-        If col < num_cols Then
-          RawADCP(row) &= ","
-        EndIf
-      Next col
-
-      Call logging("RawADCP (row=" & row & "): " & RawADCP(row))
-
-      row += 1
-            
-    Loop
-
-
-    Call logging("Raw ADCP: `" & RawADCP & "`")
     SplitStr(ADCPHeader,RawADCP(1)," ",3,5)
     SplitStr(ADCPBin1,RawADCP(5),",",11,5)
 
@@ -119,10 +93,9 @@ Sub CollectADCP(TAGString)
     Call UpdateADCPTable
 
     TAGString = ADCPTagString()
+
     Call WriteTagString '------------------------------------- Defined in main.cr6
+
   EndIf
+
 EndSub
-
-
-
-'### Processing ###

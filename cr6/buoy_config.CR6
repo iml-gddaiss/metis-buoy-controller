@@ -13,7 +13,7 @@ ConstTable (Buoy_Config,0)
     Const With_PAR = false
     Const With_OCR_I = false
 
-    Const With_SBE37 = True
+    Const With_SBE37 = false
     Const With_Seafet = false
     Const With_Triplet = false
     Const With_SUNA = false
@@ -21,7 +21,7 @@ ConstTable (Buoy_Config,0)
     Const With_OCR_R = false
 
     Const With_Wave = false
-    Const With_ADCP = false
+    Const With_ADCP = true
     Const With_Winch = false
     Const With_WD_Main = false
     Const With_Power = false
