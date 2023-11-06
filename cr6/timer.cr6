@@ -1,10 +1,10 @@
 
-Dim Weather_Timer = 1
+Dim Weather_Timer  = 1 
 
 Dim Pump_Timer = 3
 Dim Triplet_Timer = 4
 Dim Suna_Timer = 5
-Dim RainReset_Timer = 6
+Dim Rain_Timer = 6
 Dim Tower_Timer = 7
 
 

@@ -126,6 +126,3 @@ Sub CollectWXT536
     WhereAmI = "Finish WXT536"
   EndIf
 EndSub
-
-
-'### Processing ###

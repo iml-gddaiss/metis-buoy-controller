@@ -100,6 +100,7 @@ Sub CollectADCP(TAGString)
         RawADCP(row) &= RawBin(col)
         If col < num_cols Then
           RawADCP(row) &= ","
+        EndIf
       Next col
 
       Call logging("RawADCP (row=" & row & "): " & RawADCP(row))

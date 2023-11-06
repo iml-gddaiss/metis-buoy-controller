@@ -122,5 +122,3 @@ Sub SampleOCRs
     WhereAmI = "End OCR"
   EndIf
 EndSub
-
-'### Processing ###

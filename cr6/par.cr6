@@ -49,4 +49,3 @@ Sub CollectPAR
   
   EndIf
 EndSub
-'### Processing ###

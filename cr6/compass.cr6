@@ -125,9 +125,3 @@ Sub SampleCompass
     WhereAmI = "End Compass"
   EndIf
 EndSub
-
-
-
-
-
-

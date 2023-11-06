@@ -169,5 +169,3 @@ Sub CollectPCO2
               
   EndIf 'If there's a water and an air string
 EndSub
-
-'### Processing ###

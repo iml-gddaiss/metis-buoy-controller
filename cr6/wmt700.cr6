@@ -66,6 +66,3 @@ Sub CollectWMT700
     WhereAmI = "Finish WMT700"
   EndIf
 EndSub
-
-
-'### Processing ###

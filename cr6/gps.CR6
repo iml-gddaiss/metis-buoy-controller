@@ -120,5 +120,3 @@ Sub SampleGPS
         WhereAmI = "EndGPS, start Start Tower"
     EndIf
 EndSub
-
-'### Processing ###

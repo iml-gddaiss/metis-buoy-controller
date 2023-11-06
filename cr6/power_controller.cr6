@@ -82,6 +82,3 @@ Sub SamplePowerController(TAGString)
   
   EndIf
 EndSub
-
-
-'### Processing ###

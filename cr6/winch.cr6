@@ -150,5 +150,3 @@ Sub CollectWinch
         FileClose(WinchFile)
     EndIf
 EndSub
-
-'### Processing ###
