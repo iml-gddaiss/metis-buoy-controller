@@ -1,6 +1,6 @@
 ConstTable (Buoy_Config,0)
     Const Buoy_Name = "PMZA-RIKI" 
-    Const Buoy_Interval = 1
+    Const Buoy_Interval = 20
     Const PCO2_Interval = 12
     Const Winch_Interval = 5
     Const Depth_for_Winch = 210

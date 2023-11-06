@@ -95,7 +95,7 @@ Include "CPU:serials.cr6"
 Include "CPU:logging.cr6"                         '#   Logging module
 Include "CPU:timer.cr6"                         '#   Timer Values module
 
-' Configuration Flags
+' Configuration Flags FIXME THese could be in BuoyConfig
 Const With_Tower_485 = With_WXT536 OR With_WMT700 OR With_Compass       
 Const With_Tower = With_PAR OR With_WMT700 OR With_Compass OR With_OCR_I
 Const With_Weather = With_WXT536 OR With_WMT700 OR With_PAR
@@ -120,9 +120,6 @@ Sub WriteTagString 'Use in imported CR6 Files
   FileWrite(TAGFile,TAGString & CHR(10),0)
   FileWrite(ToTransmit,TAGString & CHR(10),0)
 EndSub
-
-
-
 
 '###### DECLARING INSUTRMENTS #####
 ' Instrument serial a declered in their respective cr6 files.
@@ -212,7 +209,7 @@ Sub PowerWaterDetectionSensor
   EndIf
 EndSub
 
-
+' >>>> MOVE TOWER TODO
 Sub PowerTowerInstruments
   'Starting the weather instrument as soon as possible to stabilize the OCR, start the PAR sample and initialize the WMT700
   If With_Tower Then
@@ -241,7 +238,7 @@ Sub CloseTower485
     WhereAmI = "Close Tower"
   EndIf	  
 EndSub
-
+' <<<<<
 
 Sub CheckWaterDetection
   If With_WD_Main Then
@@ -252,7 +249,7 @@ Sub CheckWaterDetection
   EndIf
 EndSub
 
-
+' >>>>>> MO TO PUMP TODO
 Sub PowerWellPump(_SBE37_In_SaltWater_)
   'Starting pump
   If (_SBE37_In_SaltWater_ OR Bypass_Salinity) AND (With_Well_Pump AND NOT Disable_Pump) Then
@@ -286,9 +283,9 @@ Sub StopWellPump
     Well_IsPowered = False
   EndIf
 EndSub
+' <<<<<<
 
-
-Sub SamplePCO2
+Sub SamplePCO2 'Move to pco2.cr6 ? TODO
   Buoy_TimeStamp_1990 = Public.TimeStamp(1)
       
   'minus 10sec to not skip a scan planned at PCO2_Interval hour (got 3599s and didn't sampled)
@@ -314,7 +311,7 @@ Sub SamplePCO2
 EndSub
 
 
-Sub SampleWinch
+Sub SampleWinch 'Move to winch.cr6 ? TODO
   Buoy_TimeStamp_1990 = Public.TimeStamp(1)
   WinchMessage = "Entering the Winch Block"
   MissingCondition = 0
@@ -361,13 +358,9 @@ BeginProg
       
   Call CloseSDM4SerialPorts
 
-  Call StartADCP        ' why is this not after the Scan ? # Jerome
+  Call StartADCP
 
-  Timer(2, Sec, 0) ' TODO TEST FOR TIMER RESET
-  
-  Scan(Buoy_Interval,Min,0,0)
-
-  Call logging("Timer 2 value" & Timer(2, Sec, 4)) ' TODO TEST FOR TIMER RESET
+  Scan(Buoy_Interval,Sec,0,0)
 
   ScanDateTime = Public.TimeStamp(4,0)
   WhereAmI = "Initializing instrument"
