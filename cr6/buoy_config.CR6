@@ -4,6 +4,7 @@ ConstTable (Buoy_Config,0)
     Const PCO2_Interval = 12
     Const Winch_Interval = 5
     Const Depth_for_Winch = 210
+    Const ADCP_Num_Bin = 27
 
     Const Instrument_installed = "As Follow" ' ??? Jérôme
     Const With_GPS = false
