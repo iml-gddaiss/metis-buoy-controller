@@ -44,7 +44,7 @@ EndSub
 Sub StartWeatherTimer
   'Start Timer#1 to collect data in 61sec
   If With_Weather Then
-    Timer(Weather_Timer, Sec,2)
+    Timer(Weather_Timer, Sec, 2)
   EndIf
 EndSub
 

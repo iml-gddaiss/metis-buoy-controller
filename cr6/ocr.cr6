@@ -34,7 +34,7 @@ Sub SampleOCRR
   
   SerialOpen(SerialOCRR,19200,3,0,800)
   
-  Call TimerDelay(Pump_Timer, 3, Sec)
+  Call TimerDelay_Sec(Pump_Timer, 3)
   
   SerialFlush(SerialOCRR)
   StringOCRR = ""
@@ -68,7 +68,7 @@ Sub SampleOCRI
   
   SerialOpen(SerialOCRI,19200,51,0,800)
   
-  Call TimerDelay(Tower_Timer, 8, Sec)
+  Call TimerDelay_Sec(Tower_Timer, 8
   
   SerialFlush(SerialOCRI)
   StringOCRI = ""

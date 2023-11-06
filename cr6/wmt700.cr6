@@ -39,7 +39,7 @@ Sub StartWMT700
   Dim Time_Left
   
   If With_WMT700 Then
-    Call TimerDelay(Tower_Timer, 8, Sec)
+    Call TimerDelay_Sec(Tower_Timer, 8)
     SerialOut(SerialTower,"$Ameas,1"&CHR(10),"",1,0)
   EndIf
 EndSub

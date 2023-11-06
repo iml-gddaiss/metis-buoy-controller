@@ -68,7 +68,7 @@ EndSub
 
 Sub CollectSUNA(TAGString)
   If With_SUNA Then
-    Call TimerDelay(Suna_Timer, 12, Sec)
+    Call TimerDelay_Sec(Suna_Timer, 12)
     
     WhereAmI = "Collect SUNA"  
     SerialInRecord(SerialSUNA,RawSUNALight,&H4C43,0,&H0D0A,NBR,101)

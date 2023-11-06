@@ -8,11 +8,11 @@ Dim RainReset_Timer = 6
 Dim Tower_Timer = 7
 
 
-Sub TimerDelay(TimerNo, TDelay, TUnits)
-    ' Wait for the TimerNo to reach the TDelay
+Sub TimerDelay_Sec(Timer_No, Delay_Sec)
+    ' Wait for the TimerNo to reach the Delay_Sec
     Dim Time_Left
-    Time_Left = Timer(TimerNo, TUnits,4)
-    If Time_Left < TDelay Then
-        Delay(1,TDelay-Time_Left, TUnits)
+    Time_Left = Timer(Timer_No, Sec,4)
+    If Time_Left < Delay_Sec Then
+        Delay(1, Delay_Sec - Time_Left, Sec)
     EndIf
 EndSub

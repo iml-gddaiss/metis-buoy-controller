@@ -273,7 +273,7 @@ Sub CheckWellPump
   
   If Well_IsPowered Then
     WhereAmI = "See if pump is running 30sec"
-    Call TimerDelay(Pump_Timer, 61, Sec)
+    Call TimerDelay_Sec(Pump_Timer, 61)
     WhereAmI = "Pump ran 30sec"
   EndIf
 EndSub
@@ -423,7 +423,7 @@ BeginProg
 
   Call StopWellPump 'Pumped sensor are done, close pump
     
-  Call TimerDelay(Weather_Timer, 61, Sec)
+  Call TimerDelay_Sec(Weather_Timer, 61)
     
   Call CollectPAR
 

@@ -57,7 +57,7 @@ Sub CollectTriplet(TAGString)
     
     RawTriplet = ""
     
-    Call TimerDelay(Triplet_Timer, 17, Sec)
+    Call TimerDelay_Sec(Triplet_Timer, 17)
     
     SerialInRecord(SerialTriplet,RawTriplet,&H4242,0,&H0D0A,NBR,01)
     
