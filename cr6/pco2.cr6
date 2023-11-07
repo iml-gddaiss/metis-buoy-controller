@@ -115,7 +115,6 @@ EndSub
 
 
 
-
 Sub CollectPCO2
   SerialIn(RawPCO2,SerialPCO2,10,"Sample Complete",500)
   If RawPCO2_Water = "" Then
@@ -167,4 +166,32 @@ Sub CollectPCO2
     CO2_Air = "#.#"
               
   EndIf 'If there's a water and an air string
+EndSub
+
+
+Sub SamplePCO2 'Move to pco2.cr6 ? TODO
+  Dim time_stamp
+  If With_PCO2 AND (Salinity > 10 OR Bypass_Salinity) Then 'Security for PCO2 pump if not in water
+    time_stamp = Public.TimeStamp(1)
+    'minus 10sec to not skip a scan planned at PCO2_Interval hour (got 3599s and didn't sampled)
+    WhereAmI = "Start PCO2"
+    If (PCO2_Last_Sample + (PCO2_Interval*60*60) - 10 <= time_stamp) AND NOT PCO2_Sampling Then
+      ' WhereAmI = "Entering PCO2 Loop"
+      Call StartPCO2
+    EndIf
+    
+    If PCO2_Sampling Then
+      'Watchdog if there's no data in 1Hour (if power disconnected during sampling)
+                          'sec
+      If (PCO2_Last_Sample + 3600) < time_stamp Then
+        Call EmptyPCO2Table '  Change le nom #jerome July 2023
+      Else
+        Call CollectPCO2
+        If RawPCO2_Water <> "" AND RawPCO2_Air <> "" Then 'TODO FIXME ME: Vérifier avec Anthony. C'est la seule place qui n'envoie pas le tags en cas de NA data ? #jerome July 2023
+          TAGString = "[PCO2]" & CO2_Water & "," & CO2_Air & "," & PCO2_Gaz_Pressure_Water & "," & PCO2_Gaz_Pressure_Air & "," & PCO2_Humidity
+          Call WriteTagString
+        EndIf
+      EndIf 'If Else Watchdog TODO
+    EndIf 'If PCO2_Sampling is True
+  EndIf 'If there's a PCO2 and salinity (or bypass)
 EndSub

@@ -11,38 +11,7 @@
 '----------------------------- Main Program -----------------------------------
 '------------------------------------------------------------------------------
 
-''' Start sampling '''
-'Close unused port on SDM
-'Open 5V for the Water_Detection_Main
-'Start Weather sensor
-'Collect SBE37 to verify there's salt water -> Start pump
-'Collect GPS data
-'Start Triplet
-'Start Flowmeter (not yet done)
-'Collect Compass (60 samples / 2Hz)
-'Collect Flowmeter (not yet done)
-'Collect Water_Detection_Main
-'Collect Power
-'Collect ADCP (not yet done)
-'Collect Triplet
-
-''' After pump running min. 30sec '''
-'Start SUNA
-'Collect SBE37
-'Collect Seafet
-'Collect SUNA
-
-''' After the weather station collected for min. 61sec '''
-'Collect PAR
-'Collect Weather (WMT700 & WXT536)
-'Collect OCR ?
-
-''' Before ending scan '''
-'Collect Wave
-'Collect PCO2 / Start sample / Delay sample
-'Collect Winch / Start Winch / Delay Winch
-
-''' Send data and End Scan '''
+'################################ TODO ###############################################
 
 SequentialMode
 AngleDegrees
@@ -86,9 +55,6 @@ Dim TAGFile As Long
 Dim WinchFile As Long
 Dim ToTransmit As Long
 
-
-' Const SerialTower = 32 'RS485 As WMT700(A), WXT536(2) & Compass(1)
-
 ' Instruments state
 Include "CPU:buoy_config.cr6"                     '#   Declare Buoy Config
 Include "CPU:serials.cr6"
@@ -130,12 +96,16 @@ Include "CPU:eco_triplet.cr6"               '#W2 Declare ECO-Triplet
 Include "CPU:seafet.cr6"                    '#W3 Declare Seafet 
 Include "CPU:suna.cr6"                      '#W4 Declare SUNA 
 Include "CPU:pco2.cr6"                      '#W5 PCO2
-Include "CPU:ocr.cr6"                '#W7 HyperOCR_R 
+Include "CPU:ocr.cr6"                       '#W7 HyperOCR_R  & #T6 HyperOCR_I
 Include "CPU:wave_monitor.cr6"              '#M1 Wave_Monitor 
 Include "CPU:power_controller.cr6"          '#M3 Power Controller
 Include "CPU:adcp.cr6"                      '#M4 ADCP 
 
 Include "CPU:winch.cr6"                     '#M5 Winch 
+
+Include "CPU:tower.cr6"                     '  ?
+Include "CPU:water_detection.cr6"           '#M2
+Include "CPU:well_pump.cr6"                 ' ?
 
 '####### Different processing past this point #######
 'Wind compensation by Compass and GPS
@@ -170,7 +140,6 @@ Function InitTagString(_UTC_Date_Hyphen_, _UTC_Time_DDot_, _Latitude_, _Longitud
 EndFunction
 
 
-
 Sub CloseCR6SerialPorts
   Dim port
   'Close all serial port on CR6 if still open except ADCP
@@ -196,120 +165,6 @@ Sub CloseSDM4SerialPorts
       SerialClose(port)
     EndIf
   Next port
-EndSub
-
-' >>>> MOVE WaterDetection TODO
-
-Const Water_Detection_Channel = U1 'Voltage reading
-Public Water_Detection_Main '>>> but this in the water detection script ?
-
-Sub PowerWaterDetectionSensor
- '5V to the Water Detection sensor, sample taked at the end --------------------
-  If With_Water_Detection_Main Then
-    PortSet(C4,1)
-  EndIf
-EndSub
-
-Sub CheckWaterDetection
-  If With_Water_Detection_Main Then
-    WhereAmI = "Check Water Detection"
-    Water_Detection_Main = 0
-    VoltSe(Water_Detection_Main,1,AutoRange,Water_Detection_Channel,0,0,15000,1,0)
-    PortSet(C4,0)
-  EndIf
-EndSub
-' <<<<<
-
-' >>>> MOVE TOWER TODO
-Sub PowerTowerInstruments
-  'Starting the weather instrument as soon as possible to stabilize the OCR, start the PAR sample and initialize the WMT700
-  If With_Tower Then
-      SW12(SW12_1,1) ' -----------------> FIMXE SW12(SW12_1, 0) ???
-      Tower_IsPowered = True
-      Timer(Tower_Timer,Sec,0)  'WMT700 power up delay
-      Call logging("Tower Instrument Powered Up")
-  EndIf
-EndSub
-
-
-Sub StartTower485
-  'Open the RS485 port if there's one of the intruments
-  'Opening SDM and PAR (T5) voltage. 1sec before communication  
-  If With_Tower_485 Then
-    SerialOpen(SerialTower,19200,51,20,500) 'for 2R! test
-  EndIf
-EndSub
-
-
-Sub CloseTower485
-  If With_Tower_485 Then
-    SerialClose(SerialTower)
-    SW12(SW12_1,0)
-    Tower_IsPowered = False
-    WhereAmI = "Close Tower"
-  EndIf	  
-EndSub
-' <<<<<
-
-
-' >>>>>> MOVE TO PUMP TODO
-Sub PowerWellPump(_SBE37_In_SaltWater_)
-  'Starting pump
-  If (_SBE37_In_SaltWater_ OR Bypass_Salinity) AND (With_Well_Pump AND NOT Disable_Pump) Then
-    WhereAmI = "Start Well Pump"
-    Call logging("Starting Well Pump")
-    'Open Switch #2 to control pump for X sec
-    SW12(SW12_2,1) ' -----------------> FIMXE SW12(SW12_1, 0) ???
-    Well_IsPowered = True
-    
-    Timer(Pump_Timer,Sec,2) 'Start timer #3 for the pump working for min. 30 sec
-  
-  EndIf
-EndSub
-
-
-Sub WaitForWellPump  
-  If Well_IsPowered and With_Well_Pump Then
-    WhereAmI = "See if pump is running 30sec"
-    Call TimerDelay_Sec(Pump_Timer, 61)
-    WhereAmI = "Pump ran 30sec"
-  EndIf
-EndSub
-
-
-Sub StopWellPump
-  WhereAmI = "Close pump"
-  If Well_IsPowered Then
-    SW12(SW12_2,0)
-    Well_IsPowered = False
-  EndIf
-EndSub
-' <<<<<<
-
-Sub SamplePCO2 'Move to pco2.cr6 ? TODO
-  Dim time_stamp
-  time_stamp = Public.TimeStamp(1)
-      
-  'minus 10sec to not skip a scan planned at PCO2_Interval hour (got 3599s and didn't sampled)
-  WhereAmI = "Start PCO2"
-  If (PCO2_Last_Sample + (PCO2_Interval*60*60) - 10 <= time_stamp) AND PCO2_Sampling = false Then
-    ' WhereAmI = "Entering PCO2 Loop"
-    Call StartPCO2
-  EndIf
-  
-  If PCO2_Sampling Then
-    'Watchdog if there's no data in 1Hour (if power disconnected during sampling)
-                        'sec
-    If (PCO2_Last_Sample + 3600) < time_stamp Then
-      Call EmptyPCO2Table '  Change le nom #jerome July 2023
-    Else
-      Call CollectPCO2
-      If RawPCO2_Water <> "" AND RawPCO2_Air <> "" Then 'TODO FIXME ME: Vérifier avec Anthony. C'est la seule place qui n'envoie pas le tags en cas de NA data ? #jerome July 2023
-        TAGString = "[PCO2]" & CO2_Water & "," & CO2_Air & "," & PCO2_Gaz_Pressure_Water & "," & PCO2_Gaz_Pressure_Air & "," & PCO2_Humidity
-        Call WriteTagString
-      EndIf
-    EndIf 'If Else Watchdog
-  EndIf 'If PCO2_Sampling is True
 EndSub
 
 
@@ -388,9 +243,7 @@ BeginProg
   
   Call CollectWMT700
   
-  Call CloseTower485
-
-  'Creating Weather file if Wind, GPS & Compass ---------------------------------   
+  Call StopTower485
   
   Call SelectWeatherInstrument   
       
@@ -400,13 +253,8 @@ BeginProg
 
   Call CollectADCP(TAGString)
   
-  'PCO2 ------------------------------------------------------------------------- TODO put this in PCO2
-  If With_PCO2 AND (Salinity > 10 OR Bypass_Salinity) Then 'Security for PCO2 pump if not in water
-    Call SamplePCO2
-  EndIf 'If there's a PCO2 and salinity (or bypass)
-    
-
-  'Winch -------------------------------------------------------------------------
+  Call SamplePCO2
+  
   Call WinchMission(Salinity)
   
   Call CloseCR6SerialPorts

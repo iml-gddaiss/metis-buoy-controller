@@ -104,6 +104,7 @@ Sub CheckWinchStatus 'Should it be started earlier ?? 'Should it be close afterw
     Else
         WinchMessage = "Winch in Progress"
     EndIf
+    SerialClose(SerialWinch)
 EndSub
 
 Sub StartWinchMission
@@ -130,6 +131,7 @@ Sub StartWinchMission
     Else 'No string from CTD
             WinchMessage = "No String received from CTD" 'and ????
     EndIf
+    SerialClose(SerialWinch)
 EndSub
 
 
@@ -188,7 +190,9 @@ Sub CollectWinch
         FileWrite(WinchFile,Buoy_Name&CHR(10),0)     
         FileWrite(WinchFile,Winch_Lat&","&Winch_Long&CHR(10),0)    
         FileWrite(WinchFile,"D"&CHR(10),0)
-
+        
+        SerialOpen(SerialWinch,19200,3,20,100) 'Should it be started earlier ??
+        SerialFlush(SerialWinch)
         SerialOut(SerialWinch,"D"&CHR(13)&CHR(10),0,1,0)
         
         Do 
@@ -197,9 +201,11 @@ Sub CollectWinch
             FileWrite(WinchFile,WinchString,0)
         Loop While WinchString <> ""
         
+        SerialClose(SerialWinch)
         
         WhereAmI = "Out of Do.. While Loop after winch"
         WinchString = ""
         FileClose(WinchFile)
+        
     EndIf
 EndSub

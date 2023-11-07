@@ -1,0 +1,28 @@
+Sub PowerTowerInstruments
+  'Starting the weather instrument as soon as possible to stabilize the OCR, start the PAR sample and initialize the WMT700
+  If With_Tower Then
+      SW12(SW12_1,1) ' -----------------> FIMXE SW12(SW12_1, 0) ???
+      Tower_IsPowered = True
+      Timer(Tower_Timer,Sec,0)  'WMT700 power up delay
+      Call logging("Tower Instrument Powered Up")
+  EndIf
+EndSub
+
+
+Sub StartTower485
+  'Open the RS485 port if there's one of the intruments
+  'Opening SDM and PAR (T5) voltage. 1sec before communication  
+  If With_Tower_485 Then
+    SerialOpen(SerialTower,19200,51,20,500) 'for 2R! test
+  EndIf
+EndSub
+
+
+Sub StopTower485
+  If With_Tower_485 Then
+    SerialClose(SerialTower)
+    SW12(SW12_1,0)
+    Tower_IsPowered = False
+    WhereAmI = "Close Tower"
+  EndIf	  
+EndSub
