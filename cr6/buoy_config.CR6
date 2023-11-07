@@ -24,7 +24,7 @@ ConstTable (Buoy_Config,0)
     Const With_Wave = false
     Const With_ADCP = true
     Const With_Winch = false
-    Const With_WD_Main = false
+    Const With_Water_Detection_Main = false
     Const With_Power = false
 
     Const Buoy_Config = "As Follow" 

@@ -9,7 +9,6 @@ Dim RawPCO2_Air As String * 100
 Dim RawPCO2_Water As String * 100
 
 Public PCO2_Last_Sample As Long
-Dim Buoy_TimeStamp_1990 As Long
 Public PCO2_Sampling As Boolean
 
 Dim PCO2WStart

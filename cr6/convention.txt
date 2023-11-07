@@ -9,3 +9,6 @@ Close<>: ... close Serial
 Check<>: ...
 
 Update<>Table: Call the CallTable within its own Scan
+
+
+_<VARIABLE>_: means that it comes from another devices. 

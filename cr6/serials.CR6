@@ -26,7 +26,7 @@ Const SerialSUNA = 41 'RS232
 '## -------  ##
 
 '## Address 8 ##
-' 44
+' 44                 ' Doesn't Compile when using 44 as serial.
 Const SerialPower = 45 'RS485
 Const SerialWave = 46 'RS232
 ' 47 Does Not Exist

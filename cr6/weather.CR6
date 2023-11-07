@@ -48,6 +48,14 @@ Sub StartWeatherTimer
   EndIf
 EndSub
 
+
+Sub WaitForWeather
+  If With_Weather Then
+    Call TimerDelay_Sec(Weather_Timer, 61)
+  EndIf 
+EndSub
+
+
 Sub SelectWeatherInstrument
   If WMT700(5) = CHR(00) OR WMT700(5) = 0 Then  ' If there's data from WMT700, taking them as Wind
     Wind() = WXT536_Wind()

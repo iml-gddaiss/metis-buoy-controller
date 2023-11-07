@@ -11,8 +11,15 @@
 ... GPSOffPosition = ... (OnTheLoose, WeGotARunner)
 ... WaterInfiltration(x3) = ...
 
+... Trouver une manière de demander un winch maintenant.
+..... Dans le slow sequence (New Variable: Start Winch Now)
+....... Ouvrir Sample GPS
+....... Partir la Winch
+
 .MISC TODO
-.. TagString table 
+.. Add 'Table' to data table names ???
+
+.. TagString table  ?
 
 . General
 .. Les arguments des SubRoutine devrait avoir des noms différents des variables Public.

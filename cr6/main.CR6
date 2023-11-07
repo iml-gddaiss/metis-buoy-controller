@@ -12,7 +12,7 @@
 '------------------------------------------------------------------------------
 
 ''' Start sampling '''
-'Close unused SerialPort on SDM
+'Close unused port on SDM
 'Open 5V for the Water_Detection_Main
 'Start Weather sensor
 'Collect SBE37 to verify there's salt water -> Start pump
@@ -101,14 +101,11 @@ Const With_Tower = With_PAR OR With_WMT700 OR With_Compass OR With_OCR_I
 Const With_Weather = With_WXT536 OR With_WMT700 OR With_PAR
 Const With_Well_Pump = With_SBE37 OR With_Seafet OR With_SUNA OR With_OCR_R
 
+'>>>> Put this and the Slow Sequence in another script ?
 Public Manual_Tower_Switch = false
 Public Manual_Well_Switch = false
-
 Public Send_Break_to_ADCP = false
-
-Const WD_Channel = U1 'Voltage reading
-Public Water_Detection_Main 
-
+'<<<<
 
 Sub OpenTAGSFiles(_UTC_Date_Short_, _UTC_Time_Short_)
   ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & _UTC_Date_Short_ & _UTC_Time_Short_ & ".dat","a",-1)
@@ -166,7 +163,7 @@ DataTable (Raw,1,-1)
   Sample (1,WinchMessage,String)
 EndTable
 
-
+' This should be a subRoutine ?
 Function InitTagString(_UTC_Date_Hyphen_, _UTC_Time_DDot_, _Latitude_, _Longitude_, _Heading_, _Pitch_, _Roll_, _COG_, _SOG_, _Water_Detection_Main_)
   ' Buoy TAG with name, GPS, Compass, Flow & WaterDetection
   InitTagString = "[INIT]" & Buoy_Name & "," & _UTC_Date_Hyphen_ & "," & _UTC_Time_DDot_ & "," & _Latitude_ & "," & _Longitude_ & "," & _Heading_ & "," & _Pitch_ & "," & _Roll_ & "," & _COG_ & "," & _SOG_ & "," & _Water_Detection_Main_
@@ -175,39 +172,53 @@ EndFunction
 
 
 Sub CloseCR6SerialPorts
-  Dim SerialPort
+  Dim port
   'Close all serial port on CR6 if still open except ADCP
-  For SerialPort = 11 To 16 Step 1
-    If SerialPort = SerialADCP Then
+  For port = 11 To 16 Step 1
+    If port = SerialADCP Then
       'Do not close the ADCP port
-    Else If SerialPort = 13 AND WinchMessage <> "Interval not reach" Then ' is this ok ? was not in Subroutine at the start of the program # JEROME FIXME
+    Else If port = 13 AND WinchMessage <> "Interval not reach" Then ' is this ok ? was not in Subroutine at the start of the program # JEROME FIXME
       'Do not close port
     Else
-      SerialClose(SerialPort)
+      SerialClose(port)
     EndIf
-  Next SerialPort
+  Next port
 EndSub
 
 
 Sub CloseSDM4SerialPorts
-  Dim SerialPort
+  Dim port
   'Close all serial port on SDM4, except for PCO2 (40) which must stays on is PCO2 is sampling
-  For SerialPort = 32 To 47 Step 1
-    If SerialPort = SerialPCO2 AND PCO2_Sampling = true Then
+  For port = 32 To 47 Step 1
+    If port = SerialPCO2 AND PCO2_Sampling = true Then
     'Do not close the port
     Else
-      SerialClose(SerialPort)
+      SerialClose(port)
     EndIf
-  Next SerialPort
+  Next port
 EndSub
 
+' >>>> MOVE WaterDetection TODO
+
+Const Water_Detection_Channel = U1 'Voltage reading
+Public Water_Detection_Main '>>> but this in the water detection script ?
 
 Sub PowerWaterDetectionSensor
  '5V to the Water Detection sensor, sample taked at the end --------------------
-  If With_WD_Main Then
+  If With_Water_Detection_Main Then
     PortSet(C4,1)
   EndIf
 EndSub
+
+Sub CheckWaterDetection
+  If With_Water_Detection_Main Then
+    WhereAmI = "Check Water Detection"
+    Water_Detection_Main = 0
+    VoltSe(Water_Detection_Main,1,AutoRange,Water_Detection_Channel,0,0,15000,1,0)
+    PortSet(C4,0)
+  EndIf
+EndSub
+' <<<<<
 
 ' >>>> MOVE TOWER TODO
 Sub PowerTowerInstruments
@@ -240,16 +251,8 @@ Sub CloseTower485
 EndSub
 ' <<<<<
 
-Sub CheckWaterDetection
-  If With_WD_Main Then
-    WhereAmI = "Check Water Detection"
-    Water_Detection_Main = 0
-    VoltSe(Water_Detection_Main,1,AutoRange,U1,0,0,15000,1,0)
-    PortSet(C4,0)
-  EndIf
-EndSub
 
-' >>>>>> MO TO PUMP TODO
+' >>>>>> MOVE TO PUMP TODO
 Sub PowerWellPump(_SBE37_In_SaltWater_)
   'Starting pump
   If (_SBE37_In_SaltWater_ OR Bypass_Salinity) AND (With_Well_Pump AND NOT Disable_Pump) Then
@@ -265,9 +268,7 @@ Sub PowerWellPump(_SBE37_In_SaltWater_)
 EndSub
 
 
-Sub CheckWellPump
-  Dim WellTimer
-  
+Sub WaitForWellPump  
   If Well_IsPowered and With_Well_Pump Then
     WhereAmI = "See if pump is running 30sec"
     Call TimerDelay_Sec(Pump_Timer, 61)
@@ -286,11 +287,12 @@ EndSub
 ' <<<<<<
 
 Sub SamplePCO2 'Move to pco2.cr6 ? TODO
-  Buoy_TimeStamp_1990 = Public.TimeStamp(1)
+  Dim time_stamp
+  time_stamp = Public.TimeStamp(1)
       
   'minus 10sec to not skip a scan planned at PCO2_Interval hour (got 3599s and didn't sampled)
   WhereAmI = "Start PCO2"
-  If (PCO2_Last_Sample + (PCO2_Interval*60*60) - 10 <= Buoy_TimeStamp_1990) AND PCO2_Sampling = false Then
+  If (PCO2_Last_Sample + (PCO2_Interval*60*60) - 10 <= time_stamp) AND PCO2_Sampling = false Then
     ' WhereAmI = "Entering PCO2 Loop"
     Call StartPCO2
   EndIf
@@ -298,7 +300,7 @@ Sub SamplePCO2 'Move to pco2.cr6 ? TODO
   If PCO2_Sampling Then
     'Watchdog if there's no data in 1Hour (if power disconnected during sampling)
                         'sec
-    If (PCO2_Last_Sample + 3600) < Buoy_TimeStamp_1990 Then
+    If (PCO2_Last_Sample + 3600) < time_stamp Then
       Call EmptyPCO2Table '  Change le nom #jerome July 2023
     Else
       Call CollectPCO2
@@ -308,45 +310,6 @@ Sub SamplePCO2 'Move to pco2.cr6 ? TODO
       EndIf
     EndIf 'If Else Watchdog
   EndIf 'If PCO2_Sampling is True
-EndSub
-
-
-Sub SampleWinch 'Move to winch.cr6 ? TODO
-  Buoy_TimeStamp_1990 = Public.TimeStamp(1)
-  WinchMessage = "Entering the Winch Block"
-  MissingCondition = 0
-                        'minus 10sec to not skip a scan planned at Winch_Interval hour (got 3599s and didn't sampled)
-  If (Winch_Last_Sample + (Winch_Interval*60*60) - 10 <= Buoy_TimeStamp_1990) AND Winch_Sampling Then
-    WhereAmI = "Starting A Winch"
-    If With_WXT536 Then
-      Call CheckWinchAir(Air_Temp) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
-    EndIf
-    
-    If With_Wave Then
-      Call CheckWinchWave(Wave_H13, Wave_Period) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
-    EndIf
-          
-    If With_GPS Then
-      Call CheckWinchGPS(SOG) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
-    EndIf
-    
-    If With_Power Then
-      Call CheckWinchPower(VBatt1, VBatt2) 'REPLACe BY FUNCTION TO INCREMENT MISSINGCONDITION
-    EndIf
-
-    If MissingCondition = 0 Then
-      Call StartWinch(Buoy_TimeStamp_1990, GPS_Date, UTC_Date_Hyphen, UTC_Time_Short, UTC_Time_DDot, Lat, Lon, Lat_Hem, Lon_Hem) 
-    EndIf
-  
-  ElseIf Winch_Sampling Then
-    WhereAmI = "Check if the winch is done"
-    Call CheckWinch
-  Else
-    WinchMessage = "Interval not reach"
-  EndIf  
-  
-  TAGString = "[WNCH]" + WinchMessage
-  Call WriteTagString
 EndSub
 
 
@@ -396,13 +359,14 @@ BeginProg
   Call OpenTAGSFiles(UTC_Date_Short, UTC_Time_Short)
   
   TAGString = InitTagString(UTC_Date_Hyphen, UTC_Time_DDot, Latitude, Longitude, Heading, Pitch, Roll, COG, SOG, Water_Detection_Main)
+  
   Call WriteTagString
     
   Call SamplePowerController(TAGString)
 
   Call CollectTriplet(TAGString)
      
-  Call CheckWellPump   'Pumped sensor (SBE37, Seafet & SUNA) 
+  Call WaitForWellPump   'Pumped sensor (SBE37, Seafet & SUNA) 
 
   Call StartSUNA
   
@@ -416,9 +380,7 @@ BeginProg
 
   Call StopWellPump 'Pumped sensor are done, close pump
   
-  If With_Weather Then
-    Call TimerDelay_Sec(Weather_Timer, 61)
-  EndIf 
+  Call WaitForWeather
     
   Call CollectPAR
 
@@ -438,38 +400,37 @@ BeginProg
 
   Call CollectADCP(TAGString)
   
-  'PCO2 -------------------------------------------------------------------------
+  'PCO2 ------------------------------------------------------------------------- TODO put this in PCO2
   If With_PCO2 AND (Salinity > 10 OR Bypass_Salinity) Then 'Security for PCO2 pump if not in water
     Call SamplePCO2
   EndIf 'If there's a PCO2 and salinity (or bypass)
     
 
   'Winch -------------------------------------------------------------------------
-  If With_Winch AND (Salinity > 10 OR Bypass_Salinity) Then
-    Call SampleWinch
-  EndIf
-
+  Call WinchMission(Salinity)
+  
   Call CloseCR6SerialPorts
 
   Call CloseSDM4SerialPorts        
   
   CallTable Raw
 
+  ' Just do it with If ? Call ResetPCO2RawStrings
   If RawPCO2_Air <> "" AND RawPCO2_Water <> "" Then
     RawPCO2_Air = ""
     RawPCO2_Water = ""
   EndIf
   
-  TAGString = "[END]"
-  Call WriteTagString
-  
-  TAGString = ""
-  Call WriteTagString
+  TAGString = "[END]\n" '"[END]\n" ?? <--+
+  Call WriteTagString '                |
+                      '                |
+  'TAGString = ""      ' >--------------+
+  'Call WriteTagString
   
   FileClose(TAGFile)
   FileClose(ToTransmit)
 
-  CollectWinch
+  Call CollectWinch
   
   WhereAmI = "Scan end"
   NextScan

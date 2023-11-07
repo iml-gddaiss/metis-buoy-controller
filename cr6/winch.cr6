@@ -13,131 +13,184 @@ Const Min_Voltage_for_Winch = 12.2
 
 Public OnWhichBattery ' On?Winch?Battery
 Public WinchMessage As String * 50
-Public MissingCondition As Long
+Public WinchMissingCondition As Long
 Public Winch_Voltage As Float
 Public Winch_Last_Sample As Long
-Public Winch_Sampling As Boolean
 Public WinchString As String * 50
 Public WinchFileName As String * 50
-Public WinchComplete as Boolean
 
-Dim Winch_Date_Hyphen As String
-Dim Winch_Date_Slash As String
-Dim Winch_Time_Short As String
-Dim Winch_Time_DDot As String
-Dim Winch_Lat As String
-Dim Winch_Long As String
+Public WinchStatus as String * 10 'Standby / Sampling / Completed
 
+Dim Winch_Start_RecNum as Long
 
 '### Units ###
 '### Tables ###
 '### Sampling ###
 
 
-Sub CheckWinchAir(Air_Temp)
+Sub WinchAirCheck(Air_Temp)
     If Air_Temp < Min_Air_Temp_for_Winch Then
-        MissingCondition = MissingCondition + 1
+        WinchMissingCondition += 1
         WinchMessage = "The air temperature is too cold"
     EndIf
 EndSub
 
-Sub CheckWinchWave(Wave_H13, Wave_Period)
+Sub WinchWaveCheck(Wave_H13, Wave_Period)
     If Wave_H13 > Max_Wave_H13_for_Winch Then
-        MissingCondition = MissingCondition + 1
+        WinchMissingCondition += 1
         WinchMessage = "Average wave is too high"
     EndIf
         
     If Wave_H13 > 1 AND Wave_Period < Min_Wave_Period_for_Winch  AND Wave_Period <> 0 Then
-        MissingCondition = MissingCondition + 1
+        WinchMissingCondition += 1
         WinchMessage = "Wave period is too short"
     EndIf
 EndSub
 
-
-Sub CheckWinchGPS(SOG)
+Sub WinchGPSCheck(SOG)
     If SOG > Max_Buoy_Speed_for_Winch Then
-        MissingCondition = MissingCondition + 1
+        WinchMissingCondition += 1
         WinchMessage = "The buoy is moving too fast"
     EndIf
 EndSub
 
-Sub CheckWinchPower(VBatt1, VBatt2)
+Sub WinchPowerCheck(VBatt1, VBatt2)
     OnWhichBattery = Mid(PowerString(11),4,1)
     If OnWhichBattery = 1 Then
         Winch_Voltage = VBatt1
-    Else If OnWhichBattery = 2 Then
+   ElseIf OnWhichBattery = 2 Then
         Winch_Voltage = VBatt2
     EndIf
     
     If Winch_Voltage < Min_Voltage_for_Winch Then
-        MissingCondition = MissingCondition + 1
+        WinchMissingCondition += 1
         WinchMessage = "The Winch voltage is too low"
     EndIf
 EndSub
 
-
-Sub StartWinch(Buoy_TimeStamp_1990, GPS_Date, UTC_Date_Hyphen, UTC_Time_Short, UTC_Time_DDot, Lat, Lon, Lat_Hem, Lon_Hem)
-    SerialOpen(SerialWinch,19200,3,20,100)
-    WinchString = ""
-    SerialFlush(SerialWinch)
-    Delay(1,500,mSec)
-    SerialIn(WinchString,SerialWinch,100,10,60)
+Sub WinchConditionsCheck
+    WinchMissingCondition = 0
     
-    If WinchString = "" Then
-        SerialOut(SerialWinch,CHR(13),"",1,0)
-        SerialOut(SerialWinch,"p1"&CHR(13)&CHR(10),.,2,300)
-        Delay(1,2,Sec)
-        SerialFlush(SerialWinch)
-        SerialIn(WinchString,SerialWinch,100,10,100)
-        SerialOut(SerialWinch,"p0"&CHR(13)&CHR(10),.,2,300)
-        If Mid(WinchString,1,3) = "[S]" Then 'If String received from ctd
-            SerialOut(SerialWinch,"X"&CHR(13)&CHR(10),"[W]1B>Operation Complete",2,200)
-            SerialOut(SerialWinch,"R"&CHR(13)&CHR(10),"[W]09>Top Switch Activated",3,1000)
-            SerialOut(SerialWinch,"K"&CHR(13)&CHR(10),"[W]13>Lenght Manually Cleared",2,200)
-            SerialOut(SerialWinch,"Y"&Depth_for_Winch&CHR(13)&CHR(10),CHR(13),1,0)
-            WinchMessage = "Winch Mission Started"
-            Winch_Sampling = True
-            Winch_Last_Sample = Buoy_TimeStamp_1990
-            Winch_Date_Slash = Mid(GPS_Date,5,2)&"/"&Mid(GPS_Date,3,2)&"/"&Mid(GPS_Date,1,2)
-            Winch_Date_Hyphen = UTC_Date_Hyphen
-            Winch_Time_Short = UTC_Time_Short
-            Winch_Time_DDot = UTC_Time_DDot
-            Winch_Lat = Mid(Lat,1,2)&" "&Mid(Lat,3,5)&Lat_Hem
-            Winch_Long = Mid(Lon,1,3)&" "&Mid(Lon,4,5)&Lon_Hem
-        Else 'No string from CTD
-            WinchMessage = "No String received from CTD"
-        EndIf
-    Else
-        WinchMessage = "Winch already in function"
-        Winch_Sampling = True
+    If With_WXT536 Then
+      Call WinchAirCheck(Air_Temp)
+    EndIf
+    
+    If With_Wave Then
+      Call WinchWaveCheck(Wave_H13, Wave_Period) 
+    EndIf
+          
+    If With_GPS Then
+      Call WinchGPSCheck(SOG)
+    EndIf
+    
+    If With_Power Then
+      Call CheckWinchPower(VBatt1, VBatt2)
     EndIf
 EndSub
 
-
-Sub CheckWinch
-    SerialOpen(SerialWinch,19200,3,20,100)
+Sub CheckWinchStatus 'Should it be started earlier ?? 'Should it be close afterward
+    SerialOpen(SerialWinch,19200,3,20,100) 'Should it be started earlier ??
     SerialFlush(SerialWinch)
-    SerialIn(WinchString,SerialWinch,200,10,100)
+    Delay(1,500,mSec)
+    SerialIn(WinchString,SerialWinch,100,10,60)
+
     If WinchString = "" Then
-        WinchMessage = "Winch Complete"
+        If WinchStatus = "Sampling"
+            WinchStatus = "Completed"
+            WinchMessage = "Winch Completed"
+        Else
+            WinchMessage = "No Winch in Progress"
+        EndIf
     Else
         WinchMessage = "Winch in Progress"
     EndIf
 EndSub
 
+Sub StartWinchMission
+    SerialOpen(SerialWinch,19200,3,20,100) 'Should it be started earlier ?? 'Should it be close afterward
+    SerialOut(SerialWinch,CHR(13),"",1,0)
+    SerialOut(SerialWinch,"p1"&CHR(13)&CHR(10),.,2,300)
+    Delay(1,2,Sec)
+    SerialFlush(SerialWinch)
+    SerialIn(WinchString,SerialWinch,100,10,100)
+    SerialOut(SerialWinch,"p0"&CHR(13)&CHR(10),.,2,300)
+
+    If Mid(WinchString,1,3) = "[S]" Then 'If [S] is received from CTD -> winch has started
+            SerialOut(SerialWinch,"X"&CHR(13)&CHR(10),"[W]1B>Operation Complete",2,200)
+            SerialOut(SerialWinch,"R"&CHR(13)&CHR(10),"[W]09>Top Switch Activated",3,1000)
+            SerialOut(SerialWinch,"K"&CHR(13)&CHR(10),"[W]13>Lenght Manually Cleared",2,200)
+            SerialOut(SerialWinch,"Y"&Depth_for_Winch&CHR(13)&CHR(10),CHR(13),1,0)
+            
+            WinchStatus = "Sampling"
+
+            Winch_Last_Sample = Public.TimeStamp(1)
+            Winch_Start_RecNum = Status.RecNum
+
+            WinchMessage = "Winch Mission Started"
+    Else 'No string from CTD
+            WinchMessage = "No String received from CTD" 'and ????
+    EndIf
+EndSub
+
+
+Sub WinchMission(Salinity)
+    'Start a Winch Mission if its not started and possible.
+    If With_Winch AND (Salinity > 10 OR Bypass_Salinity) Then
+               
+        WhereAmI = "Entering the Winch Block"
+
+        Call CheckWinchStatus
+        
+        If WinchStatus = "Standby" Then
+            If (Winch_Last_Sample + Winch_Interval*60*60 - 10) <= Public.TimeStamp(1) Then 
+                'minus 10sec to not skip a scan planned at Winch_Interval hour (got 3599s and didn't sampled)
+                WhereAmI = "Starting A Winch"
+
+                Call WinchConditionsCheck
+
+                If WinchMissingCondition = 0 Then
+                    Call StartWinchMission
+                EndIf  
+            Else
+                WinchMessage = "Interval not reach"
+            EndIf
+        EndIf
+    
+        TAGString = "[WNCH]" + WinchMessage
+        Call WriteTagString
+    EndIf
+EndSub
+
+
 Sub CollectWinch
-    If WinchMessage = "Winch Complete" Then
-        Winch_Sampling = False
+    Dim Winch_Date As String
+    Dim Winch_Time As String
+    Dim Winch_Lat As String
+    Dim Winch_Long As String
+
+    Call CheckWinchStatus
+    
+    If WinchStatus = "Completed" Then
+        WinchStatus = "Standby"
         
         WhereAmI = "Collecting the winch"
-            WinchFileName = Buoy_Name&"_"&Winch_Date_Hyphen&"_"&Winch_Time_Short
-            WinchFile = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
-            FileWrite(WinchFile,Winch_Time_DDot&" "&Winch_Date_Slash&CHR(10),0)
-            FileWrite(WinchFile,Buoy_Name&CHR(10),0)     
-            FileWrite(WinchFile,Winch_Lat&","&Winch_Long&CHR(10),0)    
-            FileWrite(WinchFile,"D"&CHR(10),0)
+        
+        Winch_Date =  FileGPS.UTC_Date_Slash(1, status.RecNum - Winch_Start_RecNum)
+        Winch_Time = FileGPS.UTC_Time_DDOT(2, status.RecNum - Winch_Start_RecNum)
+        Winch_Lat = FileGPS.Latitude(3, status.RecNum - Winch_Start_RecNum)
+        Winch_Lon = FileGPS.Longitude(4, status.RecNum - Winch_Start_RecNum)
+
+        WinchFileName = Buoy_Name&"_"&Replace(Winch_Date, "/", "")&"_"&Replace(Winch_Time, ":", "")
+        WinchFile = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
+
+        
+        FileWrite(WinchFile,Winch_Time&" "&Winch_Date&CHR(10),0)
+        FileWrite(WinchFile,Buoy_Name&CHR(10),0)     
+        FileWrite(WinchFile,Winch_Lat&","&Winch_Long&CHR(10),0)    
+        FileWrite(WinchFile,"D"&CHR(10),0)
 
         SerialOut(SerialWinch,"D"&CHR(13)&CHR(10),0,1,0)
+        
         Do 
             WinchString = ""
             SerialIn(WinchString,SerialWinch,300,10,60)
