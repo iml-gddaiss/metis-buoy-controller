@@ -15,7 +15,7 @@ Const FaradayConstant = 96485.365 'Faraday constant
 Const KelvinToCelsius = 273.15
 
 Public Coeff_Exp(4) As String : Alias Coeff_Exp = K0_Int_Exp, K2_Int_Exp, K0_Ext_Exp, K2_Ext_Exp
-Public Coeff_Raw As String * 300
+' Public Coeff_Raw As String * 300
 Public K0_Int, K2_Int, K0_Ext, K2_Ext As Float
 
 '### Units ###
