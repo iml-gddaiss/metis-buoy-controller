@@ -1,3 +1,5 @@
+Dim Tower_IsPowered As Boolean ' Flag for Tower Power State
+
 Sub PowerTowerInstruments
   'Starting the weather instrument as soon as possible to stabilize the OCR, start the PAR sample and initialize the WMT700
   If With_Tower Then

@@ -1,0 +1,35 @@
+Public Manual_Tower_Switch = false
+Public Manual_Well_Switch = false
+Public Send_Break_to_ADCP = false
+
+Sub TowerSwitchSequence
+    If Manual_Tower_Switch AND Not Tower_IsPowered Then
+        SW12(SW12_1,1)
+        Tower_IsPowered = true
+    EndIf
+    
+    If Not Manual_Tower_Switch AND Tower_IsPowered Then
+        SW12(SW12_1,0)
+        Tower_IsPowered = false
+    EndIf
+EndSub
+
+Sub WellSwitchSequence
+    If Manual_Well_Switch AND Not Well_IsPowered Then
+        SW12(SW12_2,1)
+        Well_IsPowered = true
+    EndIf
+        
+    If Not Manual_Well_Switch AND Well_IsPowered Then
+        SW12(SW12_2,0)
+        Well_IsPowered = false
+    EndIf
+EndSub
+
+Sub ADCPBreakSequence
+    If Send_Break_to_ADCP Then
+        ' SerialBrk(SerialADCP,200)
+        Call SendADCPBreak
+        Send_Break_to_ADCP = false
+      EndIf
+EndSub

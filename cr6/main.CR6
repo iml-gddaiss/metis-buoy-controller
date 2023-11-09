@@ -41,43 +41,27 @@ PreserveVariables
 '#M4 ADCP
 '#M5 Winch
 
-Public WhereAmI As String
-Public TAGString As String * 200
-
-Dim Well_IsPowered As Boolean  ' Well_Switch
-Dim Tower_IsPowered As Boolean ' Tower_Switch
+Public WhereAmI As String ' Debug Purposes
 
 ' Never Really used. Was use in WXT for RealTime but then not used.
 ' Dim Buoy_Time(9) : Alias Buoy_Time = Buoy_Year, Buoy_Month, Buoy_Date, Buoy_Hour, Buoy_Minute, Buoy_Second, Buoy_Microsecond, Buoy_DayofWeek, Buoy_DayofYear
 
-Public ScanDateTime As String
+Public ScanDateTime As String ' FIXME this could be a Dim ?
 
+Public TAGString As String * 200
 Dim TAGFile As Long
-Dim WinchFile As Long
 Dim ToTransmit As Long
+
+Sub WriteTagString 'Use in imported CR6 Files
+  FileWrite(TAGFile,TAGString & CHR(10),0)
+  FileWrite(ToTransmit,TAGString & CHR(10),0)
+EndSub
 
 ' Instruments state
 Include "CPU:buoy_config.cr6"                     '#   Declare Buoy Config
 Include "CPU:serials.cr6"
 Include "CPU:logging.cr6"                         '#   Logging module
 Include "CPU:timers.cr6"                         '#   Timer Values module
-
-'>>>> Put this and the Slow Sequence in another script ?
-Public Manual_Tower_Switch = false
-Public Manual_Well_Switch = false
-Public Send_Break_to_ADCP = false
-'<<<<
-
-Sub OpenTAGSFiles(_UTC_Date_Short_, _UTC_Time_Short_)
-  ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & _UTC_Date_Short_ & _UTC_Time_Short_ & ".dat","a",-1)
-  TAGFile = FileOpen("CRD:" & Buoy_Name & "_TAGFile.txt","a",-1)
-EndSub
-
-
-Sub WriteTagString 'Use in imported CR6 Files
-  FileWrite(TAGFile,TAGString & CHR(10),0)
-  FileWrite(ToTransmit,TAGString & CHR(10),0)
-EndSub
 
 '###### DECLARING INSUTRMENTS #####
 ' Instrument serial a declered in their respective cr6 files.
@@ -106,8 +90,20 @@ Include "CPU:well_pump.cr6"                 ' ?
 'Wind compensation by Compass and GPS
 Include "CPU:weather.cr6"                   ' Weather variables  
 
-' Raw data from the instruments
+'###### These need to be declared after the GPS files has been included ####
+Sub OpenTagsFiles
+  ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & UTC_Date_Short & UTC_Time_Short & ".dat","a",-1)
+  TAGFile = FileOpen("CRD:" & Buoy_Name & "_TAGFile.txt","a",-1)
+EndSub
 
+Function InitTagString as String
+  InitTagString = "[INIT]" & Buoy_Name & "," & UTC_Date_Hyphen & "," & UTC_Time_DDot & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
+EndFunction
+
+'####### Slow Sequence | User Command Interface 
+Include "CPU:slow_sequences.cr6"             ' ?
+
+' Raw data from the instruments
 DataTable (Raw,1,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,RawR1_Wind,String)
@@ -128,39 +124,33 @@ DataTable (Raw,1,-1)
   Sample (1,WinchMessage,String)
 EndTable
 
-' This should be a subRoutine ?
-Function InitTagString(_UTC_Date_Hyphen_, _UTC_Time_DDot_, _Latitude_, _Longitude_, _Heading_, _Pitch_, _Roll_, _COG_, _SOG_, _Water_Detection_Main_)
-  ' Buoy TAG with name, GPS, Compass, Flow & WaterDetection
-  InitTagString = "[INIT]" & Buoy_Name & "," & _UTC_Date_Hyphen_ & "," & _UTC_Time_DDot_ & "," & _Latitude_ & "," & _Longitude_ & "," & _Heading_ & "," & _Pitch_ & "," & _Roll_ & "," & _COG_ & "," & _SOG_ & "," & _Water_Detection_Main_
-EndFunction
+
+' Sub CloseCR6SerialPorts
+'   Dim port
+'   'Close all serial port on CR6 if still open except ADCP
+'   For port = 11 To 16 Step 1
+'     If port = SerialADCP Then
+'       'Do not close the ADCP port
+'     Else If port = 13 AND WinchMessage <> "Interval not reach" Then ' is this ok ? was not in Subroutine at the start of the program # JEROME FIXME
+'       'Do not close port
+'     Else
+'       SerialClose(port)
+'     EndIf
+'   Next port
+' EndSub
 
 
-Sub CloseCR6SerialPorts
-  Dim port
-  'Close all serial port on CR6 if still open except ADCP
-  For port = 11 To 16 Step 1
-    If port = SerialADCP Then
-      'Do not close the ADCP port
-    Else If port = 13 AND WinchMessage <> "Interval not reach" Then ' is this ok ? was not in Subroutine at the start of the program # JEROME FIXME
-      'Do not close port
-    Else
-      SerialClose(port)
-    EndIf
-  Next port
-EndSub
-
-
-Sub CloseSDM4SerialPorts
-  Dim port
-  'Close all serial port on SDM4, except for PCO2 (40) which must stays on is PCO2 is sampling
-  For port = 32 To 47 Step 1
-    If port = SerialPCO2 AND PCO2_Sampling = true Then
-    'Do not close the port
-    Else
-      SerialClose(port)
-    EndIf
-  Next port
-EndSub
+' Sub CloseSDM4SerialPorts
+'   Dim port
+'   'Close all serial port on SDM4, except for PCO2 (40) which must stays on is PCO2 is sampling
+'   For port = 32 To 47 Step 1
+'     If port = SerialPCO2 AND PCO2_Sampling = true Then
+'     'Do not close the port
+'     Else
+'       SerialClose(port)
+'     EndIf
+'   Next port
+' EndSub
 
 
 BeginProg
@@ -206,10 +196,9 @@ BeginProg
   
   Call CheckWaterDetection
 
-  Call OpenTAGSFiles(UTC_Date_Short, UTC_Time_Short)
+  Call OpenTagsFiles(UTC_Date_Short, UTC_Time_Short)
   
-  TAGString = InitTagString(UTC_Date_Hyphen, UTC_Time_DDot, Latitude, Longitude, Heading, Pitch, Roll, COG, SOG, Water_Detection_Main)
-  
+  TAGString = InitTagString()
   Call WriteTagString
     
   Call SamplePowerController(TAGString)
@@ -250,11 +239,13 @@ BeginProg
   
   Call SamplePCO2
   
-  Call WinchMission(Salinity)
+  Call WinchMission(Salinity, TAGString)
   
-  Call CloseCR6SerialPorts
+  ' Call CloseCR6SerialPorts
 
-  Call CloseSDM4SerialPorts        
+  ' Call CloseSDM4SerialPorts        
+
+  Call CloseSerialPorts
   
   CallTable Raw
 
@@ -277,31 +268,11 @@ BeginProg
 	
   SlowSequence
     Scan(1,Sec,0,0)
-      If Manual_Tower_Switch AND Not Tower_IsPowered Then
-        SW12(SW12_1,1)
-        Tower_IsPowered = true
-      EndIf
-        
-      If Not Manual_Tower_Switch AND Tower_IsPowered Then
-        SW12(SW12_1,0)
-        Tower_IsPowered = false
-      EndIf
-      
-      If Manual_Well_Switch AND Not Well_IsPowered Then
-        SW12(SW12_2,1)
-        Well_IsPowered = true
-      EndIf
-        
-      If Not Manual_Well_Switch AND Well_IsPowered Then
-        SW12(SW12_2,0)
-        Well_IsPowered = false
-      EndIf
-      
-      If Send_Break_to_ADCP Then
-        ' SerialBrk(SerialADCP,200)
-        Call SendADCPBreak
-        Send_Break_to_ADCP = false
-      EndIf
+      Call TowerSwitchSequence
+
+      Call WellSwitchSequence
+
+      Call ADCPBreakSequence
     NextScan
 EndProg
 

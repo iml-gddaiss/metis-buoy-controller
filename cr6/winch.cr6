@@ -23,6 +23,8 @@ Public WinchStatus as String * 10 'Standby / Sampling / Completed
 
 Dim Winch_Start_RecNum as Long
 
+Dim WinchFile As Long
+
 '### Units ###
 '### Tables ###
 '### Sampling ###
@@ -104,7 +106,6 @@ Sub CheckWinchStatus 'Should it be started earlier ?? 'Should it be close afterw
     Else
         WinchMessage = "Winch in Progress"
     EndIf
-    SerialClose(SerialWinch)
 EndSub
 
 Sub StartWinchMission
@@ -131,11 +132,10 @@ Sub StartWinchMission
     Else 'No string from CTD
             WinchMessage = "No String received from CTD" 'and ????
     EndIf
-    SerialClose(SerialWinch)
 EndSub
 
 
-Sub WinchMission(Salinity)
+Sub WinchMission(Salinity, TAGString)
     'Start a Winch Mission if its not started and possible.
     If With_Winch AND (Salinity > 10 OR Bypass_Salinity) Then
                

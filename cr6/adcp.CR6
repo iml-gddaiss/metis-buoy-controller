@@ -64,7 +64,7 @@ Sub CollectADCP(TAGString)
 
     TAGString = ADCPTagString()
 
-    Call WriteTagString '------------------------------------- Defined in main.cr6
+    Call WriteTagString
 
   EndIf
 

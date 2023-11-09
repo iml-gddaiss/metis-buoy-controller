@@ -91,6 +91,11 @@ Sub PCO2WTable
 EndSub
 
 
+Function PCO2TagString As String
+  PCO2TagString = "[PCO2]" & CO2_Water & "," & CO2_Air & "," & PCO2_Gaz_Pressure_Water & "," & PCO2_Gaz_Pressure_Air & "," & PCO2_Humidity
+EndFunction
+
+
 '### Sampling ###
 
 Sub StartPCO2
@@ -157,6 +162,7 @@ Sub CollectPCO2
     CO2_Air = PCO2(9)
     PCO2_Gaz_Pressure_Air = PCO2(11)
     SerialFlush(SerialPCO2)
+    
     SerialClose(SerialPCO2)
     
     Call PCO2ATable
@@ -167,7 +173,6 @@ Sub CollectPCO2
               
   EndIf 'If there's a water and an air string
 EndSub
-
 
 Sub SamplePCO2 'Move to pco2.cr6 ? TODO
   Dim time_stamp
@@ -188,7 +193,7 @@ Sub SamplePCO2 'Move to pco2.cr6 ? TODO
       Else
         Call CollectPCO2
         If RawPCO2_Water <> "" AND RawPCO2_Air <> "" Then 'TODO FIXME ME: Vérifier avec Anthony. C'est la seule place qui n'envoie pas le tags en cas de NA data ? #jerome July 2023
-          TAGString = "[PCO2]" & CO2_Water & "," & CO2_Air & "," & PCO2_Gaz_Pressure_Water & "," & PCO2_Gaz_Pressure_Air & "," & PCO2_Humidity
+          TAGString = PCO2TagString()
           Call WriteTagString
         EndIf
       EndIf 'If Else Watchdog TODO
