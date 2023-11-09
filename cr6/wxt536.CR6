@@ -80,9 +80,10 @@ EndSub
 
 Sub CollectWXT536
   Dim X
-  WhereAmI = "Collect WXT536"
+  
   If With_WXT536 Then
-      
+    WhereAmI = "Collect WXT536"    
+    
     RawR1_Wind = ""
     RawR2_Weather = ""
     RawR3_Rain = ""
