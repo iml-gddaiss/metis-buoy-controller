@@ -52,7 +52,7 @@ Sub CloseSDM4SerialPorts
   Dim port
   'Close all serial port on SDM4, except for PCO2 (40) which must stays on is PCO2 is sampling
   For port = 32 To 47 Step 1
-    If port = SerialPCO2 Then 'AND PCO2_Sampling = true Then ' Port closing is only done with CollectPCO2
+    If port = SerialPCO2 Then 'AND PCO2IsSampling = true Then ' Port closing is only done with CollectPCO2
     'Do not close the port
     Else
       SerialClose(port)

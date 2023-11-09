@@ -8,13 +8,17 @@ Dim RawPCO2 As String * 1000
 Dim RawPCO2_Air As String * 100
 Dim RawPCO2_Water As String * 100
 
-Public PCO2_Last_Sample As Long
-Public PCO2_Sampling As Boolean
+Public PCO2_Last_Sampling As Long
+Public PCO2IsSampling As Boolean
 
 Dim PCO2WStart
 Dim PCO2WEnd
 Dim PCO2AStart
 Dim PCO2AEnd
+
+
+Dim PCO2AirIsCollected = false
+Dim PCO2WaterIsCollected = false
 
 
 Dim PCO2(14) As String : Alias PCO2 = PCO2_Year, PCO2_Month, PCO2_Day, PCO2_Hour, PCO2_Minute, PCO2_Second, PCO2_Zero, PCO2_AD, CO2, Ave_IRGA, PCO2_Humidity, PCO2_Temp, PCO2_Gaz_Pressure, PCO2_Voltage
@@ -66,17 +70,6 @@ DataTable(FilePCO2A,1,-1)
 EndTable
 
 
-Sub EmptyPCO2Table
-  Scan(1,Sec, 0, 1)
-  CallTable FilePCO2W
-  CallTable FilePCO2A
-  NextScan
-  RawPCO2_Water = ""
-  RawPCO2_Air = ""
-  PCO2_Sampling = false
-EndSub
-
-
 Sub UpdatePCO2AirTable
   Scan(1,Sec, 0, 1)
   CallTable FilePCO2A
@@ -99,6 +92,8 @@ EndFunction
 '### Sampling ###
 
 Sub StartPCO2
+  WhereAmI = "Start PCO2"  
+
   RawPCO2 = ""
   RawPCO2_Water = ""
   RawPCO2_Air = ""
@@ -114,9 +109,21 @@ Sub StartPCO2
   Delay (1,500,mSec)
   SerialOut(SerialPCO2,"s","",1,0)
   SerialFlush(SerialPCO2)
-  PCO2_Sampling = true
-  PCO2_Last_Sample = Public.TimeStamp(1)
+  
+  PCO2IsSampling = true
+  PCO2_Last_Sampling = Public.TimeStamp(1)
+  PCO2WaterIsCollected = false
+  PCO2AirIsCollected = false
 EndSub
+
+
+Sub ClosePC02
+  SerialFlush(SerialPCO2)
+  SerialClose(SerialPCO2)
+    
+  PCO2IsSampling = false
+EndSub
+
 
 Sub CollectPCO2Air
   'Search in RawPCO2 where PCO2_Air starts with "A M"
@@ -126,6 +133,8 @@ Sub CollectPCO2Air
     'Collect from RawPCO2 to get RawPCO2_Water
     RawPCO2_Air = Mid(RawPCO2,PCO2AStart,PCO2AEnd - PCO2AStart)
   EndIf
+
+  PCO2AirIsCollected = true
 EndSub
 
 
@@ -137,77 +146,99 @@ Sub CollectPCO2Water
     'Collect from RawPCO2 to get RawPCO2_Water
     RawPCO2_Water = Mid(RawPCO2,PCO2WStart,PCO2WEnd - PCO2WStart)
   EndIf
+
+  PCO2WaterIsCollected = true
+EndSub
+
+
+Sub WritePCO2Air
+  SplitStr(PCO2,RawPCO2_Air,",",14,0)
+  PCO2_Type = "A M"
+  PCO2_Date = PCO2(1)&"-"&PCO2(2)&"-"&PCO2(3)
+  PCO2_Time = PCO2(4)&":"&PCO2(5)&":"&PCO2(6)
+  CO2_Air = PCO2(9)
+  PCO2_Gaz_Pressure_Air = PCO2(11)
+  Call UpdatePCO2AirTable
+  CO2_Air = "#.#"
+EndSub
+
+
+Sub WritePCO2Water
+  SplitStr(PCO2,RawPCO2_Water,",",14,0)
+  PCO2_Type = "W M"
+  PCO2_Date = PCO2(1)&"-"&PCO2(2)&"-"&PCO2(3)
+  PCO2_Time = PCO2(4)&":"&PCO2(5)&":"&PCO2(6)
+  CO2_Water = PCO2(9)
+  PCO2_Gaz_Pressure_Water = PCO2(13)
+  PCO2W_Humidity = PCO2(11)
+  Call UpdatePCO2WaterTable
+  CO2_Water = "#.#"
 EndSub
 
 
 Sub CollectPCO2
   SerialIn(RawPCO2,SerialPCO2,10,"Sample Complete",500)
   
-  If RawPCO2_Water = "" Then
+  If NOT PCO2WaterIsCollected Then
     Call CollectPCO2Water
   EndIf
 
-  If RawPCO2_Air = "" Then
+  If NOT PCO2AirIsCollected Then
     Call CollectPCO2Air
   EndIf
     
-  If RawPCO2_Water <> "" AND RawPCO2_Air <> "" Then 
-    PCO2_Sampling = false
+  If PCO2WaterIsCollected AND PCO2AirIsCollected Then
     
-    SplitStr(PCO2,RawPCO2_Water,",",14,0)
-    PCO2_Type = "W M"
-    PCO2_Date = PCO2(1)&"-"&PCO2(2)&"-"&PCO2(3)
-    PCO2_Time = PCO2(4)&":"&PCO2(5)&":"&PCO2(6)
-    CO2_Water = PCO2(9)
-    PCO2_Gaz_Pressure_Water = PCO2(13)
-    PCO2W_Humidity = PCO2(11)
-    
-    Call UpdatePCO2WaterTable
-      
-    SplitStr(PCO2,RawPCO2_Air,",",14,0)
-    PCO2_Type = "A M"
-    PCO2_Date = PCO2(1)&"-"&PCO2(2)&"-"&PCO2(3)
-    PCO2_Time = PCO2(4)&":"&PCO2(5)&":"&PCO2(6)
-    CO2_Air = PCO2(9)
-    PCO2_Gaz_Pressure_Air = PCO2(11)
-    SerialFlush(SerialPCO2)
-    
-    SerialClose(SerialPCO2)
-    
-    Call UpdatePCO2AirTable
+    Call WritePCO2Water
+    Call WritePCO2Air
 
     RawPCO2 = ""
-    CO2_Water = "#.#"
-    CO2_Air = "#.#"
-              
-  EndIf 'If there's a water and an air string
+    
+    TAGString = PCO2TagString()
+    Call WriteTagString
+
+    Call ClosePC02
+  EndIf
+EndSub
+
+
+Sub CollectPartialPCO2
+  If PCO2AirIsCollected Then
+    Call WritePCO2Air
+    RawPCO2_Air = ""
+  Else
+    Call UpdatePCO2AirTable
+  EndIf
+
+  If PCO2WaterIsCollected Then
+    Call WritePCO2Water
+    RawPCO2_Water = ""
+  Else
+    Call UpdatePCO2WaterTable
+  EndIf
+
+  Call ClosePC02
 EndSub
 
 Sub SamplePCO2 'Move to pco2.cr6 ? TODO
   Dim time_stamp
-  If With_PCO2 AND (Salinity > 10 OR Bypass_Salinity) Then 'Security for PCO2 pump if not in water
+  
+  If With_PCO2 AND (Salinity > 10 OR Bypass_Salinity) Then 'Security for PCO2 pump if not in water  FIXME SHOULD ONLY USED FOR STARTING ???
+    WhereAmI = "Entering PCO2 Loop"
     time_stamp = Public.TimeStamp(1)
-    'minus 10sec to not skip a scan planned at PCO2_Interval hour (got 3599s and didn't sampled)
-    WhereAmI = "Start PCO2"
-    If (PCO2_Last_Sample + (PCO2_Interval*60*60) - 10 <= time_stamp) AND NOT PCO2_Sampling Then
-      ' WhereAmI = "Entering PCO2 Loop"
-      Call StartPCO2
-    EndIf
     
-    If PCO2_Sampling Then
-      'Watchdog if there's no data in 1Hour (if power disconnected during sampling)
-                          'sec
-      If (PCO2_Last_Sample + 3600) < time_stamp Then
-        Call EmptyPCO2Table '  Change le nom #jerome July 2023
+    If PCO2IsSampling Then
+      If (PCO2_Last_Sampling + 3600) < time_stamp Then 'Watchdog if there's no data in 1Hour (if power disconnected during sampling) # FIXME MAKE A TIMER | Put it in another slow sequence
+        ' Call EmptyPCO2Table
+        Call CollectPartialPCO2
       Else
         Call CollectPCO2
-        If RawPCO2_Water <> "" AND RawPCO2_Air <> "" Then 'TODO FIXME ME: Vérifier avec Anthony. C'est la seule place qui n'envoie pas le tags en cas de NA data ? #jerome July 2023
-          TAGString = PCO2TagString()
-          Call WriteTagString
-        EndIf
-      EndIf 'If Else Watchdog TODO
-    EndIf 'If PCO2_Sampling is True
-  EndIf 'If there's a PCO2 and salinity (or bypass)
+      EndIf
+    
+    ElseIf (PCO2_Last_Sampling + (PCO2_Interval*60*60) - 10 <= time_stamp) Then 'minus 10sec to not skip a scan planned at PCO2_Interval hour (got 3599s and didn't sampled)
+      Call StartPCO2
+    EndIf
+  EndIf
 EndSub
 
 Sub PCO2RawStringsReset

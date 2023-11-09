@@ -144,7 +144,7 @@ EndTable
 '   Dim port
 '   'Close all serial port on SDM4, except for PCO2 (40) which must stays on is PCO2 is sampling
 '   For port = 32 To 47 Step 1
-'     If port = SerialPCO2 AND PCO2_Sampling = true Then
+'     If port = SerialPCO2 AND PCO2IsSampling = true Then
 '     'Do not close the port
 '     Else
 '       SerialClose(port)
@@ -197,7 +197,6 @@ BeginProg
   Call CheckWaterDetection
 
   Call OpenTagsFiles(UTC_Date_Short, UTC_Time_Short)
-  
   TAGString = InitTagString()
   Call WriteTagString
     
