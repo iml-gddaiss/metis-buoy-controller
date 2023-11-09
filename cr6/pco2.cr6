@@ -77,14 +77,14 @@ Sub EmptyPCO2Table
 EndSub
 
 
-Sub PCO2ATable
+Sub UpdatePCO2AirTable
   Scan(1,Sec, 0, 1)
   CallTable FilePCO2A
   NextScan
 EndSub
 
 
-Sub PCO2WTable
+Sub UpdatePCO2WaterTable
   Scan(1,Sec, 0, 1)
   CallTable FilePCO2W
   NextScan
@@ -118,28 +118,37 @@ Sub StartPCO2
   PCO2_Last_Sample = Public.TimeStamp(1)
 EndSub
 
+Sub CollectPCO2Air
+  'Search in RawPCO2 where PCO2_Air starts with "A M"
+  PCO2AStart = InStr(1,RawPCO2,"A M,",4)
+  PCO2AEnd = InStr(PCO2AStart,RawPCO2,CHR(10),2)
+  If PCO2AStart <> 0 AND PCO2AEnd <> 0 Then
+    'Collect from RawPCO2 to get RawPCO2_Water
+    RawPCO2_Air = Mid(RawPCO2,PCO2AStart,PCO2AEnd - PCO2AStart)
+  EndIf
+EndSub
+
+
+Sub CollectPCO2Water
+  'Search in RawPCO2 where PCO2_Water starts with "W M"
+  PCO2WStart = InStr(1,RawPCO2,"W M,",4)
+  PCO2WEnd = InStr(PCO2WStart,RawPCO2,CHR(10),2)
+  If PCO2WStart <> 0 AND PCO2WEnd <> 0 Then
+    'Collect from RawPCO2 to get RawPCO2_Water
+    RawPCO2_Water = Mid(RawPCO2,PCO2WStart,PCO2WEnd - PCO2WStart)
+  EndIf
+EndSub
 
 
 Sub CollectPCO2
   SerialIn(RawPCO2,SerialPCO2,10,"Sample Complete",500)
+  
   If RawPCO2_Water = "" Then
-    'Search in RawPCO2 where PCO2_Water starts with "W M"
-    PCO2WStart = InStr(1,RawPCO2,"W M,",4)
-    PCO2WEnd = InStr(PCO2WStart,RawPCO2,CHR(10),2)
-    If PCO2WStart <> 0 AND PCO2WEnd <> 0 Then
-      'Collect from RawPCO2 to get RawPCO2_Water
-      RawPCO2_Water = Mid(RawPCO2,PCO2WStart,PCO2WEnd - PCO2WStart)
-    EndIf
+    Call CollectPCO2Water
   EndIf
 
   If RawPCO2_Air = "" Then
-    'Search in RawPCO2 where PCO2_Air starts with "A M"
-    PCO2AStart = InStr(1,RawPCO2,"A M,",4)
-    PCO2AEnd = InStr(PCO2AStart,RawPCO2,CHR(10),2)
-    If PCO2AStart <> 0 AND PCO2AEnd <> 0 Then
-      'Collect from RawPCO2 to get RawPCO2_Water
-      RawPCO2_Air = Mid(RawPCO2,PCO2AStart,PCO2AEnd - PCO2AStart)
-    EndIf
+    Call CollectPCO2Air
   EndIf
     
   If RawPCO2_Water <> "" AND RawPCO2_Air <> "" Then 
@@ -153,7 +162,7 @@ Sub CollectPCO2
     PCO2_Gaz_Pressure_Water = PCO2(13)
     PCO2W_Humidity = PCO2(11)
     
-    Call PCO2WTable
+    Call UpdatePCO2WaterTable
       
     SplitStr(PCO2,RawPCO2_Air,",",14,0)
     PCO2_Type = "A M"
@@ -165,7 +174,7 @@ Sub CollectPCO2
     
     SerialClose(SerialPCO2)
     
-    Call PCO2ATable
+    Call UpdatePCO2AirTable
 
     RawPCO2 = ""
     CO2_Water = "#.#"

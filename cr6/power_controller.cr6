@@ -28,7 +28,7 @@ DataTable(FilePower,1,-1)
  EndTable
 
  
- Sub PowerTable
+ Sub UpdatePowerTable
   Scan(1,Sec, 0, 1)
   CallTable FilePower
   NextScan
@@ -75,10 +75,10 @@ Sub SamplePowerController(TAGString)
       VBatt_to_SD = VBatt2
     EndIf
     
-    Call PowerTable
+    Call UpdatePowerTable
 
     TAGString = PowerTagString()
-    Call WriteTagString '------------------------------------- Defined in main.cr6
+    Call WriteTagString
   
   EndIf
 EndSub

@@ -44,13 +44,13 @@ DataTable (FileSeafet_Pro,1,-1)
   Sample (1,K2_Ext,IEEE4)
 EndTable
 
-Sub SeafetTable
+Sub UpdateSeafetTable
   Scan(1,Sec, 0, 1)
   CallTable FileSeafet
   NextScan
 EndSub
 
-Sub Seafet_ProTable
+Sub UpdateSeafet_ProTable
   Scan(1,Sec, 0, 1)
   CallTable FileSeafet_Pro
   NextScan
@@ -203,8 +203,8 @@ Sub SampleSeafet(TAGString, _Water_Temp_, _Salinity_)
       Call SampleSeafet_Pro(TAGString, _Water_Temp_, _Salinity_)
     EndIf
     
-    Call SeafetTable
-    Call WriteTagString '------------------------------------- Defined in main.cr6
+    Call UpdateSeafetTable
+    Call WriteTagString
     
     WhereAmI = "End Seafet"
   EndIf

@@ -251,12 +251,9 @@ BeginProg
 
   Call ResetPCO2RawStrings
   
-  TAGString = "[END]\n" '"[END]\n" ?? <--+
-  Call WriteTagString '                |
-                      '                |
-  'TAGString = ""      ' >--------------+
-  'Call WriteTagString
-  
+  TAGString = "[END]" & CHR(10)
+  Call WriteTagString   
+                          
   FileClose(TAGFile)
   FileClose(ToTransmit)
 

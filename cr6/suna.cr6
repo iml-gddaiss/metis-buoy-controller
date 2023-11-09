@@ -40,7 +40,7 @@ DataTable(FileSUNA_Light,1,-1)
  EndTable
 
 
-Sub SUNATable
+Sub UpdateSUNATable
   Scan(1,Sec, 0, 1)
   CallTable FileSUNA_Dark
   CallTable FileSUNA_Light
@@ -90,10 +90,10 @@ Sub CollectSUNA(TAGString)
       SplitStr(SUNALight(),RawSUNALight,",",8,4)
     EndIf
 
-    Call SUNATable
+    Call UpdateSUNATable
 
     TAGString = SUNATagString()
-    Call WriteTagString '------------------------------------- Defined in main.cr6
+    Call WriteTagString
 
     WhereAmI = "End SUNA"
   EndIf

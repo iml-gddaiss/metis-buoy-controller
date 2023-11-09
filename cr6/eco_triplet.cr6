@@ -16,7 +16,7 @@ DataTable(FileTriplet,1,-1)
 EndTable
 
 
-Sub TripleTable
+Sub UpdateTripleTable
   Scan(1,Sec, 0, 1)
   CallTable FileTriplet
   NextScan
@@ -72,9 +72,9 @@ Sub CollectTriplet(TAGString)
     Chlorophyll = Chl_Value
     FDOM = FDOM_Value
     
-    Call TripleTable
+    Call UpdateTripleTable
     
     TAGString = TripletTagString()
-    Call WriteTagString '------------------------------------- Defined in main.cr6
+    Call WriteTagString
   EndIf
 EndSub

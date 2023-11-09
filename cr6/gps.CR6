@@ -33,7 +33,7 @@ DataTable(FileGPS,1,-1)
     Sample(1,Mag_Var,IEEE4)
 EndTable
 
-Sub GPSTable
+Sub UpdateGPSTable
   Scan(1,Sec, 0, 1)
   CallTable FileGPS
   NextScan
@@ -115,7 +115,7 @@ Sub SampleGPS
         'Putting the String value in Float or Long variables 
         Mag_Var = Magnetic_Variation  
 
-        Call GPSTable
+        Call UpdateGPSTable
         
         WhereAmI = "EndGPS, start Start Tower"
     EndIf

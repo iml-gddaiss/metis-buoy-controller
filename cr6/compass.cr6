@@ -24,7 +24,7 @@ DataTable (FileCompass,1,-1)
 EndTable
 
 
-Sub CompassTable
+Sub UpdateCompassTable
   Scan(1,Sec, 0, 1)
   CallTable FileCompass
   NextScan
@@ -122,7 +122,7 @@ Sub SampleCompass
 
     Call ApplyMagneticCorrection(Heading, Mag_Var)
 
-    Call CompassTable
+    Call UpdateCompassTable
     
     WhereAmI = "End Compass"
   EndIf

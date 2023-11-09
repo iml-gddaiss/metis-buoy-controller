@@ -50,7 +50,7 @@ DataTable(FileWXT536,1,-1) 'Set table size to # of records, or -1 to autoallocat
 EndTable
 
 
-Sub WXT536Table
+Sub UpdateWXT536Table
   Scan(1,Sec, 0, 1)
   CallTable FileWXT536
   NextScan
@@ -121,7 +121,7 @@ Sub CollectWXT536
 
     Next X
 
-    Call WXT536Table
+    Call UpdateWXT536Table
 
     WhereAmI = "Finish WXT536"
   EndIf

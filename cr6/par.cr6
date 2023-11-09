@@ -19,7 +19,7 @@ DataTable (FilePAR,1,-1)
   Sample (1,PAR_Int_Temp,IEEE4)
 EndTable
 
-Sub PARTable
+Sub UpdatePARTable
   Scan(1,Sec, 0, 1)
   CallTable FilePAR
   NextScan
@@ -45,7 +45,7 @@ Sub CollectPAR
 
     Call logging("RawPAR: `" & RawPAR & "`")
 
-    Call PARTable
+    Call UpdatePARTable
   
   EndIf
 EndSub

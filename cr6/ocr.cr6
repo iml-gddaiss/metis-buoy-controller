@@ -96,7 +96,7 @@ Sub SampleOCRI
   WhereAmI = "End OCRI"
 EndSub
 
-Sub HyperOCRTable
+Sub UpdateHyperOCRTable
   Scan(1,Sec, 0, 1)
   CallTable FileHyperOCR
   NextScan
@@ -120,7 +120,7 @@ Sub SampleOCRs
   
 
   If call_ocr_table Then
-    Call HyperOCRTable
+    Call UpdateHyperOCRTable
     WhereAmI = "End OCR"
   EndIf
 EndSub

@@ -27,7 +27,7 @@ DataTable(FileWave,1,-1)
 EndTable
 
 
-Sub WaveTable
+Sub UpdateWaveTable
   Scan(1,Sec, 0, 1)
   CallTable FileWave
   NextScan
@@ -58,10 +58,10 @@ Sub CollectWave(TAGString)
     
     SerialClose(SerialWave)
 
-    Call WaveTable
+    Call UpdateWaveTable
     
     TAGString = WaveTagString()
-    Call WriteTagString '------------------------------------- Defined in main.cr6
+    Call WriteTagString
 
     WhereAmI = "Finish Wave"
   EndIf

@@ -26,7 +26,7 @@ EndTable
 
 
 
-Sub WMT700Table
+Sub UpdateWMT700Table
   Scan(1,Sec, 0, 1)
   CallTable FileWMT700
   NextScan
@@ -62,7 +62,7 @@ Sub CollectWMT700
       SplitStr(WMT700(),RawWMT700,",",6,0)
     EndIf
     
-    Call WMT700Table
+    Call UpdateWMT700Table
 
     WhereAmI = "Finish WMT700"
   EndIf

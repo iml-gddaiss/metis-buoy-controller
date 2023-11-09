@@ -26,7 +26,7 @@ DataTable (FileSBE37,1,-1)
 EndTable
 
 
-Sub SBE37Table
+Sub UpdateSBE37Table
   Scan(1,Sec, 0, 1)
   CallTable FileSBE37
   NextScan
@@ -125,10 +125,10 @@ Sub SampleSBE37(TAGString)
       
     SerialClose(SerialSBE37)
 
-    Call SBE37Table
+    Call UpdateSBE37Table
   
     TAGString = SBE37TagString()
-    Call WriteTagString '------------------------------------- Defined in main.cr6
+    Call WriteTagString
     WhereAmI = "SBE37 Sampling finished"
   EndIf
   

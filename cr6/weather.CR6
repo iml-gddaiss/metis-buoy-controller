@@ -34,7 +34,7 @@ DataTable (Weather,1,-1)
 EndTable
 
 
-Sub WeatherTable
+Sub UpdateWeatherTable
   Scan(1,Sec, 0, 1)
   CallTable Weather
   NextScan
@@ -142,13 +142,13 @@ Sub CollectWeather(TAGString, GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)
     WhereAmI = "Processing Weather"
     Call WindCorrection(GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)
     
-    Call WeatherTable
+    Call UpdateWeatherTable
 
     TAGString = WindTagString()
-    Call WriteTagString '------------------------------------- Defined in main.cr6
+    Call WriteTagString
     
     TAGString = ATMSTagString()
-    Call WriteTagString '------------------------------------- Defined in main.cr6
+    Call WriteTagString
     WhereAmI = "Finish Weather"
   EndIf
 EndSub
