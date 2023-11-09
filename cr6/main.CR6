@@ -46,8 +46,9 @@ Public TAGString As String * 200
 
 Dim Well_IsPowered As Boolean  ' Well_Switch
 Dim Tower_IsPowered As Boolean ' Tower_Switch
-Dim NBR 'NBytesReturned ' 
-Dim Buoy_Time(9) : Alias Buoy_Time = Buoy_Year, Buoy_Month, Buoy_Date, Buoy_Hour, Buoy_Minute, Buoy_Second, Buoy_Millisecond, Buoy_DayofWeek, Buoy_DayofYear
+
+' Never Really used. Was use in WXT for RealTime but then not used.
+' Dim Buoy_Time(9) : Alias Buoy_Time = Buoy_Year, Buoy_Month, Buoy_Date, Buoy_Hour, Buoy_Minute, Buoy_Second, Buoy_Microsecond, Buoy_DayofWeek, Buoy_DayofYear
 
 Public ScanDateTime As String
 
@@ -59,13 +60,7 @@ Dim ToTransmit As Long
 Include "CPU:buoy_config.cr6"                     '#   Declare Buoy Config
 Include "CPU:serials.cr6"
 Include "CPU:logging.cr6"                         '#   Logging module
-Include "CPU:timer.cr6"                         '#   Timer Values module
-
-' Configuration Flags FIXME THese could be in BuoyConfig
-Const With_Tower_485 = With_WXT536 OR With_WMT700 OR With_Compass       
-Const With_Tower = With_PAR OR With_WMT700 OR With_Compass OR With_OCR_I
-Const With_Weather = With_WXT536 OR With_WMT700 OR With_PAR
-Const With_Well_Pump = With_SBE37 OR With_Seafet OR With_SUNA OR With_OCR_R
+Include "CPU:timers.cr6"                         '#   Timer Values module
 
 '>>>> Put this and the Slow Sequence in another script ?
 Public Manual_Tower_Switch = false
@@ -263,11 +258,7 @@ BeginProg
   
   CallTable Raw
 
-  ' Just do it with If ? Call ResetPCO2RawStrings
-  If RawPCO2_Air <> "" AND RawPCO2_Water <> "" Then
-    RawPCO2_Air = ""
-    RawPCO2_Water = ""
-  EndIf
+  Call ResetPCO2RawStrings
   
   TAGString = "[END]\n" '"[END]\n" ?? <--+
   Call WriteTagString '                |
@@ -281,6 +272,7 @@ BeginProg
   Call CollectWinch
   
   WhereAmI = "Scan end"
+  
   NextScan
 	
   SlowSequence
@@ -306,7 +298,8 @@ BeginProg
       EndIf
       
       If Send_Break_to_ADCP Then
-        SerialBrk(SerialADCP,200)
+        ' SerialBrk(SerialADCP,200)
+        Call SendADCPBreak
         Send_Break_to_ADCP = false
       EndIf
     NextScan

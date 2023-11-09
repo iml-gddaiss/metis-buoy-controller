@@ -52,6 +52,8 @@ EndSub
 
 
 Sub CollectTriplet(TAGString)
+  ' &4242 -> BB &0D0A -> CR LF
+  Dim NBR ' Number of Bytes Returned  
   If With_Triplet Then
     WhereAmI = "Collect triplet"
     

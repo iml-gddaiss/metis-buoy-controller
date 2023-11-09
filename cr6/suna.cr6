@@ -67,6 +67,8 @@ EndSub
 
 
 Sub CollectSUNA(TAGString)
+  ' &4C43 -> LC &0D0A -> CR LF
+  Dim NBR ' Number of Bytes Returned
   If With_SUNA Then
     Call TimerDelay_Sec(Suna_Timer, 12)
     

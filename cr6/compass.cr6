@@ -51,6 +51,8 @@ EndFunction
 
 
 Sub CollectCompass60s
+  ' &h -> SA &0D0A -> CR LF
+  Dim NBR ' Number of Bytes Returned  
   Dim X, Y
   Dim ASCIIString As String * 100
   Dim HeadingBuff 

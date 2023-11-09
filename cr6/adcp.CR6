@@ -69,3 +69,17 @@ Sub CollectADCP(TAGString)
   EndIf
 
 EndSub
+
+Sub SendADCPBreak
+  Dim Counter As Long
+  Dim Breakstring As String
+
+  Counter = 0
+  Do While Counter <> 7200
+     Breakstring &= CHR(00)
+     Counter += 1
+  Loop   
+
+  SerialOutBlock(SerialADCP, Breakstring, 7200)
+
+EndSub

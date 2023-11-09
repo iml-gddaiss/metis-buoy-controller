@@ -44,6 +44,9 @@ EndSub
 
 
 Sub CollectWMT700
+  Dim NBR ' Number of Bytes Returned
+  '&H0DA -> WM | &H0DA0 -> \r\n  (CR)(CF)
+  '&H0D0A is the hexadecimal representation for carriage return/line feed
   If With_WMT700 Then
     WhereAmI = "Collect WMT700"
 

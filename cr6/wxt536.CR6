@@ -61,8 +61,8 @@ EndSub
 Sub StartWXT536
   Dim  Rain_Time_Elapsed
   If With_WXT536 Then
-    RealTime(Buoy_Time) 'Collecting buoy time to see if it's time to reset the rain/hail accumulation
-    ' Timer(Rain_Timer,Hr,0) 'Start the timer if it isn't started
+    ' RealTime(Buoy_Time) 'Collecting buoy time to see if it's time to reset the rain/hail accumulation (NOT USED FIXME)
+    ' Timer(Rain_Timer,Hr,0) 'Start the timer if it isn't started ? FIXME
     Rain_Time_Elapsed = Timer(Rain_Timer,Hr,4)
         
     ' Reset Rain if 00:00 or active for more than 24h

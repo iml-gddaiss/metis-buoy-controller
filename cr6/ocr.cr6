@@ -27,10 +27,10 @@ EndTable
 
 '### Sampling ###
 Sub SampleOCRR
-  WhereAmI = "Sample OCRR"
+  ' &5341 -> SA &0D0A -> CR LF
+  Dim NBR ' Number of Bytes Returned  
   
-  Dim X, Y
-  Dim Time_Left
+  WhereAmI = "Sample OCRR"
   
   SerialOpen(SerialOCRR,19200,3,0,800)
   
@@ -62,9 +62,11 @@ EndSub
 
 
 Sub SampleOCRI
-  WhereAmI = "Sample OCRI"
- 
+  ' &5341 -> SA &0D0A -> CR LF
+  Dim NBR ' Number of Bytes Returned
   Dim X, Y
+
+  WhereAmI = "Sample OCRI"
   
   SerialOpen(SerialOCRI,19200,51,0,800)
   

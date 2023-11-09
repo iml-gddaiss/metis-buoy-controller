@@ -34,3 +34,9 @@ ConstTable (Buoy_Config,0)
 
     Const With_Logging = true
 EndConstTable
+
+
+Const With_Tower_485 = With_WXT536 OR With_WMT700 OR With_Compass       
+Const With_Tower = With_PAR OR With_WMT700 OR With_Compass OR With_OCR_I
+Const With_Weather = With_WXT536 OR With_WMT700 OR With_PAR
+Const With_Well_Pump = With_SBE37 OR With_Seafet OR With_SUNA OR With_OCR_R

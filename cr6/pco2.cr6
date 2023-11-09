@@ -195,3 +195,10 @@ Sub SamplePCO2 'Move to pco2.cr6 ? TODO
     EndIf 'If PCO2_Sampling is True
   EndIf 'If there's a PCO2 and salinity (or bypass)
 EndSub
+
+Sub PCO2RawStringsReset
+  If RawPCO2_Air <> "" AND RawPCO2_Water <> "" Then
+    RawPCO2_Air = ""
+    RawPCO2_Water = ""
+  EndIf
+EndSub
