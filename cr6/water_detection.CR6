@@ -1,14 +1,14 @@
 Const Water_Detection_Channel = U1 'Voltage reading
-Public Water_Detection_Main '>>> but this in the water detection script ?
+Public Water_Detection_Main
 
-Sub PowerWaterDetectionSensor
+Sub PowerWaterDetectionMain
  '5V to the Water Detection sensor, sample taked at the end --------------------
   If With_Water_Detection_Main Then
     PortSet(C4,1)
   EndIf
 EndSub
 
-Sub CheckWaterDetection
+Sub CheckWaterDectectionMain
   If With_Water_Detection_Main Then
     WhereAmI = "Check Water Detection"
     Water_Detection_Main = 0

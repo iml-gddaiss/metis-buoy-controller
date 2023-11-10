@@ -4,11 +4,18 @@ SubRoutine:
 
 Power<>: Power-up a device or devices.
 Stop<>: ... Power-down device or devices.
-Start<>: Open Serial Port -> maybe change to Open<>
+
+Sample<>: Start & Collect
+Start<>: Open Serial Port, (Requset ?) -> maybe change to Open<>
+Collect<>: Read, Parse, Write  Data ?
+
 Close<>: ... close Serial
+
 Check<>: ...
+
+
+WaitFor<> :Timer
+
 
 Update<>Table: Call the CallTable within its own Scan
 
-
-_<VARIABLE>_: means that it comes from another devices. 

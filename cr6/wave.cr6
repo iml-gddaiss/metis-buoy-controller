@@ -39,11 +39,12 @@ Function WaveTagString  As String
 EndFunction
 
 '### Sampling ###
-Sub CollectWave(TAGString)
+Sub SampleWave(TAGString)
   Dim X
   If With_Wave Then
+    WhereAmI = "Sample Wave"
+    
     RawWave = ""
-    WhereAmI = "Collect Wave"
     Wave() = ""
     SerialOpen(SerialWave,19200,3,600,200)
     For X = 1 To 3 Step 1

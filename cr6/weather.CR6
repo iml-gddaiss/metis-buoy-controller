@@ -34,6 +34,16 @@ DataTable (Weather,1,-1)
 EndTable
 
 
+Function WindTagString as String
+  WindTagString = WindTAG & Wind_Dir_Min & "," & Wind_Dir_Ave & "," & Wind_Dir_Max & "," & Wind_Spd_Min & "," & Wind_Spd_Ave & "," & Wind_Spd_Max
+EndFunction
+
+
+Function ATMSTagString as String
+  ATMSTagString = "[ATMS]" & Air_Temp & "," & Air_Humidity & "," & Air_Pressure & "," & PAR & "," & Rain_Total & "," & Rain_Duration & "," & Rain_Intensity
+EndFunction
+
+
 Sub UpdateWeatherTable
   Scan(1,Sec, 0, 1)
   CallTable Weather
@@ -125,16 +135,6 @@ Sub WindCorrection(GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)
   
   EndIf
 EndSub
-
-Function WindTagString as String
-  WindTagString = WindTAG & Wind_Dir_Min & "," & Wind_Dir_Ave & "," & Wind_Dir_Max & "," & Wind_Spd_Min & "," & Wind_Spd_Ave & "," & Wind_Spd_Max
-EndFunction
-
-
-Function ATMSTagString as String
-  ATMSTagString = "[ATMS]" & Air_Temp & "," & Air_Humidity & "," & Air_Pressure & "," & PAR & "," & Rain_Total & "," & Rain_Duration & "," & Rain_Intensity
-EndFunction
-
 
 
 Sub CollectWeather(TAGString, GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)

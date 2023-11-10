@@ -76,7 +76,7 @@ Include "CPU:seafet.cr6"                    '#W3 Declare Seafet
 Include "CPU:suna.cr6"                      '#W4 Declare SUNA 
 Include "CPU:pco2.cr6"                      '#W5 PCO2
 Include "CPU:ocr.cr6"                       '#W7 HyperOCR_R  & #T6 HyperOCR_I
-Include "CPU:wave_monitor.cr6"              '#M1 Wave_Monitor 
+Include "CPU:wave.cr6"              '#M1 Wave_Monitor 
 Include "CPU:power_controller.cr6"          '#M3 Power Controller
 Include "CPU:adcp.cr6"                      '#M4 ADCP 
 
@@ -125,34 +125,6 @@ DataTable (Raw,1,-1)
 EndTable
 
 
-' Sub CloseCR6SerialPorts
-'   Dim port
-'   'Close all serial port on CR6 if still open except ADCP
-'   For port = 11 To 16 Step 1
-'     If port = SerialADCP Then
-'       'Do not close the ADCP port
-'     Else If port = 13 AND WinchMessage <> "Interval not reach" Then ' is this ok ? was not in Subroutine at the start of the program # JEROME FIXME
-'       'Do not close port
-'     Else
-'       SerialClose(port)
-'     EndIf
-'   Next port
-' EndSub
-
-
-' Sub CloseSDM4SerialPorts
-'   Dim port
-'   'Close all serial port on SDM4, except for PCO2 (40) which must stays on is PCO2 is sampling
-'   For port = 32 To 47 Step 1
-'     If port = SerialPCO2 AND PCO2IsSampling = true Then
-'     'Do not close the port
-'     Else
-'       SerialClose(port)
-'     EndIf
-'   Next port
-' EndSub
-
-
 BeginProg
   'This is turning the Wifi Off
   SetSetting("WIFIconfig",4)
@@ -170,7 +142,7 @@ BeginProg
 
   Call logging("Scan Start: ")
     
-  Call PowerWaterDetectionSensor
+  Call PowerWaterDetectionMain
       
   Call PowerTowerInstruments
 
@@ -194,7 +166,7 @@ BeginProg
   
   Call SampleCompass
   
-  Call CheckWaterDetection
+  Call CheckWaterDectectionMain
 
   Call OpenTagsFiles(UTC_Date_Short, UTC_Time_Short)
   TAGString = InitTagString()
@@ -232,7 +204,7 @@ BeginProg
       
   Call CollectWeather(TAGString, GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)     
 
-  Call CollectWave(TAGString)           
+  Call SampleWave(TAGString)           
 
   Call CollectADCP(TAGString)
   

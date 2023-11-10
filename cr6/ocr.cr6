@@ -104,22 +104,22 @@ EndSub
 
 
 Sub SampleOCRs
-  Dim call_ocr_table = false
+  Dim update_OCRs_table = false
   
   If With_OCR_R AND Well_IsPowered Then
     WhereAmI = "Sample OCR R"
     Call SampleOCRR
-    call_ocr_table = true
+    update_OCRs_table = true
   EndIf
   
   If With_OCR_I Then
     WhereAmI = "Sample OCR I"
     Call SampleOCRI
-    call_ocr_table = true
+    update_OCRs_table = true
   EndIf
   
 
-  If call_ocr_table Then
+  If update_OCRs_table Then
     Call UpdateHyperOCRTable
     WhereAmI = "End OCR"
   EndIf

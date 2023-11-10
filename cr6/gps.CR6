@@ -14,6 +14,8 @@ Public Latitude As String,Longitude As String, SOG As Float, COG As Float, Mag_V
 
 Dim UTC_Date_Hyphen As String, UTC_Date_Slash As String, UTC_Date_Short As String, UTC_Time_Short As String, UTC_Time_DDot As String
 
+Public GPSNumberOfSample = 10
+
 
 '### Units ###
 Units SOG = Kn
@@ -47,15 +49,17 @@ Sub SampleGPS
     If With_GPS Then
         WhereAmI = "Sample GPS"
         
+        HVS() = 0 ' Reset Var
+        
         SerialOpen(SerialGPS,19200,3,20,1000)
         SerialFlush(SerialGPS)
         SerialIn(RawGPS,SerialGPS,150,10,80)
-        HVS() = 0 'HVS = GPS_Header, GPS_Time, GPS_Status, Lat, Lat_Hem, Lon, Lon_Hem, Speed_Over_Ground, Course_Over_Ground, GPS_Date, Magnetic_Variation, Mag_Var_Dir, Check_GPS
+        
         GPS_SOG_X = 0
         GPS_SOG_Y = 0
         SOG = 0
         COG = 0
-        For X = 1 To 10 Step 1
+        For X = 1 To GPSNumberOfSample Step 1
             SerialIn(RawGPS,SerialGPS,150,10,80)
             SplitStr(HVS(),RawGPS,",",13,5)
             If Speed_Over_Ground = "" Then
@@ -86,7 +90,7 @@ Sub SampleGPS
         UTC_Date_Short = Mid(ScanDateTime,1,4)&Mid(ScanDateTime,6,2)&Mid(ScanDateTime,9,2)
         
         'Processing COG and SOG
-        SOG = Round(SQR(PWR(GPS_SOG_X,2)+PWR(GPS_SOG_Y,2))/10,2)
+        SOG = Round(SQR(PWR(GPS_SOG_X,2)+PWR(GPS_SOG_Y,2))/GPSNumberOfSample,2)
         COG = Round(ATN2(GPS_SOG_Y,GPS_SOG_X),1)
         If COG < 0 Then
             COG = 360 + COG
@@ -103,7 +107,7 @@ Sub SampleGPS
             Magnetic_Variation = "+"&Mid(Magnetic_Variation,2,5)
         EndIf
 
-        'Processing Buoy's Speed&Direction 
+        'Processing Buoy's Speed&Direction FIXME Speed and course over ground are not averaged ???
         If Speed_Over_Ground = "" Then
             Speed_Over_Ground = 0
         EndIf

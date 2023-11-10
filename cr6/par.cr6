@@ -26,10 +26,8 @@ Sub UpdatePARTable
 EndSub
 
 '### Sampling ###
-
 Sub StartPAR
-  'Open the PAR port if present, sending the data as soon as it's ready
-  If With_PAR <> 0 Then
+  If With_PAR Then
     SerialOpen(SerialPAR,19200,3,20,100)
     SerialFlush(SerialPAR)
     Call logging("Starting PAR")
@@ -37,8 +35,9 @@ Sub StartPAR
 EndSub
 
 Sub CollectPAR
-  WhereAmI = "Collect PAR"
-  If With_PAR <> 0 Then
+  If With_PAR Then
+    WhereAmI = "Collect PAR"
+    
     SerialIn(RawPAR,SerialPAR,10,CHR(13),60)
     SplitStr(PARSensor(),RawPAR,",",5,4)
     SerialClose(SerialPAR)
