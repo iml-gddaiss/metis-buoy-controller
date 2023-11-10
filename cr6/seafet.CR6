@@ -176,7 +176,7 @@ Sub SampleSeafet_Pro(TAGString, _Water_Temp_, _Salinity_)
   Call Seafet_ProCorrection(_Water_Temp_, _Salinity_)  
 
   If Int_pH_P <> "NAN" AND Ext_pH_P <> "NAN" Then
-    Call SeaFet_ProTable
+    Call UpdateSeafet_ProTable
     TAGString = PHPROTagString()
   EndIf 
 

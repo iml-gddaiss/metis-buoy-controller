@@ -167,7 +167,7 @@ BeginProg
   
   Call CheckWaterDectectionMain
 
-  Call OpenTagsFiles(UTC_Date_Short, UTC_Time_Short)
+  Call OpenTagsFiles
   TAGString = InitTagString()
   Call WriteTagString
     

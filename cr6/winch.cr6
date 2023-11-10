@@ -86,7 +86,7 @@ Sub WinchConditionsCheck
     EndIf
     
     If With_Power Then
-      Call CheckWinchPower(VBatt1, VBatt2)
+      Call WinchPowerCheck(VBatt1, VBatt2)
     EndIf
 EndSub
 
@@ -126,7 +126,7 @@ Sub StartWinchMission
             WinchStatus = "Sampling"
 
             Winch_Last_Sample = Public.TimeStamp(1)
-            Winch_Start_RecNum = Status.RecNum
+            Winch_Start_RecNum = Status.Record
 
             WinchMessage = "Winch Mission Started"
     Else 'No string from CTD
@@ -177,10 +177,10 @@ Sub CollectWinch
         
         WhereAmI = "Collecting the winch"
         
-        Winch_Date =  FileGPS.UTC_Date_Slash(1, status.RecNum - Winch_Start_RecNum)
-        Winch_Time = FileGPS.UTC_Time_DDOT(2, status.RecNum - Winch_Start_RecNum)
-        Winch_Lat = FileGPS.Latitude(3, status.RecNum - Winch_Start_RecNum)
-        Winch_Lon = FileGPS.Longitude(4, status.RecNum - Winch_Start_RecNum)
+        Winch_Date =  FileGPS.UTC_Date_Slash(1, status.Record - Winch_Start_RecNum)
+        Winch_Time = FileGPS.UTC_Time_DDOT(2, status.Record - Winch_Start_RecNum)
+        Winch_Lat = FileGPS.Latitude(3, status.Record - Winch_Start_RecNum)
+        Winch_Long = FileGPS.Longitude(4, status.Record - Winch_Start_RecNum)
 
         WinchFileName = Buoy_Name&"_"&Replace(Winch_Date, "/", "")&"_"&Replace(Winch_Time, ":", "")
         WinchFile = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)

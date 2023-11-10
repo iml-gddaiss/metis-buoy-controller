@@ -29,6 +29,7 @@ EndTable
 Sub SampleOCRR
   ' &5341 -> SA &0D0A -> CR LF
   Dim NBR ' Number of Bytes Returned  
+  Dim X, Y
   
   WhereAmI = "Sample OCRR"
   
