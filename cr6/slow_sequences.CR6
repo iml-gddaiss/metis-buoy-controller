@@ -26,10 +26,10 @@ Sub WellSwitchSequence
     EndIf
 EndSub
 
-Sub ADCPBreakSequence
-    If Send_Break_to_ADCP Then
-        ' SerialBrk(SerialADCP,200)
-        Call SendADCPBreak
-        Send_Break_to_ADCP = false
-      EndIf
-EndSub
+' Sub ADCPBreakSequence 'Doest not work
+'     If Send_Break_to_ADCP Then
+'         ' SerialBrk(SerialADCP,200)
+'         Call SendADCPBreak
+'         Send_Break_to_ADCP = false
+'       EndIf
+' EndSub
