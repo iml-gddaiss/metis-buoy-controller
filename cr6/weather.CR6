@@ -105,12 +105,12 @@ Sub WindCorrection(GPS_SOG_X, GPS_SOG_Y)
 EndSub
 
 
-Sub ProcessWeather(TAGString, GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)
+Sub ProcessWeather(TAGString, GPS_SOG_X, GPS_SOG_Y)
   If With_Weather AND With_GPS AND Pitch <> "NAN" AND Roll <> "NAN" Then 
     WhereAmI = "Processing Weather"
     Call SelectWeatherInstrument   
 
-    Call WindCorrection(GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)
+    Call WindCorrection(GPS_SOG_X, GPS_SOG_Y)
     
     Call UpdateWeatherTable
 
