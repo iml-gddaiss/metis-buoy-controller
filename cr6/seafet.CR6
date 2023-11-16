@@ -64,8 +64,31 @@ Function PHPROTagString as String
   PHPROTagString = "[PHPRO]" & Ext_pH_P & "," & Int_pH_P & "," & Error_Flag & "," & Ext_pH & "," & Int_pH
 EndFunction
 
+Sub StartSeafet
+  Call logging("Starting SeaFet")
+  SerialOpen(SerialSeafet,19200,3,20,900) 'Seafet string is around 100, but bigger buffer for Coef.
+EndSub
+
+
+Function CollectSeafetCoefficient(coeff_tag As String) As String
+  Dim _coeff_k_ As String
+  
+  SerialFlush(SerialSeafet)
+  SerialOut(SerialSeafet,CHR(13),"S>",2,50)
+  SerialOut(SerialSeafet,coeff_tag&CHR(13),"",1,0)
+  SerialIn(_coeff_k_,SerialSeafet,100,39,40)
+  SerialIn(_coeff_k_,SerialSeafet,100,39,20)
+  
+  If Len(_coeff_k_) <> 13 OR Mid(_coeff_k_,10,1) <> "e" Then
+    _coeff_k_ = ""
+  EndIf
+
+  CollectSeafetCoefficient = _coeff_k_
+
+
 
 Sub CollectSeafet
+  Call logging("Collecting SeaFet")
   Dim X
   For X = 1 To 3 Step 1
     SerialFlush(SerialSeafet)
@@ -81,6 +104,7 @@ Sub CollectSeafet
     
     SerialIn(RawSeafet,SerialSeafet,800,CHR(13),125) 'Seafet string is around 100
     SplitStr(Seafet_Value,RawSeafet,",",10,14)
+    
     Int_pH = Int_pH_Value
     Ext_pH = Ext_pH_Value
     
@@ -89,54 +113,34 @@ Sub CollectSeafet
     EndIf
   
   Next X
+
+  If Error_Flag = "0000" Then ' Jerome 0000 -> "0000" Is it supposed to be a string ? TODO FIXME
+    Error_Flag = 0
+  Else
+    Error_Flag = 1
+  EndIf
+
 EndSub
 
 
 Sub CollectSeafet_Pro
+  Call logging("Collecting SeaFet Pro")
   Dim X
   For X = 1 To 5 Step 1
     If K0_Int_Exp = "" OR K0_Int = "NAN" Then
-      SerialFlush(SerialSeafet)
-      SerialOut(SerialSeafet,CHR(13),"S>",2,50)
-      SerialOut(SerialSeafet,"K0"&CHR(13),"",1,0)
-      SerialIn(K0_Int_Exp,SerialSeafet,100,39,40)
-      SerialIn(K0_Int_Exp,SerialSeafet,100,39,20)
-      If Len(K0_Int_Exp) <> 13 OR Mid(K0_Int_Exp,10,1) <> "e" Then
-        K0_Int_Exp = ""
-      EndIf                 
+      K0_Int_Exp = CollectSeafetCoefficient("K0")             
     EndIf
     
     If K2_Int_Exp = "" OR K2_Int = "NAN" Then
-      SerialFlush(SerialSeafet)
-      SerialOut(SerialSeafet,CHR(13),"S>",2,50)
-      SerialOut(SerialSeafet,"K2"&CHR(13),"",1,0)
-      SerialIn(K2_Int_Exp,SerialSeafet,100,39,40)
-      SerialIn(K2_Int_Exp,SerialSeafet,100,39,20)
-      If Len(K2_Int_Exp) <> 13 OR Mid(K2_Int_Exp,10,1) <> "e" Then
-        K2_Int_Exp = ""
-      EndIf            
+      K2_Int_Exp = CollectSeafetCoefficient("K2")         
     EndIf
     
     If K0_Ext_Exp = "" OR K0_Ext = "NAN" Then
-      SerialFlush(SerialSeafet)
-      SerialOut(SerialSeafet,CHR(13),"S>",2,50)
-      SerialOut(SerialSeafet,"KDF0"&CHR(13),"",1,0)
-      SerialIn(K0_Ext_Exp,SerialSeafet,100,39,40)
-      SerialIn(K0_Ext_Exp,SerialSeafet,100,39,20)
-      If Len(K0_Ext_Exp) <> 13 OR Mid(K0_Ext_Exp,10,1) <> "e" Then
-        K0_Ext_Exp = ""
-      EndIf
+      K0_Ext_Exp = CollectSeafetCoefficient("KDF0")
     EndIf
     
     If K2_Ext_Exp = "" OR K2_Ext = "NAN" Then
-      SerialFlush(SerialSeafet)
-      SerialOut(SerialSeafet,CHR(13),"S>",2,50)
-      SerialOut(SerialSeafet,"KDF2"&CHR(13),"",1,0)
-      SerialIn(K2_Ext_Exp,SerialSeafet,100,39,40)
-      SerialIn(K2_Ext_Exp,SerialSeafet,100,39,20)
-      If Len(K2_Ext_Exp) <> 13 OR Mid(K2_Ext_Exp,10,1) <> "e" Then
-        K2_Ext_Exp = ""
-      EndIf
+      K2_Ext_Exp = CollectSeafetCoefficient("KDF2")
     EndIf
     
     K0_Int = K0_Int_Exp
@@ -147,63 +151,59 @@ Sub CollectSeafet_Pro
 EndSub
 
 
-Sub Seafet_ProCorrection(_Water_Temp_, _Salinity_)
+Sub Seafet_ProCorrection(Water_Temp, Salinity)
+  ' Documentation needed. FIXME Article, equation source .etc.
+  Call logging("Carrying Seafet Correction")      
+  
   Dim Snernst, Clt, log_yHClT, St, Water_Temp_K, I, Adh
   Dim Ks_Tab(6) : Alias Ks_Tab = Ks1, Ks2, Ks3, Ks4, Ks5, Ks
     
-  Water_Temp_K = KelvinToCelsius + _Water_Temp_
+  Water_Temp_K = KelvinToCelsius + Water_Temp
   Snernst = (GasConstantR*Water_Temp_K*LN(10))/FaradayConstant
-  Clt = (0.99889/35.453)*(_Salinity_/1.80655)*(1000/(1000-(1.005*_Salinity_)))
-  I = (19.924*_Salinity_)/(1000-(1.005*_Salinity_))
-  Adh = (0.0000034286*(_Water_Temp_^2))+(0.00067524*_Water_Temp_)+0.49172143
-  log_yHClT = (-Adh*SQR(I))/(1+(1.394*SQR(I)))+((0.08885-(0.000111*_Water_Temp_))*I)
-  St = (0.1400/96.062)*(_Salinity_/1.80655)
+  Clt = (0.99889/35.453)*(Salinity/1.80655)*(1000/(1000-(1.005*Salinity)))
+  I = (19.924*Salinity)/(1000-(1.005*Salinity))
+  Adh = (0.0000034286*(Water_Temp^2))+(0.00067524*Water_Temp)+0.49172143
+  log_yHClT = (-Adh*SQR(I))/(1+(1.394*SQR(I)))+((0.08885-(0.000111*Water_Temp))*I)
+  St = (0.1400/96.062)*(Salinity/1.80655)
   Ks1 = (-4276.1/Water_Temp_K)+141.328-(23.093*LN(Water_Temp_K))
   Ks2 = ((-13856/Water_Temp_K)+324.57-(47.986*LN(Water_Temp_K)))*SQR(I)
   Ks3 = ((35474/Water_Temp_K)-771.54+(114.723*LN(Water_Temp_K)))*I
   Ks4 = (2698/Water_Temp_K)*I^1.5
   Ks5 = (1776/Water_Temp_K)*I^2
-  Ks = (1-(0.001005*_Salinity_))*EXP(Ks1+Ks2+Ks3-Ks4+Ks5)
+  Ks = (1-(0.001005*Salinity))*EXP(Ks1+Ks2+Ks3-Ks4+Ks5)
   
-  Int_pH_P = Round((CTYPE(Volt_Int_pH,Float) - K0_Int - (K2_Int*_Water_Temp_))/Snernst,4)
-  Ext_pH_P = Round(((CTYPE(Volt_Ext_pH,Float) - K0_Ext - (K2_Ext*_Water_Temp_))/Snernst) + LOG(Clt) + (2*log_yHClT) - LOG(1+(St/Ks)) - LOG((1000-(1.005*_Salinity_))/1000),4)
-
-EndSub
-
-Sub SampleSeafet_Pro(TAGString, _Water_Temp_, _Salinity_)
-  Call CollectSeafet_Pro
-
-  Call Seafet_ProCorrection(_Water_Temp_, _Salinity_)  
-
-  If Int_pH_P <> "NAN" AND Ext_pH_P <> "NAN" Then
-    Call UpdateSeafet_ProTable
-    TAGString = PHPROTagString()
-  EndIf 
+  Int_pH_P = Round((CTYPE(Volt_Int_pH,Float) - K0_Int - (K2_Int*Water_Temp))/Snernst,4)
+  Ext_pH_P = Round(((CTYPE(Volt_Ext_pH,Float) - K0_Ext - (K2_Ext*Water_Temp))/Snernst) + LOG(Clt) + (2*log_yHClT) - LOG(1+(St/Ks)) - LOG((1000-(1.005*Salinity))/1000),4)
 
 EndSub
 
 
-'### Sampling ###
-Sub SampleSeafet(TAGString, _Water_Temp_, _Salinity_)
+Sub SampleSeafet(TAGString, Water_Temp, Salinity)
   If With_Seafet Then
     WhereAmI = "Sample Seafet"
-    SerialOpen(SerialSeafet,19200,3,20,900) 'Seafet string is around 100, but bigger buffer for Coef.
+    
+    Call StartSeafet
     
     Call CollectSeafet
-        
-    If Error_Flag = "0000" Then ' Jerome 0000 -> "0000" Is it supposed to be a string ? TODO FIXME
-      Error_Flag = 0
-    Else
-      Error_Flag = 1
-    EndIf
-    
+
+    Call UpdateSeafetTable
     TAGString = PHTagString()
     
-    If Seafet_Auto_Correction <> 0 AND _Salinity_ > 10 Then
-      Call SampleSeafet_Pro(TAGString, _Water_Temp_, _Salinity_)
+    If Seafet_Auto_Correction AND Salinity > 10 Then
+    
+      Call CollectSeafet_Pro
+
+      Call Seafet_ProCorrection(Water_Temp, Salinity)  
+
+      If Int_pH_P <> "NAN" AND Ext_pH_P <> "NAN" Then
+        Call UpdateSeafet_ProTable
+        TAGString = PHPROTagString()
+      EndIf 
     EndIf
     
-    Call UpdateSeafetTable
+    ' FIXME the SeafetTable can be updated before the AutoCorrection Routine
+    ' Call UpdateSeafetTable 
+    
     Call WriteTagString
     
     WhereAmI = "End Seafet"

@@ -39,7 +39,7 @@ Sub CloseCR6SerialPorts
   For port = 11 To 16 Step 1
     If port = SerialADCP Then
       'Do not close the ADCP port
-    Else If port = SerialWinch Then 'AND WinchMessage <> "Interval not reach" Then 'Only CollectWinch can close the winch port
+    Else If port = SerialWinch And WinchStatus <> "Standby" Then
       'Do not close port
     Else
       SerialClose(port)
@@ -52,7 +52,7 @@ Sub CloseSDM4SerialPorts
   Dim port
   'Close all serial port on SDM4, except for PCO2 (40) which must stays on is PCO2 is sampling
   For port = 32 To 47 Step 1
-    If port = SerialPCO2 Then 'AND PCO2IsSampling = true Then ' Port closing is only done with CollectPCO2
+    If port = SerialPCO2 AND PCO2IsSampling Then
     'Do not close the port
     Else
       SerialClose(port)

@@ -235,7 +235,7 @@ Sub SamplePCO2 'Move to pco2.cr6 ? TODO
         Call CollectPCO2
       EndIf
     
-    ElseIf (PCO2_Last_Sampling + (PCO2_Interval*60*60) - 10 <= time_stamp) Then 'minus 10sec to not skip a scan planned at PCO2_Interval hour (got 3599s and didn't sampled)
+    ElseIf (PCO2_Last_Sampling + (PCO2_Interval*60*60) - 60 <= time_stamp) Then 'minus 60sec to not skip a scan planned at PCO2_Interval hour (got 3599s and didn't sampled)
       Call StartPCO2
     EndIf
   EndIf

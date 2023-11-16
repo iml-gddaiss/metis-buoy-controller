@@ -43,9 +43,6 @@ PreserveVariables
 
 Public WhereAmI As String ' Debug Purposes
 
-' Never Really used. Was use in WXT for RealTime but then not used.
-' Dim Buoy_Time(9) : Alias Buoy_Time = Buoy_Year, Buoy_Month, Buoy_Date, Buoy_Hour, Buoy_Minute, Buoy_Second, Buoy_Microsecond, Buoy_DayofWeek, Buoy_DayofYear
-
 Public ScanDateTime As String ' FIXME this could be a Dim ?
 
 Public TAGString As String * 200
@@ -134,6 +131,8 @@ BeginProg
 
   Call StartADCP
 
+  Call StartRainTimer
+
   Scan(Buoy_Interval,Sec,0,0)
 
   ScanDateTime = Public.TimeStamp(4,0)
@@ -151,11 +150,11 @@ BeginProg
 
   Call SampleGPS
   
-  Call StartWXT536
+  Call ResetWXT536
 
   Call StartWMT700
   
-  Call StartWeatherTimer
+  Call StartATMSTimer
 
   Call SBE37SalinityCheck
     
@@ -189,19 +188,17 @@ BeginProg
 
   Call StopWellPump 'Pumped sensor are done, close pump
   
-  Call WaitForWeather
+  Call WaitForATMS
     
   Call CollectPAR
 
-  Call CollectWXT536
+  Call CollectWXT536 
   
   Call CollectWMT700
   
   Call StopTower485
-  
-  Call SelectWeatherInstrument   
-      
-  Call CollectWeather(TAGString, GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)     
+        
+  Call ProcessWeather(TAGString, GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)     
 
   Call SampleWave(TAGString)           
 
@@ -209,11 +206,7 @@ BeginProg
   
   Call SamplePCO2
   
-  Call WinchMission(Salinity, TAGString)
-  
-  ' Call CloseCR6SerialPorts
-
-  ' Call CloseSDM4SerialPorts        
+  Call WinchMission(Salinity, TAGString)      
 
   Call CloseSerialPorts
   

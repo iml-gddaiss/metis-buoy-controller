@@ -35,7 +35,7 @@ Sub StartADCP
   If With_ADCP Then  
     Call logging("Starting ADCP")
     SerialOpen(SerialADCP,115200,3,0,3000)
-    ' DONT FLUSH HERE IMPORTANT
+    SerialFlush(SerialADCP)
   EndIf
 EndSub
  

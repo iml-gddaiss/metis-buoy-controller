@@ -57,16 +57,18 @@ Sub UpdateWXT536Table
 EndSub
 
 
-'### Sampling ###
-Sub StartWXT536
-  Dim  Rain_Time_Elapsed
+Sub StartRainTimer
   If With_WXT536 Then
-    ' RealTime(Buoy_Time) 'Collecting buoy time to see if it's time to reset the rain/hail accumulation (NOT USED FIXME)
-    ' Timer(Rain_Timer,Hr,0) 'Start the timer if it isn't started ? FIXME
-    Rain_Time_Elapsed = Timer(Rain_Timer,Hr,4)
-        
+    Rain_Time_Elapsed = Timer(Rain_Timer,Hr, 0)
+  EndIf
+EndSub
+
+
+'### Sampling ###
+Sub ResetWXT536
+  If With_WXT536 Then        
     ' Reset Rain if 00:00 or active for more than 24h
-    If UTC_Time_DDot = "00:00:00" OR  Rain_Time_Elapsed >= 24 Then ' FIXME What is going on here
+    If UTC_Time_DDot = "00:00:00" OR  Timer(Rain_Timer,Hr,4) >= 24 Then ' FIXME What is going on here
       SerialOut(SerialTower,CHR(13)&CHR(10)&"2XZRU"&CHR(13)&CHR(10),"",1,0)
       SerialOut(SerialTower,CHR(13)&CHR(10)&"2XZRI"&CHR(13)&CHR(10),"",1,0)
       Timer(Rain_Timer,Hr,2) 'Timer #6 Reset&Start
@@ -82,7 +84,7 @@ Sub CollectWXT536
   Dim X
   
   If With_WXT536 Then
-    WhereAmI = "Collect WXT536"    
+    WhereAmI = "Collect WXT536"
     
     RawR1_Wind = ""
     RawR2_Weather = ""

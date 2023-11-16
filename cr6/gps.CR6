@@ -70,8 +70,8 @@ Sub SampleGPS
                 SOG = Speed_Over_Ground
             EndIf
             
-            GPS_SOG_X = GPS_SOG_X + (SOG * COS(COG))
-            GPS_SOG_Y = GPS_SOG_Y + (SOG * SIN(COG))
+            GPS_SOG_X += SOG * COS(COG)
+            GPS_SOG_Y += SOG * SIN(COG)
         Next
         
         SerialClose(SerialGPS)
@@ -91,10 +91,7 @@ Sub SampleGPS
         
         'Processing COG and SOG
         SOG = Round(SQR(PWR(GPS_SOG_X,2)+PWR(GPS_SOG_Y,2))/GPSNumberOfSample,2)
-        COG = Round(ATN2(GPS_SOG_Y,GPS_SOG_X),1)
-        If COG < 0 Then
-            COG = 360 + COG
-        EndIf        
+        COG = Round(ATN2(GPS_SOG_Y,GPS_SOG_X),1) MOD 360
 
         'Processing Lat/Long & Magnetic Variation                  
         Latitude = Mid(Lat,1,2)&"°"&Mid(Lat,3,6)&"'"&Lat_Hem
@@ -105,15 +102,6 @@ Sub SampleGPS
             Magnetic_Variation = "-"&Mid(Magnetic_Variation,2,5)
         Else
             Magnetic_Variation = "+"&Mid(Magnetic_Variation,2,5)
-        EndIf
-
-        'Processing Buoy's Speed&Direction FIXME Speed and course over ground are not averaged ???
-        If Speed_Over_Ground = "" Then
-            Speed_Over_Ground = 0
-        EndIf
-        
-        If Course_Over_Ground = "" Then
-            Course_Over_Ground = 0
         EndIf
         
         'Putting the String value in Float or Long variables 

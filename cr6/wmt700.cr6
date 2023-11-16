@@ -24,8 +24,6 @@ DataTable (FileWMT700,1,-1)
   Sample (1,Spd_Max1,IEEE4)
 EndTable
 
-
-
 Sub UpdateWMT700Table
   Scan(1,Sec, 0, 1)
   CallTable FileWMT700
