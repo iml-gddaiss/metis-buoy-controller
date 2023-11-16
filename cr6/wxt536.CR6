@@ -59,7 +59,7 @@ EndSub
 
 Sub StartRainTimer
   If With_WXT536 Then
-    Rain_Time_Elapsed = Timer(Rain_Timer,Hr, 0)
+    Timer(Rain_Timer,Hr, 0)
   EndIf
 EndSub
 

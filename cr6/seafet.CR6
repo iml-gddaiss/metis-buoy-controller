@@ -84,7 +84,7 @@ Function CollectSeafetCoefficient(coeff_tag As String) As String
   EndIf
 
   CollectSeafetCoefficient = _coeff_k_
-
+EndFunction
 
 
 Sub CollectSeafet

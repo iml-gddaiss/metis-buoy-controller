@@ -198,7 +198,7 @@ BeginProg
   
   Call StopTower485
         
-  Call ProcessWeather(TAGString, GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)     
+  Call ProcessWeather(TAGString, GPS_SOG_X, GPS_SOG_Y)     
 
   Call SampleWave(TAGString)           
 

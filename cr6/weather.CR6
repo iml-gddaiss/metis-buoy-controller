@@ -1,7 +1,4 @@
 Dim WindTAG As String
-Dim Wind_Dir_Vec(6) As Float : Alias Wind_Dir_Vec = Dir_Min_x, Dir_Min_y, Dir_Ave_x, Dir_Ave_y, Dir_Max_x, Dir_Max_y
-Dim Wind_Spd_Vec(6) As Float : Alias Wind_Spd_Vec = Spd_Min_x, Spd_Min_y, Spd_Ave_x, Spd_Ave_y, Spd_Max_x, Spd_Max_y
-
 
 
 ' Weather manipulation with selection of better wind and compensation
@@ -91,11 +88,11 @@ Sub AverageWindMotionCorrection(GPS_SOG_X, GPS_SOG_Y)
 
     Wind(4) = RhoTheta(1)
     Wind(2) = RhoTheta(2)
-  EndSub
+  EndIf
 EndSub
 
 
-Sub WindCorrection(GPS_SOG_X, GPS_SOG_Y, Roll, Pitch)
+Sub WindCorrection(GPS_SOG_X, GPS_SOG_Y)
   Dim X
   'Heading correction
   For X = 1 To 3                                   ' with the heading (which is already corrected with magnetic

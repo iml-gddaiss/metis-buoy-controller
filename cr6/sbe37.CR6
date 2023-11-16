@@ -83,6 +83,7 @@ EndSub
 
 
 Sub CollectSBE37
+  Dim X
   Call logging("Collecting SBE37")
   RawSBE37 = ""
   SBE37() = ""
@@ -116,7 +117,6 @@ Sub SampleSBE37(TAGString)
   ' If the data were not received after sending the `tss` command,
   ' we assume that the CTD has received the `tss` command thus, we send 
   ' the `sl` command. Otherwise the ctd internal storage will have duplicate sample.
-  Dim X
   If With_SBE37 Then
     WhereAmI = "Sampling SBE37"
     Call logging("Sampling SBE37")
