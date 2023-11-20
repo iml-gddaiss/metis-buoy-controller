@@ -5,9 +5,8 @@
 '### Data Variables ###
 Public RawSeafet As String * 120
 ' TODO TEST AS FLOAT
-Public Seafet_Value(10) As String : Alias Seafet_Value = Date_Time_Seafet, Sample_Number, Error_Flag, Ext_pH As Float, Int_pH As Float, Volt_Ext_pH As Float, Volt_Int_pH As Float, pH_Temp, Seafet_Rel_Hum, Seafet_Int_Temp
-Public Seafet_Pro(2) As Float : Alias Seafet_Pro = Ext_pH_P, Int_pH_P
-
+Public Seafet_Value(10) As String : Alias Seafet_Value = Date_Time_Seafet, Sample_Number, Error_Flag, Ext_pH, Int_pH, Volt_Ext_pH, Volt_Int_pH, pH_Temp, Seafet_Rel_Hum, Seafet_Int_Temp
+Public Seafet_pH_Corr(2) As Float : Alias Seafet_pH_Corr = Ext_pH_Corr, Int_pH_Corr
 
 'Constant to auto-proceed the pH value with Temp and Sal from CTD
 Const GasConstantR = 8.3144621 'Universal Gas constant in J/Kmol
@@ -15,10 +14,10 @@ Const FaradayConstant = 96485.365 'Faraday constant
 Const KelvinToCelsius = 273.15
 
 ' This Should Work. No ?
-' Public Coeff_Exp(4) As String : Alias Coeff_Exp = K0_Int_Exp, K2_Int_Exp, K0_Ext_Exp, K2_Ext_Exp
+' Public Seafet_Coeff(4) As String : Alias Seafet_Coeff = K0_Int_Exp, K2_Int_Exp, K0_Ext_Exp, K2_Ext_Exp
 ' ' Public Coeff_Raw As String * 300
 ' Public K0_Int, K2_Int, K0_Ext, K2_Ext As Float
-Public Coeff_Exp(4) As Float : Alias Coeff_Exp = K0_Int, K2_Int, K0_Ext, K2_Ext
+Public Seafet_Coeff(4) As Float : Alias Seafet_Coeff = K0_Int, K2_Int, K0_Ext, K2_Ext
 
 
 '### Units ###
@@ -37,8 +36,8 @@ EndTable
 
 DataTable (FileSeafet_Pro,1,-1)
   DataInterval (0,0,Sec,10)
-  Sample (1,Ext_pH_P,IEEE4).
-  Sample (1,Int_pH_P,IEEE4)
+  Sample (1,Ext_pH_Corr,IEEE4).
+  Sample (1,Int_pH_Corr,IEEE4)
   Sample (1,Water_Temp,IEEE4) ' Is it not confusing ? To have the CTD temperature in the SeaFet data.
   Sample (1,Salinity,IEEE4)
   Sample (1,K0_Int,IEEE4)
@@ -64,7 +63,7 @@ Function PHTagString as String
 EndFunction
 
 Function PHPROTagString as String
-  PHPROTagString = "[PHPRO]" & Ext_pH_P & "," & Int_pH_P & "," & Error_Flag & "," & Ext_pH & "," & Int_pH
+  PHPROTagString = "[PHPRO]" & Ext_pH_Corr & "," & Int_pH_Corr & "," & Error_Flag & "," & Ext_pH & "," & Int_pH
 EndFunction
 
 Sub StartSeafet
@@ -73,7 +72,7 @@ Sub StartSeafet
 EndSub
 
 
-Function CollectSeafetCoefficient(coeff_tag As String) As String
+Function Collect_Seafet_Coefficient(coeff_tag As String) As String
   Dim _coeff_k_ As String
   
   SerialFlush(SerialSeafet)
@@ -86,7 +85,7 @@ Function CollectSeafetCoefficient(coeff_tag As String) As String
     _coeff_k_ = ""
   EndIf
 
-  CollectSeafetCoefficient = _coeff_k_
+  Collect_Seafet_Coefficient = _coeff_k_
 EndFunction
 
 
@@ -108,7 +107,7 @@ Sub CollectSeafet
     SerialIn(RawSeafet,SerialSeafet,800,CHR(13),125) 'Seafet string is around 100
     SplitStr(Seafet_Value,RawSeafet,",",10,14)
     
-    If Len(RawSeafet) > 97 AND Mid(RawSeafet,24,1) = "T" AND Int_pH < 12 AND Int_pH > 3 AND Ext_pH < 12 AND Ext_pH > 3 Then
+    If Len(RawSeafet) > 97 AND Mid(RawSeafet,24,1) = "T" AND CTYPE(Int_pH,Float) < 12 AND CTYPE(Int_pH,Float) > 3 AND CTYPE(Ext_pH,Float) < 12 AND CTYPE(Ext_pH,Float) > 3 Then
       ExitFor
     EndIf
   
@@ -126,26 +125,29 @@ EndSub
 Sub CollectSeafetCoefficents
   Call logging("Collecting SeaFet Pro")
   Dim X
-  For X = 1 To 5 Step 1
-    If K0_Int = "" OR K0_Int = "NAN" Then
-      K0_Int = CollectSeafetCoefficient("K0")             
+  For X = 1 To 5 Step 1 ' Fixme Question: Is this to have 5 attemps ?
+    If K0_Int = "NAN" Then
+      K0_Int = Collect_Seafet_Coefficient("K0")             
     EndIf
     
-    If K2_Int = "" OR K2_Int = "NAN" Then
-      K2_Int = CollectSeafetCoefficient("K2")         
+    If K2_Int = "NAN" Then
+      K2_Int = Collect_Seafet_Coefficient("K2")         
     EndIf
     
-    If K0_Ext = "" OR K0_Ext = "NAN" Then
-      K0_Ext = CollectSeafetCoefficient("KDF0")
+    If K0_Ext = "NAN" Then
+      K0_Ext = Collect_Seafet_Coefficient("KDF0")
     EndIf
     
-    If K2_Ext = "" OR K2_Ext = "NAN" Then
-      K2_Ext = CollectSeafetCoefficient("KDF2")
+    If K2_Ext = "NAN" Then
+      K2_Ext = Collect_Seafet_Coefficient("KDF2")
     EndIf
 
   Next X           
 EndSub
 
+Function LOG10(X) As Float
+  LOG10 = LOG(X) / LOG(10)
+EndFunction
 
 Sub Seafet_Correction(Water_Temp, Salinity)
   ' Documentation needed. FIXME Article, equation source .etc.
@@ -166,12 +168,12 @@ Sub Seafet_Correction(Water_Temp, Salinity)
   Ks1 = (-4276.1/Water_Temp_K)+141.328-(23.093*LOG(Water_Temp_K))
   Ks2 = ((-13856/Water_Temp_K)+324.57-(47.986*LOG(Water_Temp_K)))*SQR(I)
   Ks3 = ((35474/Water_Temp_K)-771.54+(114.723*LOG(Water_Temp_K)))*I
-  Ks4 = (2698/Water_Temp_K)*I^1.5
+  Ks4 = -(2698/Water_Temp_K)*I^1.5
   Ks5 = (1776/Water_Temp_K)*I^2
-  Ks = (1-(0.001005*Salinity))*EXP(Ks1+Ks2+Ks3-Ks4+Ks5)
+  Ks = (1-(0.001005*Salinity))*EXP(Ks1+Ks2+Ks3+Ks4+Ks5)
   
-  Int_pH_P = Round((Volt_Int_pH,Float - K0_Int - (K2_Int*Water_Temp))/Snernst,4)
-  Ext_pH_P = Round(((Volt_Ext_pH,Float - K0_Ext - (K2_Ext*Water_Temp))/Snernst) + LOG(Clt)/LOG(10) + (2*log_yHClT) - LOG(1+(St/Ks))/LOG(10) - LOG((1000-(1.005*Salinity))/1000)/LOG(10),4)
+  Int_pH_Corr = Round((Volt_Int_pH,Float - K0_Int - (K2_Int*Water_Temp))/Snernst,4)
+  Ext_pH_Corr = Round(((Volt_Ext_pH,Float - K0_Ext - (K2_Ext*Water_Temp))/Snernst) + LOG10(Clt) + (2*log_yHClT) - LOG10(1+(St/Ks)) - LOG10((1000-(1.005*Salinity))/1000),4)
 
 EndSub
 
@@ -193,7 +195,7 @@ Sub SampleSeafet(TAGString, Water_Temp, Salinity)
 
       Call Seafet_Correction(Water_Temp, Salinity)  
 
-      If Int_pH_P <> "NAN" AND Ext_pH_P <> "NAN" Then
+      If Int_pH_Corr <> "NAN" AND Ext_pH_Corr <> "NAN" Then
         Call UpdateSeafet_ProTable
         TAGString = PHPROTagString()
       EndIf 
