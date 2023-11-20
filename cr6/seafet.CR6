@@ -40,10 +40,10 @@ DataTable (FileSeafet_Pro,1,-1)
   Sample (1,Int_pH_Corr,IEEE4)
   Sample (1,Water_Temp,IEEE4) ' Is it not confusing ? To have the CTD temperature in the SeaFet data.
   Sample (1,Salinity,IEEE4)
-  Sample (1,K0_Int,IEEE4)
-  Sample (1,K2_Int,IEEE4)
   Sample (1,K0_Ext,IEEE4)
   Sample (1,K2_Ext,IEEE4)
+  Sample (1,K0_Int,IEEE4)
+  Sample (1,K2_Int,IEEE4)
 EndTable
 
 Sub UpdateSeafetTable
@@ -127,19 +127,19 @@ Sub CollectSeafetCoefficents
   Dim X
   For X = 1 To 5 Step 1 ' Fixme Question: Is this to have 5 attemps ?
     If K0_Int = "NAN" Then
-      K0_Int = Collect_Seafet_Coefficient("K0")             
+      K0_Int = Collect_Seafet_Coefficient("KDF0")             
     EndIf
     
     If K2_Int = "NAN" Then
-      K2_Int = Collect_Seafet_Coefficient("K2")         
+      K2_Int = Collect_Seafet_Coefficient("KDF2")         
     EndIf
     
     If K0_Ext = "NAN" Then
-      K0_Ext = Collect_Seafet_Coefficient("KDF0")
+      K0_Ext = Collect_Seafet_Coefficient("K0")
     EndIf
     
     If K2_Ext = "NAN" Then
-      K2_Ext = Collect_Seafet_Coefficient("KDF2")
+      K2_Ext = Collect_Seafet_Coefficient("K2")
     EndIf
 
   Next X           
@@ -172,8 +172,8 @@ Sub Seafet_Correction(Water_Temp, Salinity)
   Ks5 = (1776/Water_Temp_K)*I^2
   Ks = (1-(0.001005*Salinity))*EXP(Ks1+Ks2+Ks3+Ks4+Ks5)
   
-  Int_pH_Corr = Round((Volt_Int_pH,Float - K0_Int - (K2_Int*Water_Temp))/Snernst,4)
-  Ext_pH_Corr = Round(((Volt_Ext_pH,Float - K0_Ext - (K2_Ext*Water_Temp))/Snernst) + LOG10(Clt) + (2*log_yHClT) - LOG10(1+(St/Ks)) - LOG10((1000-(1.005*Salinity))/1000),4)
+  Int_pH_Corr = Round((CTYPE(Volt_Int_pH,Float) - K0_Int - (K2_Int*Water_Temp))/Snernst,4)
+  Ext_pH_Corr = Round(((CTYPE(Volt_Ext_pH,Float) - K0_Ext - (K2_Ext*Water_Temp))/Snernst) + LOG10(Clt) + (2*log_yHClT) - LOG10(1+(St/Ks)) - LOG10((1000-(1.005*Salinity))/1000),4)
 
 EndSub
 
