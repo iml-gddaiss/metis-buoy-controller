@@ -24,8 +24,26 @@ Public Seafet_Coeff(4) As Float : Alias Seafet_Coeff = K0_Int, K2_Int, K0_Ext, K
 
 
 '### Tables ###
+' DataTable (FileSeafet,1,-1)
+' 	DataInterval (0,0,Sec,10)
+'   Sample (1,Ext_pH,IEEE4)
+'   Sample (1,Int_pH,IEEE4)
+'   Sample (1,Error_Flag,FP2)
+'   Sample (1,Volt_Ext_pH,IEEE4)
+'   Sample (1,Volt_Int_pH,IEEE4)
+'   Sample (1,pH_Temp,IEEE4)
+' EndTable
+
 DataTable (FileSeafet,1,-1)
-	DataInterval (0,0,Sec,10)
+  DataInterval (0,0,Sec,10)
+  Sample (1,Ext_pH_Corr,IEEE4).  ' Pourquoi il y a un point -------------------------
+  Sample (1,Int_pH_Corr,IEEE4)
+  Sample (1,Water_Temp,IEEE4)
+  Sample (1,Salinity,IEEE4)
+  Sample (1,K0_Ext,IEEE4)
+  Sample (1,K2_Ext,IEEE4)
+  Sample (1,K0_Int,IEEE4)
+  Sample (1,K2_Int,IEEE4)
   Sample (1,Ext_pH,IEEE4)
   Sample (1,Int_pH,IEEE4)
   Sample (1,Error_Flag,FP2)
@@ -34,36 +52,24 @@ DataTable (FileSeafet,1,-1)
   Sample (1,pH_Temp,IEEE4)
 EndTable
 
-DataTable (FileSeafet_Pro,1,-1)
-  DataInterval (0,0,Sec,10)
-  Sample (1,Ext_pH_Corr,IEEE4).
-  Sample (1,Int_pH_Corr,IEEE4)
-  Sample (1,Water_Temp,IEEE4) ' Is it not confusing ? To have the CTD temperature in the SeaFet data.
-  Sample (1,Salinity,IEEE4)
-  Sample (1,K0_Ext,IEEE4)
-  Sample (1,K2_Ext,IEEE4)
-  Sample (1,K0_Int,IEEE4)
-  Sample (1,K2_Int,IEEE4)
-EndTable
-
 Sub UpdateSeafetTable
   Scan(1,Sec, 0, 1)
   CallTable FileSeafet
   NextScan
 EndSub
 
-Sub UpdateSeafet_ProTable
-  Scan(1,Sec, 0, 1)
-  CallTable FileSeafet_Pro
-  NextScan
-EndSub
+' Sub UpdateSeafet_ProTable
+'   Scan(1,Sec, 0, 1)
+'   CallTable FileSeafet_Pro
+'   NextScan
+' EndSub
+
+' Function PHTagString as String
+'   PHTagString = "[PH]" & Ext_pH & "," & Int_pH & "," & Error_Flag      
+' EndFunction
 
 Function PHTagString as String
-  PHTagString = "[PH]" & Ext_pH & "," & Int_pH & "," & Error_Flag      
-EndFunction
-
-Function PHPROTagString as String
-  PHPROTagString = "[PHPRO]" & Ext_pH_Corr & "," & Int_pH_Corr & "," & Error_Flag & "," & Ext_pH & "," & Int_pH
+  PHTagString = "[PHPRO]" & Ext_pH_Corr & "," & Int_pH_Corr & "," & Error_Flag & "," & Ext_pH & "," & Int_pH
 EndFunction
 
 Sub StartSeafet
@@ -123,17 +129,9 @@ EndSub
 
 
 Sub CollectSeafetCoefficents
-  Call logging("Collecting SeaFet Pro")
+  Call logging("Collecting SeaFet Coefficient")
   Dim X
-  For X = 1 To 5 Step 1 ' Fixme Question: Is this to have 5 attemps ?
-    If K0_Int = "NAN" Then
-      K0_Int = Collect_Seafet_Coefficient("KDF0")             
-    EndIf
-    
-    If K2_Int = "NAN" Then
-      K2_Int = Collect_Seafet_Coefficient("KDF2")         
-    EndIf
-    
+  For X = 1 To 5 Step 1 ' Fixme Question: Is this to have 5 attemps -------------------------------------------?
     If K0_Ext = "NAN" Then
       K0_Ext = Collect_Seafet_Coefficient("K0")
     EndIf
@@ -141,30 +139,42 @@ Sub CollectSeafetCoefficents
     If K2_Ext = "NAN" Then
       K2_Ext = Collect_Seafet_Coefficient("K2")
     EndIf
-
-  Next X           
+    
+    If K0_Int = "NAN" Then
+      K0_Int = Collect_Seafet_Coefficient("KDF0")             
+    EndIf
+    
+    If K2_Int = "NAN" Then
+      K2_Int = Collect_Seafet_Coefficient("KDF2")         
+    EndIf
+  Next X 
+  Call logging("SeaFet Coefficient. K0 Ext: " & K0_Ext & ", K2 Ext: " & K2_Ext & ", K0 Int: " & K0_Int & ", K2 Int: " & K2_INT)          
 EndSub
 
-Function LOG10(X) As Float
-  LOG10 = LOG(X) / LOG(10)
+Function LOG_10(X) As Float
+  LOG_10 = LOG(X) / LOG(10)
 EndFunction
 
 Sub Seafet_Correction(Water_Temp, Salinity)
-  ' Documentation needed. FIXME Article, equation source .etc.
-  Call logging("Carrying Seafet Correction")      
+  '  References
+  '  ----------
+  '  .. [1] Johnson et al.2016, Analytical Chemistry, DeepSea DuraFET: A pressure tolerant pH sensor designed for global sensor networks.
+  '  .. [2] Sea-Bird Scientific, Technical Note on Calculating pH, Application Note 99
+  Call logging("Carrying Seafet Correction")
   
   Dim Snernst, Clt, log_yHClT, St, Water_Temp_K, I, Adh
   Dim Ks_Tab(6) : Alias Ks_Tab = Ks1, Ks2, Ks3, Ks4, Ks5, Ks
     
   Water_Temp_K = KelvinToCelsius + Water_Temp
   
-  Snernst = (GasConstantR*Water_Temp_K*LOG(10))/FaradayConstant
-  Clt = (0.99889/35.453)*(Salinity/1.80655)*(1000/(1000-(1.005*Salinity)))
-  I = (19.924*Salinity)/(1000-(1.005*Salinity))
-  Adh = (0.0000034286*(Water_Temp^2))+(0.00067524*Water_Temp)+0.49172143
-  log_yHClT = (-Adh*SQR(I))/(1+(1.394*SQR(I)))+((0.08885-(0.000111*Water_Temp))*I)
-  St = (0.1400/96.062)*(Salinity/1.80655)
+  Snernst = (GasConstantR*Water_Temp_K*LOG(10))/FaradayConstant                    ' Nernst equation
+  Clt = (0.99889/35.453)*(Salinity/1.80655)*(1000/(1000-(1.005*Salinity)))         ' total_chloride_in_seawater
+  I = (19.924*Salinity)/(1000-(1.005*Salinity))                                    ' sample_ionic_strength
+  Adh = (0.0000034286*(Water_Temp^2))+(0.00067524*Water_Temp)+0.49172143           ' debye_huckel_HCl_activity_constant
+  log_yHClT = (-Adh*SQR(I))/(1+(1.394*SQR(I)))+((0.08885-(0.000111*Water_Temp))*I) ' log_of_HCl_activity_as_temperature_function
+  St = (0.1400/96.062)*(Salinity/1.80655)                                          ' total_sulfate_in_seawater
   
+  ' acid_dissociation_constant_HSO4
   Ks1 = (-4276.1/Water_Temp_K)+141.328-(23.093*LOG(Water_Temp_K))
   Ks2 = ((-13856/Water_Temp_K)+324.57-(47.986*LOG(Water_Temp_K)))*SQR(I)
   Ks3 = ((35474/Water_Temp_K)-771.54+(114.723*LOG(Water_Temp_K)))*I
@@ -173,21 +183,19 @@ Sub Seafet_Correction(Water_Temp, Salinity)
   Ks = (1-(0.001005*Salinity))*EXP(Ks1+Ks2+Ks3+Ks4+Ks5)
   
   Int_pH_Corr = Round((CTYPE(Volt_Int_pH,Float) - K0_Int - (K2_Int*Water_Temp))/Snernst,4)
-  Ext_pH_Corr = Round(((CTYPE(Volt_Ext_pH,Float) - K0_Ext - (K2_Ext*Water_Temp))/Snernst) + LOG10(Clt) + (2*log_yHClT) - LOG10(1+(St/Ks)) - LOG10((1000-(1.005*Salinity))/1000),4)
+  Ext_pH_Corr = Round(((CTYPE(Volt_Ext_pH,Float) - K0_Ext - (K2_Ext*Water_Temp))/Snernst) + LOG_10(Clt) + (2*log_yHClT) - LOG_10(1+(St/Ks)) - LOG_10((1000-(1.005*Salinity))/1000),4)
 
 EndSub
 
 
 Sub SampleSeafet(TAGString, Water_Temp, Salinity)
   If With_Seafet Then
+    Call logging("Sampling Seafet")
     WhereAmI = "Sample Seafet"
     
     Call StartSeafet
     
     Call CollectSeafet
-
-    Call UpdateSeafetTable
-    TAGString = PHTagString()
     
     If Seafet_Auto_Correction AND Salinity > 10 Then
     
@@ -195,11 +203,16 @@ Sub SampleSeafet(TAGString, Water_Temp, Salinity)
 
       Call Seafet_Correction(Water_Temp, Salinity)  
 
-      If Int_pH_Corr <> "NAN" AND Ext_pH_Corr <> "NAN" Then
-        Call UpdateSeafet_ProTable
-        TAGString = PHPROTagString()
-      EndIf 
+      ' If Int_pH_Corr <> "NAN" AND Ext_pH_Corr <> "NAN" Then
+      '   Call UpdateSeafet_ProTable
+      '   TAGString = PHPROTagString()
+      ' EndIf
+    Else
+      Seafet_pH_Corr(2) = ""
     EndIf
+
+    Call UpdateSeafetTable
+    TAGString = PHTagString()
     
     ' FIXME the SeafetTable can be updated before the AutoCorrection Routine
     ' Call UpdateSeafetTable 
