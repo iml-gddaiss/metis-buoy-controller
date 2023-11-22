@@ -10,24 +10,19 @@ Units Heading = °
 Units Pitch = °
 Units Roll = °
 
+Dim UpdateCompassTable As Boolean = false
 
 '### Units ###
 
 
 '### Tables ###
-DataTable (FileCompass,1,-1)
+DataTable (FileCompass,UpdateCompassTable,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,Heading,String)
   Sample (1,Pitch,String)
   Sample (1,Roll,String)
 EndTable
 
-
-Sub UpdateCompassTable
-  Scan(1,Sec, 0, 1)
-  CallTable FileCompass
-  NextScan
-EndSub
 
 Function HexaSign(RawSign) as String * 1
   Select Case RawSign
@@ -100,7 +95,7 @@ Sub SampleCompass
 
     Call ApplyMagneticCorrection
 
-    Call UpdateCompassTable
+    UpdateCompassTable = true
     
     WhereAmI = "End Compass"
     Call logging("Compass Sampled")

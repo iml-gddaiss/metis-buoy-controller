@@ -11,7 +11,10 @@ Units Wind_Spd_Min = Kn
 Units Wind_Spd_Ave = Kn
 Units Wind_Spd_Max = Kn
 
-DataTable (Weather,1,-1)
+
+Dim UpdateWeatherTable As Boolean = false
+
+DataTable (FileWeather,UpdateWeatherTable,-1)
   DataInterval (0,0,Sec,10)
   Sample (1,Air_Temp,IEEE4)
   Sample (1,Air_Humidity,IEEE4)
@@ -41,13 +44,6 @@ Function ATMSTagString as String
 EndFunction
 
 
-Sub UpdateWeatherTable
-  Scan(1,Sec, 0, 1)
-  CallTable Weather
-  NextScan
-EndSub
-
-
 Sub StartATMSTimer 'Weather and PAR
   'Start Timer#1 to collect data in 61sec
   If With_ATMS Then
@@ -74,7 +70,7 @@ Sub SelectWeatherInstrument
 EndSub
 
 
-Sub WindHeadingCorrection(GPS_SOG_X, GPS_SOG_Y)
+Sub WindHeadingCorrection(Heading)
   Dim X
   'Heading correction
   For X = 1 To 3                                   ' with the heading (which is already corrected with magnetic
@@ -83,14 +79,14 @@ Sub WindHeadingCorrection(GPS_SOG_X, GPS_SOG_Y)
 EndSub
 
 
-Sub ProcessWeather(TAGString, GPS_SOG_X, GPS_SOG_Y)
+Sub ProcessWeather(Heading)
   If With_Weather AND With_GPS AND Pitch <> "NAN" AND Roll <> "NAN" Then 
     WhereAmI = "Processing Weather"
     Call SelectWeatherInstrument   
 
-    Call WindHeadingCorrection(GPS_SOG_X, GPS_SOG_Y)
+    Call WindHeadingCorrection(Heading)
     
-    Call UpdateWeatherTable
+    UpdateWeatherTable = true
 
     TAGString = WindTagString()
     Call WriteTagString

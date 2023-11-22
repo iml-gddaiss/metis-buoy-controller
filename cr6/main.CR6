@@ -121,6 +121,24 @@ DataTable (Raw,1,-1)
   Sample (1,WinchMessage,String)
 EndTable
 
+Sub ResetTablesUpdateFlag
+  UpdateGPSTable = false
+  UpdateCompassTable = false
+  UpdatePowerTable = false
+  UpdateTripleTable = false
+  UpdateHyperOCRTable = false
+  UpdateSBE37Table = false
+  UpdateSeafetTable = false
+  UpdateSUNATable = false
+  UpdatePARTable = false
+  UpdateWXT536Table = false
+  UpdateWMT700Table = false
+  UpdateWeatherTable = false
+  UpdateWaveTable = false
+  UpdateADCPTable = false 
+  UpdatePCO2AirTable = false
+  UpdatePCO2WaterTable = false
+EndSub
 
 BeginProg
   SetSetting("WIFIconfig",4) 'This is turning the Wifi Off
@@ -170,9 +188,9 @@ BeginProg
   TAGString = InitTagString()
   Call WriteTagString
     
-  Call SamplePowerController(TAGString)
+  Call SamplePowerController
 
-  Call CollectTriplet(TAGString)
+  Call CollectTriplet
      
   Call WaitForWellPump   'Pumped sensor (SBE37, Seafet & SUNA) 
 
@@ -180,11 +198,11 @@ BeginProg
   
   Call SampleOCRs
   
-  Call SampleSBE37(TAGString)
+  Call SampleSBE37
   
-  Call SampleSeafet(TAGString, Water_Temp, Salinity)
+  Call SampleSeafet(Water_Temp, Salinity)
 
-  Call CollectSUNA(TAGString)
+  Call CollectSUNA
 
   Call StopWellPump 'Pumped sensor are done, close pump
   
@@ -198,21 +216,42 @@ BeginProg
   
   Call StopTower485
         
-  Call ProcessWeather(TAGString, GPS_SOG_X, GPS_SOG_Y)     
+  Call ProcessWeather(Heading)     
 
-  Call SampleWave(TAGString)           
+  Call SampleWave
 
-  Call CollectADCP(TAGString)
+  Call CollectADCP
   
   Call SamplePCO2
   
-  Call WinchMission(Salinity, TAGString)      
+  Call WinchMission(Salinity)      
 
   Call CloseSerialPorts
-  
-  CallTable Raw
 
-  Call ResetPCO2RawStrings
+  ' ### Updating Table Files ### ' Each Table is define with an update Condition.
+  CallTable FileGPS
+  CallTable FileCompass
+  CallTable FilePower
+  CallTable FileTriplet
+  CallTable FileHyperOCR
+  CallTable FileSBE37
+  CallTable FileSeafet
+  CallTable FileSUNA_Light
+  CallTable FileSUNA_Dark
+  CallTable FilePAR
+  CallTable FileWXT536
+  CallTable FileWMT700
+  CallTable FileWeather
+  CallTable FileWave
+  CallTable FileADCP
+  CallTable FilePCO2A
+  CallTable FilePCO2W  
+  CallTable Raw
+  
+  Call ResetTablesUpdateFlag
+
+  ' TODO PCO2 Variable resetting doesn't work with the CallTable at the end like that FIXME
+  Call ResetPCO2RawStrings ' A fix should be add here
   
   TAGString = "[END]" & CHR(10)
   Call WriteTagString   

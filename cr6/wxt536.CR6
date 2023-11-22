@@ -10,6 +10,7 @@ Dim WXT536_Weather(3) As Float : Alias WXT536_Weather = Air_Temp, Air_Humidity, 
 Dim WXT536_Wind(6) As Float : Alias WXT536_Wind = Dir_Min2, Dir_Ave2, Dir_Max2, Spd_Min2, Spd_Ave2, Spd_Max2
 Dim WXT536_Rain(6) As Float : Alias WXT536_Rain = Rain_Total, Rain_Duration, Rain_Intensity, Hail_Total, Hail_Duration, Hail_Intensity
 
+Dim UpdateWXT536Table As Boolean = false
 
 '### Units ###
 Units Air_Temp = °C
@@ -30,7 +31,7 @@ Units Hail_Intensity = mm/h
 
 
 '### Tables ###
-DataTable(FileWXT536,1,-1) 'Set table size to # of records, or -1 to autoallocate.
+DataTable(FileWXT536,UpdateWXT536Table,-1) 'Set table size to # of records, or -1 to autoallocate.
   DataInterval (0,0,Sec,10)
   Sample (1,Air_Temp,IEEE4)
   Sample (1,Air_Humidity,IEEE4)
@@ -48,14 +49,6 @@ DataTable(FileWXT536,1,-1) 'Set table size to # of records, or -1 to autoallocat
   Sample (1,Hail_Duration,IEEE4)
   Sample (1,Hail_Intensity,IEEE4)
 EndTable
-
-
-Sub UpdateWXT536Table
-  Scan(1,Sec, 0, 1)
-  CallTable FileWXT536
-  NextScan
-EndSub
-
 
 Sub StartRainTimer
   If With_WXT536 Then
@@ -124,7 +117,7 @@ Sub CollectWXT536
 
     Next X
 
-    Call UpdateWXT536Table
+    UpdateWXT536Table = true
 
     WhereAmI = "Finish WXT536"
   EndIf

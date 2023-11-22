@@ -7,10 +7,11 @@
 Dim RawPAR As String * 60
 Dim PARSensor(5) String : Alias PARSensor = PAR_Timer, PAR, PAR_Pitch, PAR_Roll, PAR_Int_Temp
 
+Dim UpdatePARTable As Boolean = false
 
 '### Units ###
 '### Tables ###
-DataTable (FilePAR,1,-1)
+DataTable (FilePAR,UpdatePARTable,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,PAR_Timer,IEEE4)
   Sample (1,PAR,IEEE4)
@@ -18,12 +19,6 @@ DataTable (FilePAR,1,-1)
   Sample (1,PAR_Roll,IEEE4)
   Sample (1,PAR_Int_Temp,IEEE4)
 EndTable
-
-Sub UpdatePARTable
-  Scan(1,Sec, 0, 1)
-  CallTable FilePAR
-  NextScan
-EndSub
 
 '### Sampling ###
 Sub StartPAR
@@ -44,7 +39,7 @@ Sub CollectPAR
 
     Call logging("RawPAR: `" & RawPAR & "`")
 
-    Call UpdatePARTable
+    UpdatePARTable = true
   
   EndIf
 EndSub

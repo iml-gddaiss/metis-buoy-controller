@@ -10,6 +10,7 @@ Dim RawSUNALight As String * 80
 Dim SUNADark(8) As Float : Alias SUNADark = SUNA_Dark_Date, SUNA_Dark_Time, Dark_Nitrate, Dark_Nitrogen_in_Nitrate, Dark_254nm, Dark_300nm, Dark_Bromide, SUNA_Dark_RMSE
 Dim SUNALight(8) As Float : Alias SUNALight = SUNA_Light_Date, SUNA_Light_Time, Light_Nitrate, Light_Nitrogen_in_Nitrate, Light_254nm, Light_300nm, Light_Bromide, SUNA_Light_RMSE
 
+Dim UpdateSUNATable As Boolean = false
 
 '### Units ###
 Units Dark_Nitrate = µM
@@ -21,7 +22,7 @@ Units Light_Bromide = mg/L
 
 
 '### Tables ###
-DataTable(FileSUNA_Dark,1,-1)
+DataTable(FileSUNA_Dark,UpdateSUNATable,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,Dark_Nitrate,IEEE4)
   Sample (1,Dark_Nitrogen_in_Nitrate,IEEE4)
@@ -30,7 +31,7 @@ DataTable(FileSUNA_Dark,1,-1)
   Sample (1,Dark_Bromide,IEEE4)
  EndTable
  
-DataTable(FileSUNA_Light,1,-1)
+DataTable(FileSUNA_Light,UpdateSUNATable,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,Light_Nitrate,IEEE4)
   Sample (1,Light_Nitrogen_in_Nitrate,IEEE4)
@@ -38,14 +39,6 @@ DataTable(FileSUNA_Light,1,-1)
   Sample (1,Light_300nm,IEEE4)
   Sample (1,Light_Bromide,IEEE4)
  EndTable
-
-
-Sub UpdateSUNATable
-  Scan(1,Sec, 0, 1)
-  CallTable FileSUNA_Dark
-  CallTable FileSUNA_Light
-  NextScan
-EndSub
 
 
 Function SUNATagString
@@ -66,7 +59,7 @@ Sub StartSUNA
 EndSub
 
 
-Sub CollectSUNA(TAGString)
+Sub CollectSUNA
   ' &4C43 -> LC &0D0A -> CR LF
   Dim NBR ' Number of Bytes Returned
   If With_SUNA Then
@@ -90,7 +83,7 @@ Sub CollectSUNA(TAGString)
       SplitStr(SUNALight(),RawSUNALight,",",8,4)
     EndIf
 
-    Call UpdateSUNATable
+    UpdateSUNATable = true
 
     TAGString = SUNATagString()
     Call WriteTagString

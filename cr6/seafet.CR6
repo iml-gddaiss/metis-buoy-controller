@@ -13,9 +13,9 @@ Const KelvinToCelsius = 273.15
 
 Public Seafet_Coeff(4) As Float = {"", "", "", ""} : Alias Seafet_Coeff = K0_Int, K2_Int, K0_Ext, K2_Ext = ""
 
+Dim UpdateSeafetTable As Boolean = false
 
-
-DataTable (FileSeafet,1,-1)
+DataTable (FileSeafet,UpdateSeafetTable,-1)
   DataInterval (0,0,Sec,10)
   Sample (1,Ext_pH_Corr,IEEE4).  ' Pourquoi il y a un point -------------------------
   Sample (1,Int_pH_Corr,IEEE4)
@@ -33,11 +33,6 @@ DataTable (FileSeafet,1,-1)
   Sample (1,pH_Temp,IEEE4)
 EndTable
 
-Sub UpdateSeafetTable
-  Scan(1,Sec, 0, 1)
-  CallTable FileSeafet
-  NextScan
-EndSub
 
 Function PHTagString as String
   PHTagString = "[PHPRO]" & Ext_pH_Corr & "," & Int_pH_Corr & "," & Error_Flag & "," & Ext_pH & "," & Int_pH
@@ -216,7 +211,7 @@ Sub SeaFetInSituSalinityCorrection(Water_Temp, Salinity)
 EndSub
 
 
-Sub SampleSeafet(TAGString, Water_Temp, Salinity)
+Sub SampleSeafet(Water_Temp, Salinity)
   If With_Seafet Then
     Call logging("Sampling Seafet")
     WhereAmI = "Sample Seafet"
@@ -225,18 +220,15 @@ Sub SampleSeafet(TAGString, Water_Temp, Salinity)
     
     Call CollectSeafet
     
-    ' ######### Faire une sub routine ? meilleur nom ? Ce n'est pas une correciton
     If Seafet_Auto_Correction AND SBE37_In_Saltwater Then
       Seafet_pH_Corr() = ""
       
       Call CollectSeafetCoefficents
 
-      Call SeaFetInSituSalinityCorrection(Water_Temp, Salinity)  
-      
+      Call SeaFetInSituSalinityCorrection(Water_Temp, Salinity)    
     EndIf
-    ' #########
 
-    Call UpdateSeafetTable
+    UpdateSeafetTable = false
     
     TAGString = PHTagString() 
     Call WriteTagString

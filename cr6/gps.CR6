@@ -20,9 +20,10 @@ Units SOG = Kn
 Units COG = °
 Units Mag_Var = °
 
+Dim UpdateGPSTable As Boolean = false
 
 '### Tables ###
-DataTable(FileGPS,1,-1)
+DataTable(FileGPS,UpdateGPSTable,-1)
     DataInterval(0,0,Sec,10)
     Sample(1,UTC_Date_Slash,String)
     Sample(1,UTC_Time_DDot,String)
@@ -32,12 +33,6 @@ DataTable(FileGPS,1,-1)
     Sample(1,COG,IEEE4)
     Sample(1,Mag_Var,IEEE4)
 EndTable
-
-Sub UpdateGPSTable
-  Scan(1,Sec, 0, 1)
-  CallTable FileGPS
-  NextScan
-EndSub
 
 
 '### Sampling ###
@@ -105,7 +100,7 @@ Sub SampleGPS
         'Putting the String value in Float or Long variables 
         Mag_Var = Magnetic_Variation  
 
-        Call UpdateGPSTable
+        UpdateGPSTable = true
         
         WhereAmI = "EndGPS, start Start Tower"
     EndIf

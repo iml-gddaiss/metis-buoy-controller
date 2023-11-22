@@ -3,6 +3,7 @@
 Dim RawWMT700 As String * 80
 Dim WMT700(6) As Float : Alias WMT700 = Dir_Min1, Dir_Ave1, Dir_Max1, Spd_Min1, Spd_Ave1, Spd_Max1
 
+Dim UpdateWMT700Table As Boolean = false
 
 '### Units ###
 Units Dir_Min1 = °
@@ -12,9 +13,8 @@ Units Spd_Min1 = Kn
 Units Spd_Ave1 = Kn
 Units Spd_Max1 = Kn
 
-
 '### Tables ###
-DataTable (FileWMT700,1,-1)
+DataTable (FileWMT700,UpdateWMT700Table,-1)
 	DataInterval (0,0,Sec,10)
   Sample (1,Dir_Min1,IEEE4)
   Sample (1,Dir_Ave1,IEEE4)
@@ -23,13 +23,6 @@ DataTable (FileWMT700,1,-1)
   Sample (1,Spd_Ave1,IEEE4)
   Sample (1,Spd_Max1,IEEE4)
 EndTable
-
-Sub UpdateWMT700Table
-  Scan(1,Sec, 0, 1)
-  CallTable FileWMT700
-  NextScan
-EndSub
-
 
 
 '### Sampling ###
@@ -60,7 +53,7 @@ Sub CollectWMT700
       SplitStr(WMT700(),RawWMT700,",",6,0)
     EndIf
     
-    Call UpdateWMT700Table
+    UpdateWMT700Table = true
 
     WhereAmI = "Finish WMT700"
   EndIf

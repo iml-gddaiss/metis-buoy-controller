@@ -9,20 +9,14 @@ Dim RawADCP(ADCP_Num_Bin + 4) As String * 100
 Dim ADCPHeader(3) As String : Alias ADCPHeader = ADCPDate, ADCPTime, ADCPSmpNbr
 Dim ADCPBin1(11) As Float : Alias ADCPBin1 = Bin, ADCPDir, ADCPMag, EW, NS, Vert, Err, Echo1, Echo2, Echo3, Echo4
 
+Dim UpdateADCPTable As Boolean = false
 
 '### Units ###
 '### Tables ###
-DataTable(FileADCP,1,-1)
+DataTable(FileADCP,UpdateADCPTable,-1)
   DataInterval(0,0,Sec,10)
   Sample(ADCP_Num_Bin + 4, RawADCP,String)
 EndTable
-
-
-Sub UpdateADCPTable
-  Scan(1,Sec, 0, 1)
-  CallTable FileADCP
-  NextScan
-EndSub
 
 
 Function ADCPTagString As String
@@ -39,7 +33,7 @@ Sub StartADCP
   EndIf
 EndSub
  
-Sub CollectADCP(TAGString)
+Sub CollectADCP
   Dim X, Y
   If With_ADCP Then
     Call logging("Collecting ADCP") 
@@ -60,7 +54,7 @@ Sub CollectADCP(TAGString)
 
     SerialFlush(SerialADCP)
 
-    Call UpdateADCPTable
+    UpdateADCPTable = true
 
     TAGString = ADCPTagString()
 

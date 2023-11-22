@@ -9,10 +9,11 @@ Dim Power(11) As Float : Alias Power = VBatt1, ABatt1, VBatt2, ABatt2, VSolar, A
 Dim PowerString(11) As String
 Dim VBatt_to_SD
 
+Dim UpdatePowerTable As Boolean = false
 
 '### Units ###
 '### Tables ###
-DataTable(FilePower,1,-1)
+DataTable(FilePower,UpdatePowerTable,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,VBatt1,IEEE4)
   Sample (1,ABatt1,IEEE4)
@@ -26,14 +27,6 @@ DataTable(FilePower,1,-1)
   Sample (1,PM_RH,IEEE4)
   Sample (1,PowerString(11),String)
  EndTable
-
- 
- Sub UpdatePowerTable
-  Scan(1,Sec, 0, 1)
-  CallTable FilePower
-  NextScan
- EndSub
-
 
 '### Sampling ###
 
@@ -58,7 +51,7 @@ Sub CollectPowerController
 EndSub
 
 
-Sub SamplePowerController(TAGString)
+Sub SamplePowerController
   
   If With_Power Then
     WhereAmI = "Sample Power Controller"
@@ -75,7 +68,7 @@ Sub SamplePowerController(TAGString)
       VBatt_to_SD = VBatt2
     EndIf
     
-    Call UpdatePowerTable
+    UpdatePowerTable = true
 
     TAGString = PowerTagString()
     Call WriteTagString

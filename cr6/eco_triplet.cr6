@@ -5,7 +5,9 @@ Dim RawTriplet As String * 200
 Dim Triplet(11) As String : Alias Triplet = Triplet_Date, Triplet_Hour, Sct_wl, Raw_Sct, Sct_Value, Chl_wl, Raw_Chl, Chl_Value, FDOM_wl, Raw_FDOM, FDOM_Value
 Public Triplet_Value(3) As Float : Alias Triplet_Value = Scattering, Chlorophyll, FDOM
 
-DataTable(FileTriplet,1,-1)
+Dim UpdateTripleTable As Boolean = false
+
+DataTable(FileTriplet,UpdateTripleTable,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,Raw_Sct,String)
   Sample (1,Sct_Value,String)
@@ -14,13 +16,6 @@ DataTable(FileTriplet,1,-1)
   Sample (1,Raw_FDOM,String)
   Sample (1,FDOM_Value,String)
 EndTable
-
-
-Sub UpdateTripleTable
-  Scan(1,Sec, 0, 1)
-  CallTable FileTriplet
-  NextScan
-EndSub
 
 '### Sampling ###
 
@@ -51,7 +46,7 @@ Sub StartTriplet
 EndSub
 
 
-Sub CollectTriplet(TAGString)
+Sub CollectTriplet
   ' &4242 -> BB &0D0A -> CR LF
   Dim NBR ' Number of Bytes Returned  
   If With_Triplet Then
@@ -72,7 +67,7 @@ Sub CollectTriplet(TAGString)
     Chlorophyll = Chl_Value
     FDOM = FDOM_Value
     
-    Call UpdateTripleTable
+    UpdateTripleTable = true
     
     TAGString = TripletTagString()
     Call WriteTagString

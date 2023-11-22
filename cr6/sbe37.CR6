@@ -15,22 +15,16 @@ Units Conductivity = S/m
 Units Salinity = PSU
 Units Density = Kg/m³
 
+Dim UpdateSBE37Table As Boolean = false
 
 '### Tables ###
-DataTable (FileSBE37,1,-1) 
+DataTable (FileSBE37,UpdateSBE37Table,-1) 
 	DataInterval (0,0,Sec,10)
   Sample (1,Water_Temp,IEEE4)
   Sample (1,Conductivity,IEEE4)
   Sample (1,Salinity,IEEE4)
   Sample (1,Density,IEEE4)
 EndTable
-
-
-Sub UpdateSBE37Table
-  Scan(1,Sec, 0, 1)
-  CallTable FileSBE37
-  NextScan
-EndSub
 
 
 Function SBE37TagString as String
@@ -119,7 +113,7 @@ EndSub
 
 '### Sampling ###
 
-Sub SampleSBE37(TAGString)
+Sub SampleSBE37
   ' If the data were not received after sending the `tss` command,
   ' we assume that the CTD has received the `tss` command thus, we send 
   ' the `sl` command. Otherwise the ctd internal storage will have duplicate sample.
@@ -134,7 +128,7 @@ Sub SampleSBE37(TAGString)
     SerialClose(SerialSBE37) ' For some Reason, this is problematic ??? 
     ' It hangs at the first `Scan` of the Update SBE37Table. 
 
-    Call UpdateSBE37Table
+    UpdateSBE37Table = true
   
     TAGString = SBE37TagString()
     Call WriteTagString

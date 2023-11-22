@@ -25,6 +25,9 @@ Dim PCO2(14) As String : Alias PCO2 = PCO2_Year, PCO2_Month, PCO2_Day, PCO2_Hour
 Dim CO2_Water = "#.#", PCO2_Gaz_Pressure_Water, PCO2W_Humidity, CO2_Air = "#.#", PCO2_Gaz_Pressure_Air
 Dim PCO2_Date As String, PCO2_Time As String, PCO2_Type As String
 
+Dim UpdatePCO2AirTable As Boolean = false
+Dim UpdatePCO2WaterTable As Boolean = false
+
 
 '### Units ###
 Units CO2_Water = ppm
@@ -35,7 +38,7 @@ Units PCO2W_Humidity = %
 
 
 '### Tables ###
-DataTable(FilePCO2W,1,-1)
+DataTable(FilePCO2W,UpdatePCO2WaterTable,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,PCO2_Type,String)
   Sample (1,PCO2_Date,String)
@@ -52,7 +55,7 @@ DataTable(FilePCO2W,1,-1)
   Sample (1,RawPCO2_Water,String)
 EndTable
 
-DataTable(FilePCO2A,1,-1)
+DataTable(FilePCO2A,UpdatePCO2AirTable,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,PCO2_Type,String)
   Sample (1,PCO2_Date,String)
@@ -68,20 +71,6 @@ DataTable(FilePCO2A,1,-1)
   Sample (1,RawPCO2,String)
   Sample (1,RawPCO2_Air,String)
 EndTable
-
-
-Sub UpdatePCO2AirTable
-  Scan(1,Sec, 0, 1)
-  CallTable FilePCO2A
-  NextScan
-EndSub
-
-
-Sub UpdatePCO2WaterTable
-  Scan(1,Sec, 0, 1)
-  CallTable FilePCO2W
-  NextScan
-EndSub
 
 
 Function PCO2TagString As String
@@ -158,8 +147,10 @@ Sub WritePCO2Air
   PCO2_Time = PCO2(4)&":"&PCO2(5)&":"&PCO2(6)
   CO2_Air = PCO2(9)
   PCO2_Gaz_Pressure_Air = PCO2(11)
-  Call UpdatePCO2AirTable
-  CO2_Air = "#.#"
+  
+  UpdatePCO2AirTable = true
+  
+  'CO2_Air = "#.#" ' FIXME This need to be done after the CallTable
 EndSub
 
 
@@ -171,8 +162,10 @@ Sub WritePCO2Water
   CO2_Water = PCO2(9)
   PCO2_Gaz_Pressure_Water = PCO2(13)
   PCO2W_Humidity = PCO2(11)
-  Call UpdatePCO2WaterTable
-  CO2_Water = "#.#"
+  
+  UpdatePCO2WaterTable = true
+  
+  'CO2_Water = "#.#" ' FIXME This need to be done after the CallTable
 EndSub
 
 
@@ -192,7 +185,7 @@ Sub CollectPCO2
     Call WritePCO2Water
     Call WritePCO2Air
 
-    RawPCO2 = ""
+    RawPCO2 = "" ' FIXME This need to be done after the CallTable
     
     TAGString = PCO2TagString()
     Call WriteTagString
@@ -205,16 +198,16 @@ EndSub
 Sub CollectPartialPCO2
   If PCO2AirIsCollected Then
     Call WritePCO2Air
-    RawPCO2_Air = ""
+    RawPCO2_Air = "" ' FIXME This need to be done after the CallTable
   Else
-    Call UpdatePCO2AirTable
+    UpdatePCO2AirTable = true
   EndIf
 
   If PCO2WaterIsCollected Then
     Call WritePCO2Water
-    RawPCO2_Water = ""
+    RawPCO2_Water = "" ' FIXME This need to be done after the CallTable
   Else
-    Call UpdatePCO2WaterTable
+    UpdatePCO2WaterTable = true
   EndIf
 
   Call ClosePC02
@@ -242,6 +235,8 @@ Sub SamplePCO2 'Move to pco2.cr6 ? TODO
 EndSub
 
 Sub ResetPCO2RawStrings
+  CO2_Air = "#.#"   ' Does this fix the CallTable problem (some of the problem) ??? FIXME 
+  CO2_Water = "#.#" ' Does this fix the CallTable problem (some of the problem) ??? FIXME
   If RawPCO2_Air <> "" AND RawPCO2_Water <> "" Then
     RawPCO2_Air = ""
     RawPCO2_Water = ""

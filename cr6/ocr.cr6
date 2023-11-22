@@ -15,10 +15,12 @@ Public StringOCRR As String * 1000
 Public RawOCRI As String * 500
 Public StringOCRI As String * 1000
 
+Dim UpdateHyperOCRTable As Boolean = false
+
 
 '### Units ###
 '### Tables ###
-DataTable(FileHyperOCR,1,-1)
+DataTable(FileHyperOCR,UpdateHyperOCRTable,-1)
   DataInterval(0,0,Sec,10)
   Sample(1,StringOCRR,String)
   Sample(1,StringOCRI,String)
@@ -97,31 +99,19 @@ Sub SampleOCRI
   WhereAmI = "End OCRI"
 EndSub
 
-Sub UpdateHyperOCRTable
-  Scan(1,Sec, 0, 1)
-  CallTable FileHyperOCR
-  NextScan
-EndSub
-
 
 Sub SampleOCRs
-  Dim update_OCRs_table = false
   
   If With_OCR_R AND Well_IsPowered Then
     WhereAmI = "Sample OCR R"
     Call SampleOCRR
-    update_OCRs_table = true
+    UpdateHyperOCRTable = true
   EndIf
   
   If With_OCR_I Then
     WhereAmI = "Sample OCR I"
     Call SampleOCRI
-    update_OCRs_table = true
+    UpdateHyperOCRTable = true
   EndIf
   
-
-  If update_OCRs_table Then
-    Call UpdateHyperOCRTable
-    WhereAmI = "End OCR"
-  EndIf
 EndSub

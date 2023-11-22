@@ -7,6 +7,7 @@
 Dim RawWave As String * 80
 Dim Wave(6) As String : Alias Wave = Wave_Date, Wave_Time, Wave_Period, Wave_Hm0, Wave_H13, Wave_Hmax
 
+Dim UpdateWaveTable As Boolean = false
 
 '### Units ###
 Units Wave_Period = Sec
@@ -16,7 +17,7 @@ Units Wave_Hmax = m
 
 
 '### Tables ###
-DataTable(FileWave,1,-1)
+DataTable(FileWave,UpdateWaveTable,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,Wave_Date,String)
   Sample (1,Wave_Time,String)
@@ -26,20 +27,12 @@ DataTable(FileWave,1,-1)
   Sample (1,Wave_Hmax,IEEE4)
 EndTable
 
-
-Sub UpdateWaveTable
-  Scan(1,Sec, 0, 1)
-  CallTable FileWave
-  NextScan
-
-EndSub
-
 Function WaveTagString  As String
   WaveTagString = "[WAVE]" & Wave_Date & "," & Wave_Time & "," & Wave_Period & "," & Wave_Hm0 & "," & Wave_H13 & "," & Wave_Hmax
 EndFunction
 
 '### Sampling ###
-Sub SampleWave(TAGString)
+Sub SampleWave
   Dim X
   If With_Wave Then
     WhereAmI = "Sample Wave"
@@ -59,7 +52,7 @@ Sub SampleWave(TAGString)
     
     SerialClose(SerialWave)
 
-    Call UpdateWaveTable
+    UpdateWaveTable = true
     
     TAGString = WaveTagString()
     Call WriteTagString
