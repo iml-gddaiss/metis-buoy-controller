@@ -2,17 +2,24 @@ ConstTable (Buoy_Config,0)
     Const Buoy_Name = "PMZA-RIKI" 
     
     ' ### Sampling Interval ####
-    Const Buoy_Interval = 20 ' Minutes?
-    Const PCO2_Interval = 12 ' Minutes?
-    Const Winch_Interval = 5 ' Minutes?
+    Const Buoy_Interval_Min = 20 ' Minutes?
+    Const PCO2_Interval_Hr = 12 ' hours
+    Const Winch_Interval_Hr = 5 ' hours
+    Const Rain_Interval_Hr = 24 ' (Rain_Timer)
    
     ' ### Instruments Config ### 
     Const Depth_for_Winch = 210
     Const ADCP_Num_Bin = 27
    
     ' ### Timers Delay ###
-    Const Well_Pump_Delay_Sec = 61
-    Const ATMS_Delay_Sec = 61
+    Const Well_Pump_Delay_Sec = 31 '(Pump_Timer)
+    Const ATMS_Delay_Sec = 61 ' (ATMS_Timer)
+    Const Suna_Delay_Sec = 12 ' (Suna_Timer)
+    Const WMT700_Delay_Sec = 8 ' (Tower_Timer)
+    Const Compass_Delay_Sec = 4 ' (Tower_Timer)
+    Const Triplet_Delay_Sec = 17 ' (Triplet_Timer)
+    Const OCR_R_Delay_Sec = 8 ' (Pump_Timer)
+    Const OCR_I_Delay_Sec = 8 ' (Tower_Timer)   
 
     ' ### Misc Parameters ###
     Const Required_Salinity = 10 ' (PSU) To know if the SBE37 is in SaltWater

@@ -112,7 +112,7 @@ Sub SampleCompass
   If With_Compass Then
     WhereAmI = "Sample Compass"   
     
-    Call TimerDelay_Sec(Tower_Timer, 4)
+    Call TimerDelay_Sec(Tower_Timer, Compass_Delay_Sec)
     
     Call ResetCompassValues
     

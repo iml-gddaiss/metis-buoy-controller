@@ -19,7 +19,7 @@ Sub WaitForWellPump
   If Well_IsPowered and With_Well_Pump Then
     Call logging("Waiting for Well Pump")
     WhereAmI = "See if pump is running 30sec"
-    Call TimerDelay_Sec(Pump_Timer, Well_Pump_Delay)
+    Call TimerDelay_Sec(Pump_Timer, Well_Pump_Delay_Sec)
     WhereAmI = "Pump ran 30sec"
   EndIf
 EndSub

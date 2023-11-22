@@ -35,7 +35,7 @@ EndSub
 '### Sampling ###
 Sub StartWMT700  
   If With_WMT700 Then
-    Call TimerDelay_Sec(Tower_Timer, 8)
+    Call TimerDelay_Sec(Tower_Timer, WMT700_Delay_Sec)
     SerialOut(SerialTower,"$Ameas,1"&CHR(10),"",1,0)
   EndIf
 EndSub

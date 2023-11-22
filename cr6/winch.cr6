@@ -144,8 +144,7 @@ Sub WinchMission(Salinity, TAGString)
         Call CheckWinchStatus
         
         If WinchStatus = "Standby" Then
-            If (Winch_Last_Sample + Winch_Interval*60*60 - 10) <= Public.TimeStamp(1) Then 
-                'minus 10sec to not skip a scan planned at Winch_Interval hour (got 3599s and didn't sampled)
+            If (Winch_Last_Sample + Winch_Interval_Hr*3600 - 60) <= Public.TimeStamp(1) Then   'minus 60sec to not skip a scan planned at Winch_Interval hour (got 3599s and didn't sampled)
                 WhereAmI = "Starting A Winch"
 
                 Call WinchConditionsCheck

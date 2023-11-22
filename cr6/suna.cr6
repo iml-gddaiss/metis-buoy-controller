@@ -70,7 +70,7 @@ Sub CollectSUNA(TAGString)
   ' &4C43 -> LC &0D0A -> CR LF
   Dim NBR ' Number of Bytes Returned
   If With_SUNA Then
-    Call TimerDelay_Sec(Suna_Timer, 12)
+    Call TimerDelay_Sec(Suna_Timer, Suna_Delay_Sec)
     
     WhereAmI = "Collect SUNA"  
     SerialInRecord(SerialSUNA,RawSUNALight,&H4C43,0,&H0D0A,NBR,101)
