@@ -10,6 +10,10 @@ ConstTable (Buoy_Config,0)
     ' ### Instruments Config ### 
     Const Depth_for_Winch = 210
     Const ADCP_Num_Bin = 27
+
+    ' ### Sample Sizes ###
+    Const GPS_Sample_Size = 10     ' 1 per second for 10 seconds
+    Const Compass_Sample_Size = 60 ' 1 per second for 60 seconds
    
     ' ### Timers Delay ###
     Const Well_Pump_Delay_Sec = 31 '(Pump_Timer)

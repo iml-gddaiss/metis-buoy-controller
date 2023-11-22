@@ -5,8 +5,7 @@
 '### Data Variables ###
 
 Dim RawCompass(9) As String
-Dim Heading_Vec(2) As Float : Alias Heading_Vec = Heading_x, Heading_y
-Public Compass(3) As Float : Alias Compass = Heading, Pitch, Roll
+Public Compass(3) As Float = {"", "", ""} : Alias Compass = Heading, Pitch, Roll
 Units Heading = °
 Units Pitch = °
 Units Roll = °
@@ -30,16 +29,6 @@ Sub UpdateCompassTable
   NextScan
 EndSub
 
-
-'### Sampling ###
-Sub ResetCompassValues
-  'Resetting the compass & Heading values
-  Compass() = 0 'Compass(3) = Heading, Pitch, Roll
-  Heading_Vec() = 0 'Heading_Vec(2) = Heading_x, Heading_y
-  SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",3,50)
-EndSub
-
-
 Function HexaSign(RawSign) as String * 1
   Select Case RawSign
     Case 10
@@ -50,21 +39,24 @@ Function HexaSign(RawSign) as String * 1
 EndFunction
 
 
-Sub CollectCompass60s
+Sub CollectCompass
   ' &h -> SA &0D0A -> CR LF
   Dim NBR ' Number of Bytes Returned  
   Dim X, Y
   Dim ASCIIString As String * 100
-  Dim HeadingBuff 
-  For Y = 1 To 60
+  Dim HeadingBuff As Float , Heading_x As Float , Heading_y As Float 
+
+  SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",3,50) ' What is this for ? FIXME
+  
+  For Y = 1 To Compass_Sample_Size
     SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",1,50)  ' Command = h^D^A^D^I (68 04 01 04 09)
     SerialInRecord(SerialTower,ASCIIString,&H68,13,0,NBR,101)   ' First byte sent is address 68
     
     If ASCIIString = "NAN" Then
       Pitch = "NAN"
       Roll = "NAN"
-      Heading = "NAN"
-      ExitFor ' FIXME exiting for loops seems dangerous ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      Heading = "NAN" 
+      ExitFor ' FIXME exiting for loops seems dangerous ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ FIXME Exit Sub Return Nan ? 
     EndIf        
 
     For X = 4 To 12                                      ' Setting each HEX byte in RawCompass Array
@@ -84,46 +76,33 @@ Sub CollectCompass60s
     Delay(1,400,mSec)
     
   Next 'Next sample (Y = 1 to 60)
-EndSub
-
-
-Sub AverageCompass(Roll, Pitch, Heading, Heading_y, Heading_x)
-  'Making the average of the 60 measurement.
-  'Since the Heading is vectorial, no need to divide by 60
-  'ÃƒÅ½Ã‚Â¸ = atan(opp/adj) is same as ÃƒÅ½Ã‚Â¸ = atan((opp/60)/(adj/60))
-  Roll = Round(Roll/60,2)
-  Pitch = Round(Pitch/60,2)
+  
+  ' Does Roll and Pitches need to be circularly averaged.
+  Roll = Round(Roll/Compass_Sample_Size,2) ' Goes from -85 to 85 so this should be fine.
+  Pitch = Round(Pitch/Compass_Sample_Size,2) ' Goes from -85 to 85 so this should be fine.
   Heading = ATN2(Heading_y, Heading_x)
 EndSub
 
-
-Sub ApplyMagneticCorrection(Heading, Mag_Var)
-  Heading = Heading + Mag_Var
-  If Heading >=  360 Then
-    Heading = Heading - 360
-  ElseIf Heading < 0 Then
-    Heading = Heading + 360
-  EndIf
-  Heading = Round(Heading,2)
+Sub ApplyMagneticCorrection
+  Heading = Round(Heading + Mag_Var) MOD 360, 2)
 EndSub
 
 
 Sub SampleCompass
+  Compass() = 0 'Compass(3) = Heading, Pitch, Roll ' FIXME I would Reset to {"", "", ""}. TO get Nan # COMPASS VALUE SHOULD BE RESET on every scan
   If With_Compass Then
+    Call logging("Sampling Compass")
     WhereAmI = "Sample Compass"   
     
     Call TimerDelay_Sec(Tower_Timer, Compass_Delay_Sec)
-    
-    Call ResetCompassValues
-    
-    Call CollectCompass60s
-      
-    Call AverageCompass(Roll, Pitch, Heading, Heading_y, Heading_x)
+        
+    Call CollectCompass
 
-    Call ApplyMagneticCorrection(Heading, Mag_Var)
+    Call ApplyMagneticCorrection
 
     Call UpdateCompassTable
     
     WhereAmI = "End Compass"
+    Call logging("Compass Sampled")
   EndIf
 EndSub
