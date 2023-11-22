@@ -6,7 +6,7 @@
 Dim RawSBE37 As String * 40
 Const SBE37_RawSample_Length = 38
 
-Public SBE37_In_Saltwater As Boolean
+Public SBE37_In_Saltwater As Boolean = false
 Public SBE37(4) As Float : Alias SBE37 = Water_Temp,Conductivity,Salinity,Density
 
 '### Units ###
@@ -40,6 +40,7 @@ EndFunction
 Sub StartSBE37
   Call logging("Starting SBE37")
   SerialOpen(SerialSBE37,19200,3,20,50) 'CTD string is 38 char.
+  SerialFlush(SerialSBE37) 
 EndSub
 
 
@@ -47,6 +48,8 @@ Sub SBE37SalinityCheck
   Dim X
   Dim RawSBE37_Test As String * 40
   Dim SBE37_Test(4) as Float
+
+  SBE37_In_Saltwater = false                 ' Could be in the With_SBE37 block. but its a safety ?
   
   If With_SBE37 Then
     WhereAmI = "SBE37 Salinity Check"
@@ -56,7 +59,7 @@ Sub SBE37SalinityCheck
     SBE37() = "" ' FIXME 0 or ""
     
     Call StartSBE37
-    SerialFlush(SerialSBE37) 
+    
     For X = 1 To 3 Step 1
       SerialOut(SerialSBE37,CHR(13),"S>",1,50)          ' Contact SBE37, expect `S>`
       SerialOut(SerialSBE37,"ts"&CHR(13),CHR(10),1,50)  ' Send: `Take, Send` sample command.
@@ -65,18 +68,18 @@ Sub SBE37SalinityCheck
       
       Call logging("SBE attempt: " & X)
       Call logging("RawSBE37: `" & RawSBE37_Test & "`")
-      Call logging("Len(RawSBE37_Test): " & Len(RawSBE37_Test))
       
-      If SBE37_Test(3) > 10 AND Len(RawSBE37_Test) = SBE37_RawSample_Length Then
+      If SBE37_Test(3) > Required_Salinity AND Len(RawSBE37_Test) = SBE37_RawSample_Length Then
         SBE37_In_Saltwater = true
-        Call logging("SBE37_In_Saltwater: " & SBE37_In_Saltwater)
-        ExitSub
+        'Call logging("SBE37_In_Saltwater: " & SBE37_In_Saltwater)
+        'SerialClose(SerialSBE37)
+        'ExitSub 
+        ExitFor
       EndIf
     Next X
     
-    SBE37_In_Saltwater = false
+    
     Call logging("SBE37_In_Saltwater: " & SBE37_In_Saltwater)
-
     SerialClose(SerialSBE37)
   EndIf  
 EndSub
@@ -88,7 +91,6 @@ Sub CollectSBE37
   RawSBE37 = ""
   SBE37() = ""
 
-  SerialFlush(SerialSBE37) 
   For X = 1 To 3 Step 1
     
     SerialOut(SerialSBE37,CHR(13),"S>",1,50)            ' Contact SBE37, expect `S>`
@@ -101,12 +103,16 @@ Sub CollectSBE37
     
     SerialIn(RawSBE37,SerialSBE37,400,13,60)
     SplitStr(SBE37,RawSBE37,",",4,0)
+
+    Call logging("SBE attempt: " & X)
+    Call logging("RawSBE37: `" & RawSBE37 & "`")
     
     If Len(RawSBE37) = SBE37_RawSample_Length AND SBE37(4) <> "" Then ' Check String length and that at least values were sent.
       ExitFor
     EndIf
   
   Next X
+  Call logging("SBE37 Collected")
 EndSub
 
 
@@ -125,13 +131,15 @@ Sub SampleSBE37(TAGString)
 
     Call CollectSBE37
       
-    SerialClose(SerialSBE37)
+    SerialClose(SerialSBE37) ' For some Reason, this is problematic ??? 
+    ' It hangs at the first `Scan` of the Update SBE37Table. 
 
     Call UpdateSBE37Table
   
     TAGString = SBE37TagString()
     Call WriteTagString
     WhereAmI = "SBE37 Sampling finished"
+    Call logging("SBE37 Sampled")
   EndIf
   
 EndSub

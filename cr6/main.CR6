@@ -46,8 +46,8 @@ Public WhereAmI As String ' Debug Purposes
 Public ScanDateTime As String ' FIXME this could be a Dim ?
 
 Public TAGString As String * 200
-Dim TAGFile As Long
-Dim ToTransmit As Long
+Dim TAGFile As Long 
+Dim ToTransmit As Long ' --------- Fixme ToTransmitFile ?
 
 Sub WriteTagString 'Use in imported CR6 Files
   FileWrite(TAGFile,TAGString & CHR(10),0)
@@ -69,7 +69,7 @@ Include "CPU:gps.cr6"                       '#T4 Declare GPS
 Include "CPU:par.cr6"                       '#T5 Declare PAR
 Include "CPU:sbe37.cr6"                     '#W1 Declare CTD SBE37 
 Include "CPU:eco_triplet.cr6"               '#W2 Declare ECO-Triplet
-Include "CPU:seafet.cr6"                    '#W3 Declare Seafet 
+Include "CPU:seafet.cr6"                    '#W3 Declare Seafet   (Needs to be included after CTD SBE37) ?
 Include "CPU:suna.cr6"                      '#W4 Declare SUNA 
 Include "CPU:pco2.cr6"                      '#W5 PCO2
 Include "CPU:ocr.cr6"                       '#W7 HyperOCR_R  & #T6 HyperOCR_I
@@ -216,7 +216,7 @@ BeginProg
   
   TAGString = "[END]" & CHR(10)
   Call WriteTagString   
-                          
+
   FileClose(TAGFile)
   FileClose(ToTransmit)
 

@@ -1,6 +1,6 @@
 Public Manual_Tower_Switch = false
 Public Manual_Well_Switch = false
-Public Send_Break_to_ADCP = false
+'Public Send_Break_to_ADCP = false
 
 Sub TowerSwitchSequence
     If Manual_Tower_Switch AND Not Tower_IsPowered Then

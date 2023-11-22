@@ -223,7 +223,7 @@ EndSub
 Sub SamplePCO2 'Move to pco2.cr6 ? TODO
   Dim time_stamp
   
-  If With_PCO2 AND (Salinity > 10 OR Bypass_Salinity) Then 'Security for PCO2 pump if not in water  FIXME SHOULD ONLY USED FOR STARTING ???
+  If With_PCO2 AND (SBE37_In_Saltwater OR Bypass_Salinity) Then 'Security for PCO2 pump if not in water  FIXME SHOULD ONLY USED FOR STARTING ???
     WhereAmI = "Entering PCO2 Loop"
     time_stamp = Public.TimeStamp(1)
     

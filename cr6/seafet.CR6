@@ -1,38 +1,19 @@
 'SEAFET related code
-'### Serial Port ###
-' Const SerialSeafet = 38 'RS232
 
 '### Data Variables ###
 Public RawSeafet As String * 120
-' TODO TEST AS FLOAT
+
 Public Seafet_Value(10) As String : Alias Seafet_Value = Date_Time_Seafet, Sample_Number, Error_Flag, Ext_pH, Int_pH, Volt_Ext_pH, Volt_Int_pH, pH_Temp, Seafet_Rel_Hum, Seafet_Int_Temp
-Public Seafet_pH_Corr(2) As Float : Alias Seafet_pH_Corr = Ext_pH_Corr, Int_pH_Corr
+Public Seafet_pH_Corr(2) As Float = {"", ""} : Alias Seafet_pH_Corr = Ext_pH_Corr, Int_pH_Corr
 
 'Constant to auto-proceed the pH value with Temp and Sal from CTD
 Const GasConstantR = 8.3144621 'Universal Gas constant in J/Kmol
 Const FaradayConstant = 96485.365 'Faraday constant
 Const KelvinToCelsius = 273.15
 
-' This Should Work. No ?
-' Public Seafet_Coeff(4) As String : Alias Seafet_Coeff = K0_Int_Exp, K2_Int_Exp, K0_Ext_Exp, K2_Ext_Exp
-' ' Public Coeff_Raw As String * 300
-' Public K0_Int, K2_Int, K0_Ext, K2_Ext As Float
-Public Seafet_Coeff(4) As Float : Alias Seafet_Coeff = K0_Int, K2_Int, K0_Ext, K2_Ext
+Public Seafet_Coeff(4) As Float = {"", "", "", ""} : Alias Seafet_Coeff = K0_Int, K2_Int, K0_Ext, K2_Ext = ""
 
 
-'### Units ###
-
-
-'### Tables ###
-' DataTable (FileSeafet,1,-1)
-' 	DataInterval (0,0,Sec,10)
-'   Sample (1,Ext_pH,IEEE4)
-'   Sample (1,Int_pH,IEEE4)
-'   Sample (1,Error_Flag,FP2)
-'   Sample (1,Volt_Ext_pH,IEEE4)
-'   Sample (1,Volt_Int_pH,IEEE4)
-'   Sample (1,pH_Temp,IEEE4)
-' EndTable
 
 DataTable (FileSeafet,1,-1)
   DataInterval (0,0,Sec,10)
@@ -58,16 +39,6 @@ Sub UpdateSeafetTable
   NextScan
 EndSub
 
-' Sub UpdateSeafet_ProTable
-'   Scan(1,Sec, 0, 1)
-'   CallTable FileSeafet_Pro
-'   NextScan
-' EndSub
-
-' Function PHTagString as String
-'   PHTagString = "[PH]" & Ext_pH & "," & Int_pH & "," & Error_Flag      
-' EndFunction
-
 Function PHTagString as String
   PHTagString = "[PHPRO]" & Ext_pH_Corr & "," & Int_pH_Corr & "," & Error_Flag & "," & Ext_pH & "," & Int_pH
 EndFunction
@@ -76,23 +47,6 @@ Sub StartSeafet
   Call logging("Starting SeaFet")
   SerialOpen(SerialSeafet,19200,3,20,900) 'Seafet string is around 100, but bigger buffer for Coef.
 EndSub
-
-
-Function Collect_Seafet_Coefficient(coeff_tag As String) As String
-  Dim _coeff_k_ As String
-  
-  SerialFlush(SerialSeafet)
-  SerialOut(SerialSeafet,CHR(13),"S>",2,50)
-  SerialOut(SerialSeafet,coeff_tag&CHR(13),"",1,0)
-  SerialIn(_coeff_k_,SerialSeafet,100,39,40)
-  SerialIn(_coeff_k_,SerialSeafet,100,39,20)
-  
-  If Len(_coeff_k_) <> 13 OR Mid(_coeff_k_,10,1) <> "e" Then
-    _coeff_k_ = ""
-  EndIf
-
-  Collect_Seafet_Coefficient = _coeff_k_
-EndFunction
 
 
 Sub CollectSeafet
@@ -111,6 +65,7 @@ Sub CollectSeafet
     EndIf
     
     SerialIn(RawSeafet,SerialSeafet,800,CHR(13),125) 'Seafet string is around 100
+    Call logging("Raw Seafet: " & RawSeafet)
     SplitStr(Seafet_Value,RawSeafet,",",10,14)
     
     If Len(RawSeafet) > 97 AND Mid(RawSeafet,24,1) = "T" AND CTYPE(Int_pH,Float) < 12 AND CTYPE(Int_pH,Float) > 3 AND CTYPE(Ext_pH,Float) < 12 AND CTYPE(Ext_pH,Float) > 3 Then
@@ -126,6 +81,22 @@ Sub CollectSeafet
   EndIf
 
 EndSub
+
+
+Function Collect_Seafet_Coefficient(coeff_tag As String) As String
+  Dim _coeff_k_ As String
+  SerialFlush(SerialSeafet)
+  SerialOut(SerialSeafet,CHR(13),"S>",2,50)
+  SerialOut(SerialSeafet,coeff_tag&CHR(13),"",1,0)
+  SerialIn(_coeff_k_,SerialSeafet,100,39,40)
+  SerialIn(_coeff_k_,SerialSeafet,100,39,20)
+  
+  If Len(_coeff_k_) <> 13 OR Mid(_coeff_k_,10,1) <> "e" Then
+    _coeff_k_ = ""
+  EndIf
+
+  Collect_Seafet_Coefficient = _coeff_k_
+EndFunction
 
 
 Sub CollectSeafetCoefficents
@@ -155,11 +126,68 @@ Function LOG_10(X) As Float
   LOG_10 = LOG(X) / LOG(10)
 EndFunction
 
-Sub Seafet_Correction(Water_Temp, Salinity)
+Sub SeaFetInSituSalinityCorrection(Water_Temp, Salinity)
+  ' Compute pH Ext and Int from raw Voltage and InSitu temperature and salinity.
+  ' From Sea-Bird Scientific documentation.
+  '
+  '   T : temperature in Kelvin
+  '   t : temperature in Celsius
+  '   psal : salinity in PSU
+  '
+  ' ### (Martz et al. 2010) ###
+  '   pH_INT = (V_INT - k0_INT - K2_INT * t) / S_nernst
+  '   V_INT : raw interior voltage
+  '   K0_INT : Interior cell standard potential Offset (From Calibration).
+  '   K2_INT : Interior temperature slope coefficient (From Calibration).
+  '
+  ' ### (Johnson et al. 2016) ###
+  '   pH_EXT = (V_EXT - k0_EXT - k2_EXT * t) / S_nernst
+  '            + log(Cl_T)
+  '            + 2*log(Y_HCl)_T
+  '            - log(1 + S_T/K_S)
+  '            - log((1000 - 1.005 * psal) / 1000))
+  '   V_EXT : raw exterior voltage
+  '   K0_EXT : Exterior cell standard potential Offset (From Calibration).
+  '   K2_Ext : Exterior temperature slope coefficient (From Calibration).
+  '
+  ' ### Nernst Equation ###
+  '  S_nernst = (R * T * ln(10)) / F 
+  '  F : Faraday Constant
+  ' 
+  ' ### log_of_HCl_activity_as_temperature_function (Khoo et al. 1977) ###
+  '                    -A_DH * sqrt(I)
+  '   log(Y_HCl)_T = --------------------  + (0.08885 - 0.000111 * t) * I
+  '                   1 + 1.394 * sqrt(I)
+  ' ### debye_huckel_HCl_activity_constant  (Khoo et al. 1977) ###
+  '   A_DH = 0.0000034286 * t**2 + 0.00067524 * t + 0.49172143            
+  '
+  ' ### total_chloride_in_seawater (Dickson et al. 2007) ###
+  '   Cl_T = (0.99889/35.453)*(psal/1.80655)*(1000/(1000-1.005*psal))
+  '
+  ' ### acid_dissociation_constant_HSO4 (Dickson et al. 2007) ###
+  '   K_S = (1 - 0.001005 * S)*exp( a0 + a1 + a2 + a3 + a4)
+  '     a0 = (-4276.1/T) + 141.328 - 23.093 * ln(T)
+  '     a1 = ((-13856/T) + 324.57 - 47.986*ln(T))*sqrt(I)
+  '     a2 = ((35474/T) - 771.54 + 114.723*ln(T))*I
+  '     a3 = -(2698/T)*I**(3/2)
+  '     a4 =  (1776/T)*I**2
+  '
+  ' ### sample_ionic_strength (Dickson et al. 2007) ###
+  '   I = (19.924*psal)/(1000-1.005*psal)
+  '
+  ' ### total_sulfate_in_seawater (Dickson et al. 2007)###
+  '   S_T = (0.1400 / 96.062) * (psal / 1.80655)
+  ' 
+  '
   '  References
   '  ----------
-  '  .. [1] Johnson et al.2016, Analytical Chemistry, DeepSea DuraFET: A pressure tolerant pH sensor designed for global sensor networks.
-  '  .. [2] Sea-Bird Scientific, Technical Note on Calculating pH, Application Note 99
+  '  .. [1] T.R. Martz, J. G. Connery, K. S. Johnson. Testing the Honeywell Durafet for seawater pH applications.
+  '         Limnol. Ocean-ogr.: Methods, 8:172-184, 2010.
+  '  .. [2] Johnson et al.2016, Analytical Chemistry, DeepSea DuraFET: A pressure tolerant pH sensor designed for global sensor networks.
+  '  .. [3] Khoo et al. 1977, Analytical Chemistry,
+  '         Determination of hydrogen ion concentrations in seawater from 5C to 40C: standard potentials at salinities 20 to 45%
+  '  .. [4]  Dickson et al. 2007, IOCCP Report No.8, Guide to Best Practices for Ocean CO2 Measurements
+  '  .. [5] Sea-Bird Scientific, Technical Note on Calculating pH, Application Note 99
   Call logging("Carrying Seafet Correction")
   
   Dim Snernst, Clt, log_yHClT, St, Water_Temp_K, I, Adh
@@ -197,28 +225,22 @@ Sub SampleSeafet(TAGString, Water_Temp, Salinity)
     
     Call CollectSeafet
     
-    If Seafet_Auto_Correction AND Salinity > 10 Then
-    
+    ' ######### Faire une sub routine ? meilleur nom ? Ce n'est pas une correciton
+    If Seafet_Auto_Correction AND SBE37_In_Saltwater Then
+      Seafet_pH_Corr() = ""
+      
       Call CollectSeafetCoefficents
 
-      Call Seafet_Correction(Water_Temp, Salinity)  
-
-      ' If Int_pH_Corr <> "NAN" AND Ext_pH_Corr <> "NAN" Then
-      '   Call UpdateSeafet_ProTable
-      '   TAGString = PHPROTagString()
-      ' EndIf
-    Else
-      Seafet_pH_Corr(2) = ""
+      Call SeaFetInSituSalinityCorrection(Water_Temp, Salinity)  
+      
     EndIf
+    ' #########
 
     Call UpdateSeafetTable
-    TAGString = PHTagString()
     
-    ' FIXME the SeafetTable can be updated before the AutoCorrection Routine
-    ' Call UpdateSeafetTable 
-    
+    TAGString = PHTagString() 
     Call WriteTagString
-    
     WhereAmI = "End Seafet"
+    Call logging("Seafet Sampled")
   EndIf
 EndSub

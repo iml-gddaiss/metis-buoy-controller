@@ -1,12 +1,30 @@
 ConstTable (Buoy_Config,0)
     Const Buoy_Name = "PMZA-RIKI" 
-    Const Buoy_Interval = 20
-    Const PCO2_Interval = 12
-    Const Winch_Interval = 5
+    
+    ' ### Sampling Interval ####
+    Const Buoy_Interval = 20 ' Minutes?
+    Const PCO2_Interval = 12 ' Minutes?
+    Const Winch_Interval = 5 ' Minutes?
+   
+    ' ### Instruments Config ### 
     Const Depth_for_Winch = 210
     Const ADCP_Num_Bin = 27
+   
+    ' ### Timers Delay ###
+    Const Well_Pump_Delay_Sec = 61
+    Const ATMS_Delay_Sec = 61
 
-    Const Instrument_installed = "As Follow" ' ??? Jérôme
+    ' ### Misc Parameters ###
+    Const Required_Salinity = 10 ' (PSU) To know if the SBE37 is in SaltWater
+
+    ' ### Control Switches ###
+    Const Bypass_Salinity = false
+    Const Disable_Pump = false
+    Const Seafet_Auto_Correction = true
+
+    Const With_Logging = true
+  
+    ' ### Instruments Enable/Disable Switches ###
     Const With_GPS = false
     Const With_WMT700 = false
     Const With_WXT536 = false
@@ -26,15 +44,7 @@ ConstTable (Buoy_Config,0)
     Const With_Winch = false
     Const With_Water_Detection_Main = false
     Const With_Power = false
-
-    Const Buoy_Config = "As Follow" 
-    Const Bypass_Salinity = false
-    Const Disable_Pump = false
     
-    Const Seafet_Auto_Correction = true
-    Const Wind_Motion_Correction = false 'Only for the average wind.
-
-    Const With_Logging = true
 EndConstTable
 
 

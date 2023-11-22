@@ -1,5 +1,6 @@
 .PROJECT TODO
-
+.. BUG TO FIXED
+############### SubRoutine Argument are Local Only. Thus you cannot put TAGString in the SubRoutine Argument
 .. Ne pas ajuster l’heure du Campbell si le GPS n’est pas présent
 .. Envoyer des alarmes/emails/texto lorsque la bouée est hors position (dérive)
 .. Envoyer des alarmes/emails lorsque les batteries sont basses

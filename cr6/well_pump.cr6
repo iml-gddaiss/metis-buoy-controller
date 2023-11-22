@@ -6,7 +6,7 @@ Sub PowerWellPump(SBE37_In_SaltWater)
     WhereAmI = "Start Well Pump"
     Call logging("Starting Well Pump")
     'Open Switch #2 to control pump for X sec
-    SW12(SW12_2,1) ' -----------------> FIMXE SW12(SW12_1, 0) ???
+    SW12(SW12_2,1)
     Well_IsPowered = True
     
     Timer(Pump_Timer,Sec,2) 'Start timer #3 for the pump working for min. 30 sec
@@ -17,8 +17,9 @@ EndSub
 
 Sub WaitForWellPump  
   If Well_IsPowered and With_Well_Pump Then
+    Call logging("Waiting for Well Pump")
     WhereAmI = "See if pump is running 30sec"
-    Call TimerDelay_Sec(Pump_Timer, 61)
+    Call TimerDelay_Sec(Pump_Timer, Well_Pump_Delay)
     WhereAmI = "Pump ran 30sec"
   EndIf
 EndSub

@@ -58,7 +58,7 @@ EndSub
 
 Sub WaitForATMS 'Weather and PAR
   If With_ATMS Then
-    Call TimerDelay_Sec(ATMS_Timer, 61)
+    Call TimerDelay_Sec(ATMS_Timer, ATMS_Delay_Sec)
   EndIf 
 EndSub
 
@@ -74,34 +74,12 @@ Sub SelectWeatherInstrument
 EndSub
 
 
-Sub AverageWindMotionCorrection(GPS_SOG_X, GPS_SOG_Y)
-  Dim XY(2) As Float, RhoTheta(2) As Float
-  'Only for the average wind.
-  If GPS_SOG_X <> "NAN" AND GPS_SOG_Y <> "NAN" ' Fixme How can it equal to NAN
-    logging("Carrying average wind motion correction")
-    'Wind(2): Wind_Dir_Ave
-    'Wind(4): Wind_Spd_Ave
-
-    XY(1) = Wind(4) * SIN(Wind(2)) + GPS_SOG_X
-    XY(2) = Wind(4) * COS(Wind(2)) + GPS_SOG_Y
-    RectPolar(RhoTheta, XY)
-
-    Wind(4) = RhoTheta(1)
-    Wind(2) = RhoTheta(2)
-  EndIf
-EndSub
-
-
-Sub WindCorrection(GPS_SOG_X, GPS_SOG_Y)
+Sub WindHeadingCorrection(GPS_SOG_X, GPS_SOG_Y)
   Dim X
   'Heading correction
   For X = 1 To 3                                   ' with the heading (which is already corrected with magnetic
     Wind(X) = Round(Wind(X) + Heading MOD 360, 2)  ' declinaison from the GPS
   Next
-  
-  If Wind_Motion_Correction Then
-    Call AverageWindMotionCorrection(GPS_SOG_X, GPS_SOG_Y)
-  EndIf
 EndSub
 
 
@@ -110,7 +88,7 @@ Sub ProcessWeather(TAGString, GPS_SOG_X, GPS_SOG_Y)
     WhereAmI = "Processing Weather"
     Call SelectWeatherInstrument   
 
-    Call WindCorrection(GPS_SOG_X, GPS_SOG_Y)
+    Call WindHeadingCorrection(GPS_SOG_X, GPS_SOG_Y)
     
     Call UpdateWeatherTable
 
