@@ -3,9 +3,6 @@
 'Program author: Anthony Ouellet
 'Modified by: Jerome Guay
 '
-' Notes: 
-' TODO: faire des sub routine pour les commandes envoyer au instrument et le traitement
-' TODO: Convention de nom entre variable, constante, table etc
 '#####################################################################################
 '------------------------------------------------------------------------------
 '----------------------------- Main Program -----------------------------------
@@ -49,7 +46,7 @@ Public TAGString As String * 200
 Dim TAGFile As Long 
 Dim ToTransmit As Long ' --------- Fixme ToTransmitFile ?
 
-Sub WriteTagString 'Use in imported CR6 Files
+Sub WriteTagString 'This needs to be declare before importing CR6 Files since they used it.
   FileWrite(TAGFile,TAGString & CHR(10),0)
   FileWrite(ToTransmit,TAGString & CHR(10),0)
 EndSub
@@ -87,18 +84,10 @@ Include "CPU:well_pump.cr6"                 ' ?
 'Wind compensation by Compass and GPS
 Include "CPU:weather.cr6"                   ' Weather variables  
 
-'###### These need to be declared after the GPS files has been included ####
-Sub OpenTagsFiles
-  ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & UTC_Date_Short & UTC_Time_Short & ".dat","a",-1)
-  TAGFile = FileOpen("CRD:" & Buoy_Name & "_TAGFile.txt","a",-1)
-EndSub
-
-Function InitTagString as String
-  InitTagString = "[INIT]" & Buoy_Name & "," & UTC_Date_Hyphen & "," & UTC_Time_DDot & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
-EndFunction
 
 '####### Slow Sequence | User Command Interface 
 Include "CPU:slow_sequences.cr6"             ' ?
+
 
 ' Raw data from the instruments
 DataTable (Raw,1,-1)
@@ -121,6 +110,26 @@ DataTable (Raw,1,-1)
   Sample (1,WinchMessage,String)
 EndTable
 
+
+' These need to be declared after the GPS files has been included ####
+Sub OpenTagsFiles
+  ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & UTC_Date_Short & UTC_Time_Short & ".dat","a",-1)
+  TAGFile = FileOpen("CRD:" & Buoy_Name & "_TAGFile.txt","a",-1)
+EndSub
+
+Sub CloseTagsFiles
+  FileClose(TAGFile)
+  FileClose(ToTransmit)
+EndSub
+
+Function InitTagString as String
+  InitTagString = "[INIT]" & Buoy_Name & "," & UTC_Date_Hyphen & "," & UTC_Time_DDot & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
+EndFunction
+
+Function EndTagString as String
+  EndTagString = "[END]" & CHR(10)
+EndFunction
+
 Sub ResetTablesUpdateFlag
   UpdateGPSTable = false
   UpdateCompassTable = false
@@ -139,6 +148,7 @@ Sub ResetTablesUpdateFlag
   UpdatePCO2AirTable = false
   UpdatePCO2WaterTable = false
 EndSub
+
 
 BeginProg
   SetSetting("WIFIconfig",4) 'This is turning the Wifi Off
@@ -160,60 +170,51 @@ BeginProg
     
   Call PowerWaterDetectionMain
       
-  Call PowerTowerInstruments
+  Call PowerTowerInstruments ' PAR, WMT700, Compass, With_OCR_I. Start Tower_Timer
 
   Call StartPAR
 
-  Call StartTower485
+  Call StartTower485         ' WXT536, WMT700, Compass
 
   Call SampleGPS
   
   Call ResetWXT536
 
-  Call StartWMT700
+  Call StartWMT700           ' Slow to start
   
   Call StartATMSTimer
 
   Call SBE37SalinityCheck
     
-  Call PowerWellPump(SBE37_In_Saltwater)
+  Call PowerWellPump        ' Power Well Pump and Start Well Timer.
   
   Call StartTriplet
-  
-  Call SampleCompass
+  ' why isn't GPS Sampled here instead ?                     --- FIXME ---
+  Call SampleCompass        ' Requires GPS Magnetic Declination (If Magnetic Declination is sampled, last collected value is used ?) --- FIXME ---
   
   Call CheckWaterDectectionMain
 
   Call OpenTagsFiles
-  TAGString = InitTagString()
+
+  TAGString = InitTagString()             'Requires Gps, Compas and WaterDectection Variables.
   Call WriteTagString
     
   Call SamplePowerController
 
   Call CollectTriplet
-     
-  Call WaitForWellPump   'Pumped sensor (SBE37, Seafet & SUNA) 
-
-  Call StartSUNA
   
+  Call WaitForWellPump   ' Well Instrument that required SBE37, Seafet, SUNA, OCR_R (Sensor Conditionning).
+  Call StartSUNA         ' why don't isn't SUNA started in THE begining --- FIXME ---
   Call SampleOCRs
-  
   Call SampleSBE37
-  
   Call SampleSeafet(Water_Temp, Salinity)
-
   Call CollectSUNA
-
-  Call StopWellPump 'Pumped sensor are done, close pump
+  Call StopWellPump 
   
-  Call WaitForATMS
-    
+  Call WaitForATMS        ' Tower Instrument that required to sample over time
   Call CollectPAR
-
   Call CollectWXT536 
-  
   Call CollectWMT700
-  
   Call StopTower485
         
   Call ProcessWeather(Heading)     
@@ -224,7 +225,7 @@ BeginProg
   
   Call SamplePCO2
   
-  Call WinchMission(Salinity)      
+  Call WinchMission      
 
   Call CloseSerialPorts
 
@@ -253,11 +254,10 @@ BeginProg
   ' TODO PCO2 Variable resetting doesn't work with the CallTable at the end like that FIXME
   Call ResetPCO2RawStrings ' A fix should be add here
   
-  TAGString = "[END]" & CHR(10)
+  TAGString = EndTagString()
   Call WriteTagString   
 
-  FileClose(TAGFile)
-  FileClose(ToTransmit)
+  Call CloseTagsFiles
 
   Call CollectWinch
   

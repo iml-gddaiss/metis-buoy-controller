@@ -79,7 +79,7 @@ Sub CollectCompass
 EndSub
 
 Sub ApplyMagneticCorrection
-  Heading = Round(Heading + Mag_Var) MOD 360, 2)
+  Heading = Round((Heading + Mag_Var) MOD 360, 2)
 EndSub
 
 

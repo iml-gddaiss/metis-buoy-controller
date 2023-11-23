@@ -43,7 +43,7 @@ Sub SBE37SalinityCheck
   Dim RawSBE37_Test As String * 40
   Dim SBE37_Test(4) as Float
 
-  SBE37_In_Saltwater = false                 ' Could be in the With_SBE37 block. but its a safety ?
+  SBE37_In_Saltwater = false
   
   If With_SBE37 Then
     WhereAmI = "SBE37 Salinity Check"
@@ -65,9 +65,6 @@ Sub SBE37SalinityCheck
       
       If SBE37_Test(3) > Required_Salinity AND Len(RawSBE37_Test) = SBE37_RawSample_Length Then
         SBE37_In_Saltwater = true
-        'Call logging("SBE37_In_Saltwater: " & SBE37_In_Saltwater)
-        'SerialClose(SerialSBE37)
-        'ExitSub 
         ExitFor
       EndIf
     Next X

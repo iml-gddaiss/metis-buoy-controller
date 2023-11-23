@@ -2,10 +2,10 @@ Dim Tower_IsPowered As Boolean ' Flag for Tower Power State
 
 Sub PowerTowerInstruments
   'Starting the weather instrument as soon as possible to stabilize the OCR, start the PAR sample and initialize the WMT700
-  If With_Tower Then
-      SW12(SW12_1,1) ' -----------------> FIMXE SW12(SW12_1, 0) ???
+  If With_Tower_Power Then
+      SW12(SW12_1,1)
       Tower_IsPowered = True
-      Timer(Tower_Timer,Sec,0)  'WMT700 power up delay
+      Timer(Tower_Timer,Sec,2)  'WMT700 power up delay
       Call logging("Tower Instrument Powered Up")
   EndIf
 EndSub

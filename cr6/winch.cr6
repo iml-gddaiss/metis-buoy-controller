@@ -135,7 +135,7 @@ Sub StartWinchMission
 EndSub
 
 
-Sub WinchMission(Salinity)
+Sub WinchMission
     'Start a Winch Mission if its not started and possible.
     If With_Winch AND (SBE37_In_Saltwater OR Bypass_Salinity) Then
                

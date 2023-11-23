@@ -11,7 +11,7 @@ Const GasConstantR = 8.3144621 'Universal Gas constant in J/Kmol
 Const FaradayConstant = 96485.365 'Faraday constant
 Const KelvinToCelsius = 273.15
 
-Public Seafet_Coeff(4) As Float = {"", "", "", ""} : Alias Seafet_Coeff = K0_Int, K2_Int, K0_Ext, K2_Ext = ""
+Public Seafet_Coeff(4) As Float = {"", "", "", ""} : Alias Seafet_Coeff = K0_Int, K2_Int, K0_Ext, K2_Ext
 
 Dim UpdateSeafetTable As Boolean = false
 
