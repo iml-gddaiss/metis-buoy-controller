@@ -5,33 +5,14 @@ ConstTable (Buoy_Config,0)
     Const Buoy_Interval_Min = 20 ' Minutes?
     Const PCO2_Interval_Hr = 12 ' hours
     Const Winch_Interval_Hr = 5 ' hours
-    Const Rain_Interval_Hr = 24 ' (Rain_Timer)
    
     ' ### Instruments Config ### 
     Const Depth_for_Winch = 210
-    Const ADCP_Num_Bin = 27
-
-    ' ### Sample Sizes ###
-    Const GPS_Sample_Size = 10     ' 1 per second for 10 seconds
-    Const Compass_Sample_Size = 60 ' 1 per second for 60 seconds
-   
-    ' ### Timers Delay ###
-    Const Well_Pump_Delay_Sec = 31 '(Pump_Timer)
-    Const ATMS_Delay_Sec = 61 ' (ATMS_Timer)
-    Const Suna_Delay_Sec = 12 ' (Suna_Timer)
-    Const WMT700_Delay_Sec = 8 ' (Tower_Timer)
-    Const Compass_Delay_Sec = 4 ' (Tower_Timer)
-    Const Triplet_Delay_Sec = 17 ' (Triplet_Timer)
-    Const OCR_R_Delay_Sec = 8 ' (Pump_Timer)
-    Const OCR_I_Delay_Sec = 8 ' (Tower_Timer)   
-
-    ' ### Misc Parameters ###
-    Const Required_Salinity = 10 ' (PSU) To know if the SBE37 is in SaltWater
 
     ' ### Control Switches ###
     Const Bypass_Salinity = false
     Const Disable_Pump = false
-    Const Seafet_Auto_Correction = true
+    Const Seafet_Auto_Calculation = true
 
     Const With_Logging = true
   
@@ -61,6 +42,29 @@ EndConstTable
 
 Const With_Tower_485 = With_WXT536 OR With_WMT700 OR With_Compass       
 Const With_Tower_Power = With_PAR OR With_WMT700 OR With_Compass OR With_OCR_I
-Const With_Weather = With_WXT536 OR With_WMT700
-Const With_ATMS = With_Weather OR With_PAR
+Const With_Wind = With_WXT536 OR With_WMT700
+Const With_Weather = With_Wind OR With_PAR
 Const With_Well_Pump = With_SBE37 OR With_Seafet OR With_SUNA OR With_OCR_R
+
+' ### Sampling Interval ####
+Const Rain_Interval_Hr = 24 ' (Rain_Timer)
+
+' ### Instruments Config ### 
+Const ADCP_Num_Bin = 27
+
+' ### Sample Sizes ###
+Const GPS_Sample_Size = 10     ' 1 per second for 10 seconds
+Const Compass_Sample_Size = 60 ' 1 per second for 60 seconds
+
+' ### Timers Delay ###
+Const Well_Pump_Delay_Sec = 30 '(Pump_Timer)
+Const Weather_Delay_Sec = 60 ' (Weather_Time)
+Const Suna_Delay_Sec = 12 ' (Suna_Timer)
+Const WMT700_Delay_Sec = 8 ' (Tower_Timer)
+Const Compass_Delay_Sec = 4 ' (Tower_Timer)
+Const Triplet_Delay_Sec = 17 ' (Triplet_Timer)
+Const OCR_R_Delay_Sec = 8 ' (Pump_Timer)
+Const OCR_I_Delay_Sec = 8 ' (Tower_Timer)   
+
+' ### Misc Parameters ###
+Const Required_Salinity = 10 ' (PSU) To know if the SBE37 is in SaltWater

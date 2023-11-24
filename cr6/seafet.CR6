@@ -4,7 +4,7 @@
 Public RawSeafet As String * 120
 
 Public Seafet_Value(10) As String : Alias Seafet_Value = Date_Time_Seafet, Sample_Number, Error_Flag, Ext_pH, Int_pH, Volt_Ext_pH, Volt_Int_pH, pH_Temp, Seafet_Rel_Hum, Seafet_Int_Temp
-Public Seafet_pH_Corr(2) As Float = {"", ""} : Alias Seafet_pH_Corr = Ext_pH_Corr, Int_pH_Corr
+Public Seafet_pH_Calc(2) As Float = {"", ""} : Alias Seafet_pH_Calc = Ext_pH_Calc, Int_pH_Calc
 
 'Constant to auto-proceed the pH value with Temp and Sal from CTD
 Const GasConstantR = 8.3144621 'Universal Gas constant in J/Kmol
@@ -17,8 +17,8 @@ Dim UpdateSeafetTable As Boolean = false
 
 DataTable (FileSeafet,UpdateSeafetTable,-1)
   DataInterval (0,0,Sec,10)
-  Sample (1,Ext_pH_Corr,IEEE4).  ' Pourquoi il y a un point -------------------------
-  Sample (1,Int_pH_Corr,IEEE4)
+  Sample (1,Ext_pH_Calc,IEEE4).  ' Pourquoi il y a un point -------------------------
+  Sample (1,Int_pH_Calc,IEEE4)
   Sample (1,Water_Temp,IEEE4)
   Sample (1,Salinity,IEEE4)
   Sample (1,K0_Ext,IEEE4)
@@ -35,7 +35,7 @@ EndTable
 
 
 Function PHTagString as String
-  PHTagString = "[PHPRO]" & Ext_pH_Corr & "," & Int_pH_Corr & "," & Error_Flag & "," & Ext_pH & "," & Int_pH
+  PHTagString = "[PH]" & Ext_pH_Calc & "," & Int_pH_Calc & "," & Error_Flag & "," & Ext_pH & "," & Int_pH
 EndFunction
 
 Sub StartSeafet
@@ -78,7 +78,7 @@ Sub CollectSeafet
 EndSub
 
 
-Function Collect_Seafet_Coefficient(coeff_tag As String) As String
+Function Fetch_Seafet_Coefficient(coeff_tag As String) As String
   Dim _coeff_k_ As String
   SerialFlush(SerialSeafet)
   SerialOut(SerialSeafet,CHR(13),"S>",2,50)
@@ -90,28 +90,28 @@ Function Collect_Seafet_Coefficient(coeff_tag As String) As String
     _coeff_k_ = ""
   EndIf
 
-  Collect_Seafet_Coefficient = _coeff_k_
+  Fetch_Seafet_Coefficient = _coeff_k_
 EndFunction
 
 
-Sub CollectSeafetCoefficents
+Sub FetchSeafetCoefficents
   Call logging("Collecting SeaFet Coefficient")
   Dim X
   For X = 1 To 5 Step 1 ' Fixme Question: Is this to have 5 attemps -------------------------------------------?
     If K0_Ext = "NAN" Then
-      K0_Ext = Collect_Seafet_Coefficient("K0")
+      K0_Ext = Fetch_Seafet_Coefficient("K0")
     EndIf
     
     If K2_Ext = "NAN" Then
-      K2_Ext = Collect_Seafet_Coefficient("K2")
+      K2_Ext = Fetch_Seafet_Coefficient("K2")
     EndIf
     
     If K0_Int = "NAN" Then
-      K0_Int = Collect_Seafet_Coefficient("KDF0")             
+      K0_Int = Fetch_Seafet_Coefficient("KDF0")             
     EndIf
     
     If K2_Int = "NAN" Then
-      K2_Int = Collect_Seafet_Coefficient("KDF2")         
+      K2_Int = Fetch_Seafet_Coefficient("KDF2")         
     EndIf
   Next X 
   Call logging("SeaFet Coefficient. K0 Ext: " & K0_Ext & ", K2 Ext: " & K2_Ext & ", K0 Int: " & K0_Int & ", K2 Int: " & K2_INT)          
@@ -121,7 +121,7 @@ Function LOG_10(X) As Float
   LOG_10 = LOG(X) / LOG(10)
 EndFunction
 
-Sub SeaFetInSituSalinityCorrection(Water_Temp, Salinity)
+Sub SeafetpH_Calc(Water_Temp, Salinity)
   ' Compute pH Ext and Int from raw Voltage and InSitu temperature and salinity.
   ' From Sea-Bird Scientific documentation.
   '
@@ -184,6 +184,7 @@ Sub SeaFetInSituSalinityCorrection(Water_Temp, Salinity)
   '  .. [4]  Dickson et al. 2007, IOCCP Report No.8, Guide to Best Practices for Ocean CO2 Measurements
   '  .. [5] Sea-Bird Scientific, Technical Note on Calculating pH, Application Note 99
   Call logging("Carrying Seafet Correction")
+  Seafet_pH_Calc() = ""
   
   Dim Snernst, Clt, log_yHClT, St, Water_Temp_K, I, Adh
   Dim Ks_Tab(6) : Alias Ks_Tab = Ks1, Ks2, Ks3, Ks4, Ks5, Ks
@@ -205,8 +206,8 @@ Sub SeaFetInSituSalinityCorrection(Water_Temp, Salinity)
   Ks5 = (1776/Water_Temp_K)*I^2
   Ks = (1-(0.001005*Salinity))*EXP(Ks1+Ks2+Ks3+Ks4+Ks5)
   
-  Int_pH_Corr = Round((CTYPE(Volt_Int_pH,Float) - K0_Int - (K2_Int*Water_Temp))/Snernst,4)
-  Ext_pH_Corr = Round(((CTYPE(Volt_Ext_pH,Float) - K0_Ext - (K2_Ext*Water_Temp))/Snernst) + LOG_10(Clt) + (2*log_yHClT) - LOG_10(1+(St/Ks)) - LOG_10((1000-(1.005*Salinity))/1000),4)
+  Int_pH_Calc = Round((CTYPE(Volt_Int_pH,Float) - K0_Int - (K2_Int*Water_Temp))/Snernst,4)
+  Ext_pH_Calc = Round(((CTYPE(Volt_Ext_pH,Float) - K0_Ext - (K2_Ext*Water_Temp))/Snernst) + LOG_10(Clt) + (2*log_yHClT) - LOG_10(1+(St/Ks)) - LOG_10((1000-(1.005*Salinity))/1000),4)
 
 EndSub
 
@@ -220,12 +221,10 @@ Sub SampleSeafet(Water_Temp, Salinity)
     
     Call CollectSeafet
     
-    If Seafet_Auto_Correction AND SBE37_In_Saltwater Then
-      Seafet_pH_Corr() = ""
-      
-      Call CollectSeafetCoefficents
+    If Seafet_Auto_Calculation AND SBE37_In_Saltwater Then      
+      Call FetchSeafetCoefficents
 
-      Call SeaFetInSituSalinityCorrection(Water_Temp, Salinity)    
+      Call SeafetpH_Calc(Water_Temp, Salinity)    
     EndIf
 
     UpdateSeafetTable = false
