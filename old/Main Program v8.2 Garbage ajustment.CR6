@@ -1779,7 +1779,7 @@ BeginProg
             PCO2_Time = PCO2(4)&":"&PCO2(5)&":"&PCO2(6)
             CO2_Water = PCO2(9)
             PCO2_Gaz_Pressure_Water = PCO2(13)
-            PCO2W_Humidity = PCO2(11)
+            PCO2W_Hu midity = PCO2(11)
             CallTable FilePCO2W
               
             SplitStr(PCO2,RawPCO2_Air,",",14,0)
