@@ -35,6 +35,7 @@ EndFunction
 
 
 Sub CollectCompass
+  ' Roll and Pitch are not circularly average.
   ' &h -> SA &0D0A -> CR LF
   Dim NBR ' Number of Bytes Returned  
   Dim X, Y
@@ -51,7 +52,7 @@ Sub CollectCompass
       Pitch = "NAN"
       Roll = "NAN"
       Heading = "NAN" 
-      ExitFor ' FIXME exiting for loops seems dangerous ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ FIXME Exit Sub Return Nan ? 
+      ExitSub
     EndIf        
 
     For X = 4 To 12                                      ' Setting each HEX byte in RawCompass Array
@@ -84,7 +85,7 @@ EndSub
 
 
 Sub SampleCompass
-  Compass() = 0 'Compass(3) = Heading, Pitch, Roll ' FIXME I would Reset to {"", "", ""}. TO get Nan # COMPASS VALUE SHOULD BE RESET on every scan
+  Compass() = {"", "", ""}
   If With_Compass Then
     Call logging("Sampling Compass")
     WhereAmI = "Sample Compass"   

@@ -46,20 +46,20 @@ EndFunction
 
 Sub StartATMSTimer 'Weather and PAR
   'Start Timer#1 to collect data in 61sec
-  If With_ATMS Then
-    Timer(ATMS_Timer, Sec, 2)
+  If With_Weather Then
+    Timer(Weather_Time, Sec, 2)
   EndIf
 EndSub
 
 
-Sub WaitForATMS 'Weather and PAR
-  If With_ATMS Then
-    Call TimerDelay_Sec(ATMS_Timer, ATMS_Delay_Sec)
+Sub WaitForWeather 'Weather and PAR
+  If With_Weather Then
+    Call TimerDelay_Sec(Weather_Time, Weather_Delay_Sec)
   EndIf 
 EndSub
 
 
-Sub SelectWeatherInstrument
+Sub SelectWindInstrument
   If WMT700(5) = CHR(00) OR WMT700(5) = 0 Then  ' If there's data from WMT700, taking them as Wind
     Wind() = WXT536_Wind()
     WindTAG = "[W536]"                    ' Otherwise take the WXT536
@@ -80,19 +80,25 @@ EndSub
 
 
 Sub ProcessWeather(Heading)
-  If With_Weather AND With_GPS AND Pitch <> "NAN" AND Roll <> "NAN" Then 
+  If With_Weather Then
     WhereAmI = "Processing Weather"
-    Call SelectWeatherInstrument   
 
-    Call WindHeadingCorrection(Heading)
-    
-    UpdateWeatherTable = true
+    If With_Wind Then
+      Call SelectWindInstrument   
+      
+      IF Heading <> "NAN" Then 
+        Call WindHeadingCorrection(Heading)
+      EndIf
 
-    TAGString = WindTagString()
-    Call WriteTagString
+      TAGString = WindTagString()
+      Call WriteTagString
+    EndIf
     
     TAGString = ATMSTagString()
     Call WriteTagString
+
+    UpdateWeatherTable = true
+    
     WhereAmI = "Finish Weather"
   EndIf
 EndSub

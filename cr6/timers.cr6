@@ -1,5 +1,5 @@
 
-Dim ATMS_Timer  = 1 ' Weather (WMT, WXT) and PAR
+Dim Weather_Time  = 1 ' Weather (WMT, WXT) and PAR
 
 Dim Pump_Timer = 3
 Dim Triplet_Timer = 4
