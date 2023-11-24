@@ -162,6 +162,36 @@ Sub WinchMission
     EndIf
 EndSub
 
+Sub DownloadWinchData
+    SerialOpen(SerialWinch,19200,3,20,100) 'Should it be started earlier ??
+    SerialFlush(SerialWinch)
+    SerialOut(SerialWinch,"D"&CHR(13)&CHR(10),0,1,0)
+    
+    Do 
+        WinchString = ""
+        SerialIn(WinchString,SerialWinch,300,10,60)
+        FileWrite(WinchFile,WinchString,0)
+    Loop While WinchString <> ""
+    
+    SerialClose(SerialWinch)
+    WinchString = ""
+EndSub
+
+Sub InitWinchFile
+    Winch_Date =  FileGPS.UTC_Date_Slash(1, status.Record - Winch_Start_RecNum)
+    Winch_Time = FileGPS.UTC_Time_DDOT(2, status.Record - Winch_Start_RecNum)
+    Winch_Lat = FileGPS.Latitude(3, status.Record - Winch_Start_RecNum)
+    Winch_Long = FileGPS.Longitude(4, status.Record - Winch_Start_RecNum)
+
+    WinchFileName = Buoy_Name&"_"&Replace(Winch_Date, "/", "")&"_"&Replace(Winch_Time, ":", "")
+    WinchFile = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
+
+    
+    FileWrite(WinchFile,Winch_Time&" "&Winch_Date&CHR(10),0)
+    FileWrite(WinchFile,Buoy_Name&CHR(10),0)     
+    FileWrite(WinchFile,Winch_Lat&","&Winch_Long&CHR(10),0)    
+    FileWrite(WinchFile,"D"&CHR(10),0)
+EndSub
 
 Sub CollectWinch
     Dim Winch_Date As String
@@ -176,35 +206,13 @@ Sub CollectWinch
         
         WhereAmI = "Collecting the winch"
         
-        Winch_Date =  FileGPS.UTC_Date_Slash(1, status.Record - Winch_Start_RecNum)
-        Winch_Time = FileGPS.UTC_Time_DDOT(2, status.Record - Winch_Start_RecNum)
-        Winch_Lat = FileGPS.Latitude(3, status.Record - Winch_Start_RecNum)
-        Winch_Long = FileGPS.Longitude(4, status.Record - Winch_Start_RecNum)
+        Call InitWinchFile
+        
+        Call DownloadWinchData
 
-        WinchFileName = Buoy_Name&"_"&Replace(Winch_Date, "/", "")&"_"&Replace(Winch_Time, ":", "")
-        WinchFile = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
-
-        
-        FileWrite(WinchFile,Winch_Time&" "&Winch_Date&CHR(10),0)
-        FileWrite(WinchFile,Buoy_Name&CHR(10),0)     
-        FileWrite(WinchFile,Winch_Lat&","&Winch_Long&CHR(10),0)    
-        FileWrite(WinchFile,"D"&CHR(10),0)
-        
-        SerialOpen(SerialWinch,19200,3,20,100) 'Should it be started earlier ??
-        SerialFlush(SerialWinch)
-        SerialOut(SerialWinch,"D"&CHR(13)&CHR(10),0,1,0)
-        
-        Do 
-            WinchString = ""
-            SerialIn(WinchString,SerialWinch,300,10,60)
-            FileWrite(WinchFile,WinchString,0)
-        Loop While WinchString <> ""
-        
-        SerialClose(SerialWinch)
+        FileClose(WinchFile)
         
         WhereAmI = "Out of Do.. While Loop after winch"
-        WinchString = ""
-        FileClose(WinchFile)
         
     EndIf
 EndSub
