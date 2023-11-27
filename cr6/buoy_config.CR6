@@ -1,6 +1,7 @@
 ConstTable (Buoy_Config,0)
     Const Buoy_Name = "PMZA-RIKI" 
     
+    Const Buoy_Configuration = "As Follow" 
     ' ### Sampling Interval ####
     Const Buoy_Interval_Min = 20 ' Minutes?
     Const PCO2_Interval_Hr = 12 ' hours
@@ -15,36 +16,36 @@ ConstTable (Buoy_Config,0)
     Const Seafet_Auto_Calculation = true
 
     Const With_Logging = true
-  
+    
     ' ### Instruments Enable/Disable Switches ###
-    Const With_GPS = false
-    Const With_WMT700 = false
-    Const With_WXT536 = false
-    Const With_Compass = false
-    Const With_PAR = false
-    Const With_OCR_I = false
+    Const Instrument_Installed = "As Follow" 
+    Const With_GPS As Boolean = false
+    Const With_WMT700 As Boolean = false
+    Const With_WXT536 As Boolean = false
+    Const With_Compass As Boolean = false
+    Const With_PAR As Boolean = false
+    Const With_OCR_I As Boolean = false
 
-    Const With_SBE37 = false
-    Const With_Seafet = false
-    Const With_Triplet = false
-    Const With_SUNA = false
-    Const With_PCO2 = false
-    Const With_OCR_R = false
+    Const With_SBE37 As Boolean = false
+    Const With_Seafet As Boolean = false
+    Const With_Triplet As Boolean = false
+    Const With_SUNA As Boolean = false
+    Const With_PCO2 As Boolean = false
+    Const With_OCR_R As Boolean = false
 
-    Const With_Wave = false
-    Const With_ADCP = true
-    Const With_Winch = false
-    Const With_Water_Detection_Main = false
-    Const With_Power = false
+    Const With_Wave As Boolean = false
+    Const With_ADCP As Boolean = true
+    Const With_Winch As Boolean = false
+    Const With_Water_Detection_Main As Boolean = false
+    Const With_Power As Boolean = false
     
 EndConstTable
 
-
-Const With_Tower_485 = With_WXT536 OR With_WMT700 OR With_Compass       
-Const With_Tower_Power = With_PAR OR With_WMT700 OR With_Compass OR With_OCR_I
-Const With_Wind = With_WXT536 OR With_WMT700
-Const With_Weather = With_Wind OR With_PAR
-Const With_Well_Pump = With_SBE37 OR With_Seafet OR With_SUNA OR With_OCR_R
+Const With_Tower_485 As Boolean = With_WXT536 OR With_WMT700 OR With_Compass       
+Const With_Tower_Power As Boolean = With_PAR OR With_WMT700 OR With_Compass OR With_OCR_I
+Const With_Wind As Boolean = With_WXT536 OR With_WMT700
+Const With_Weather As Boolean = With_Wind OR With_PAR
+Const With_Well_Pump As Boolean = With_SBE37 OR With_Seafet OR With_SUNA OR With_OCR_R
 
 ' ### Sampling Interval ####
 Const Rain_Interval_Hr = 24 ' (Rain_Timer)

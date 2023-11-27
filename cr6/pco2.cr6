@@ -69,6 +69,17 @@ EndTable
 
 
 Function PCO2TagString As String
+  Dim PCO2_A_CO2_F = "#.#"
+  Dim PCO2_A_CO2_W = "#.#"
+  
+  If PCO2_W_CO2 <> "" Then
+    PCO2_W_CO2_F = PCO2_W_CO2
+  EndIf
+
+  If PCO2_A_CO2 <> "" Then 
+    PCO2_A_CO2_F = PCO2_A_CO2
+  Endif
+    
   PCO2TagString = "[PCO2]" & PCO2_W_CO2 & "," & PCO2_A_CO2 & "," & PCO2_W_Gaz_Pressure & "," & PCO2_A_Gaz_Pressure & "," & PCO2_A_Humidity
 EndFunction
 
@@ -148,14 +159,6 @@ Sub CollectPCO2
   SplitStr(PCO2_Water,RawPCO2_Water,",",14,0)
   SplitStr(PCO2_Air,RawPCO2_Air,",",14,0)
 
-  If PCO2_W_CO2 = "" Then
-    PCO2_W_CO2 = "#.#" 
-  EndIf
-
-  If PCO2_A_CO2 = "" Then 
-    PCO2_A_CO2 = "#.#" 
-  Endif
-  
   UpdatePCO2Tables = true
 EndSub
 
@@ -176,7 +179,7 @@ EndSub
 Sub PCO2Sampling
   Dim time_stamp
   
-  If With_PCO2 Then' AND (SBE37_In_Saltwater OR Bypass_Salinity) Then 'Security for PCO2 pump if not in water
+  If With_PCO2 Then
     WhereAmI = "Entering PCO2 Loop"
     time_stamp = Public.TimeStamp(1)
     

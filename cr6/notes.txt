@@ -1,44 +1,41 @@
-.PROJECT TODO
-.. BUG TO FIXED
-############### SubRoutine Argument are Local Only. Thus you cannot put TAGString in the SubRoutine Argument
+.TODO
+.. Test
+... Add more loggings (way more) to properly test the code with all the instruments.
+
+.. General
+... Add better Docstring
+... Reset some variable on every scan mostly those used for for processing other data. (SBE37, GPS, Compass)
+
 .. Ne pas ajuster l’heure du Campbell si le GPS n’est pas présent
-.. Envoyer des alarmes/emails/texto lorsque la bouée est hors position (dérive)
-.. Envoyer des alarmes/emails lorsque les batteries sont basses
-.. Ajouter un fichier qui contiendrait tous les profils de winch (comme le TagFile.dat qui contient toutes les transmissions), pour qu’on puisse supprimer les fichiers de transmission et de profil unique.
-.. Tester l’enregistrement des DataTable sur le carte µSD, pour voir si ça s’ajoute dans le « Connect > File Control » ou si ça reste transparent.
+
+.. Envoyer des alarmes/emails/texto:
+... Lorsque la bouée est hors position (dérive)
+... Lorsque les batteries sont basses
+... Lorsque qu'un instrument n'a pas échantionné correctement.
+
+.. Data Files.
+... Ajouter un fichier qui contiendrait tous les profils de winch (comme le TagFile.dat qui contient toutes les transmissions), pour qu’on puisse supprimer les fichiers de transmission et de profil unique.
+... Tester l’enregistrement des DataTable sur le carte µSD, pour voir si ça s’ajoute dans le « Connect > File Control » ou si ça reste transparent.
 
 .. PortFlags
 ... BatteryLow = Voltage < BatteryLow_Thres
 ... GPSOffPosition = ... (OnTheLoose, WeGotARunner)
 ... WaterInfiltration(x3) = ...
 
-... Trouver une manière de demander un winch maintenant.
+.. Trouver une manière de demander un winch maintenant.
 ..... Dans le slow sequence (New Variable: Start Winch Now)
 ....... Ouvrir Sample GPS
 ....... Partir la Winch
 
-.MISC TODO
-.. Add 'Table' to data table names ???
 
-.. TagString table  ?
+.. DataTables
+... Make new Table TagString.
+.... Check how Collect work. Size wise, to know how much that is transfered. If all the table is transfered every time, we can just overwrite the same row.
+... Add units to every table. 
 
-. General
-.. Les arguments des SubRoutine devrait avoir des noms différents des variables Public.
-
-.. What is going on with rain timer not being started
-
-. Compass
-.. Make Proper Timer
-.. Le code va planter si le compass retourne que des NAN
+.. Compass
 .. Pourquoi un délais de 400ms
 
-. OCRs
-.. Nothing done with the OCR strings ?
-
-. Seafet
-.. Est-ce que recevoir la PHPROTagString serait pertinent même en cas de NAN pour voir qu'il y a un erreur ?
-
-. Weather-GPS
-.. Buoy_DIrection_Vector not assign anywhere ???? But used (FIXED in GPS)
-.. Are the units fine ? (knots)
-.. TODO Add flag for processed or not ? Wind correction
+.. GPS
+... Clean GPS. Set values to NAN ("") instead of 0 ?.
+... If no value is received adds 0 but still divide by the same number of sample.
