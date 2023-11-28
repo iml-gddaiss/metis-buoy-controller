@@ -11,8 +11,8 @@ Dim RawPCO2_Water As String * 100
 Const PCO2_Water_Tag = "W M"
 Const PCO2_Air_Tag = "A M"
 
-Dim PCO2_Water(14) As String : Alias PCO2 = PCO2_W_Year, PCO2_W_Month, PCO2_W_Day, PCO2_W_Hour, PCO2_W_Minute, PCO2_W_Second, PCO2_W_Zero, PCO2_W_AD, PCO2_W_CO2, Ave_W_IRGA, PCO2_W_Humidity, PCO2_W_Temp, PCO2_W_Gaz_Pressure, PCO2_W_Voltage
-Dim PCO2_Air(14) As String : Alias PCO2 = PCO2_A_Year, PCO2_A_Month, PCO2_A_Day, PCO2_A_Hour, PCO2_A_Minute, PCO2_A_Second, PCO2_A_Zero, PCO2_A_AD, PCO2_A_CO2, Ave_A_IRGA, PCO2_A_Humidity, PCO2_A_Temp, PCO2_A_Gaz_Pressure, PCO2_A_Voltage
+Dim PCO2_Water(14) As String : Alias PCO2_Water = PCO2_W_Year, PCO2_W_Month, PCO2_W_Day, PCO2_W_Hour, PCO2_W_Minute, PCO2_W_Second, PCO2_W_Zero, PCO2_W_AD, PCO2_W_CO2, Ave_W_IRGA, PCO2_W_Humidity, PCO2_W_Temp, PCO2_W_Gaz_Pressure, PCO2_W_Voltage
+Dim PCO2_Air(14) As String : Alias PCO2_Air = PCO2_A_Year, PCO2_A_Month, PCO2_A_Day, PCO2_A_Hour, PCO2_A_Minute, PCO2_A_Second, PCO2_A_Zero, PCO2_A_AD, PCO2_A_CO2, Ave_A_IRGA, PCO2_A_Humidity, PCO2_A_Temp, PCO2_A_Gaz_Pressure, PCO2_A_Voltage
 
 Public PCO2_Last_Sampling As Long
 Public PCO2IsSampling As Boolean
