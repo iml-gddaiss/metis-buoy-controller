@@ -85,7 +85,7 @@ EndSub
 
 
 Sub SampleCompass
-  Compass() = {"", "", ""}
+  Compass() = ""
   If With_Compass Then
     Call logging("Sampling Compass")
     WhereAmI = "Sample Compass"   

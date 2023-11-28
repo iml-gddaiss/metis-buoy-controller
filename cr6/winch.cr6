@@ -178,6 +178,11 @@ Sub DownloadWinchData
 EndSub
 
 Sub InitWinchFile
+    Dim Winch_Date As String
+    Dim Winch_Time As String
+    Dim Winch_Lat As String
+    Dim Winch_Long As String
+
     Winch_Date =  FileGPS.UTC_Date_Slash(1, status.Record - Winch_Start_RecNum)
     Winch_Time = FileGPS.UTC_Time_DDOT(2, status.Record - Winch_Start_RecNum)
     Winch_Lat = FileGPS.Latitude(3, status.Record - Winch_Start_RecNum)
@@ -194,10 +199,6 @@ Sub InitWinchFile
 EndSub
 
 Sub CollectWinch
-    Dim Winch_Date As String
-    Dim Winch_Time As String
-    Dim Winch_Lat As String
-    Dim Winch_Long As String
 
     Call CheckWinchStatus
     

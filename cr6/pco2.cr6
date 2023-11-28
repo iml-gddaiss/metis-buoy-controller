@@ -69,18 +69,18 @@ EndTable
 
 
 Function PCO2TagString As String
-  Dim PCO2_A_CO2_F = "#.#"
-  Dim PCO2_A_CO2_W = "#.#"
+  Dim CO2_Air = "#.#"
+  Dim CO2_Water = "#.#"
   
   If PCO2_W_CO2 <> "" Then
-    PCO2_W_CO2_F = PCO2_W_CO2
+    CO2_Air = PCO2_W_CO2
   EndIf
 
   If PCO2_A_CO2 <> "" Then 
-    PCO2_A_CO2_F = PCO2_A_CO2
+    CO2_Water = PCO2_A_CO2
   Endif
     
-  PCO2TagString = "[PCO2]" & PCO2_W_CO2 & "," & PCO2_A_CO2 & "," & PCO2_W_Gaz_Pressure & "," & PCO2_A_Gaz_Pressure & "," & PCO2_A_Humidity
+  PCO2TagString = "[PCO2]" & CO2_Air & "," & CO2_Water & "," & PCO2_W_Gaz_Pressure & "," & PCO2_A_Gaz_Pressure & "," & PCO2_A_Humidity
 EndFunction
 
 
@@ -126,9 +126,11 @@ EndSub
 
 Function GetPCO2_Data(PCO2_Tag) As String
   'PCO2_Tag = "A M" or "W M"
+  Dim Start_Pos  As Long
+  Dim End_Pos As Long
   Start_Pos = InStr(1,RawPCO2,PCO2_Tag & ",",4) 'Search in RawPCO2
   End_Pos = InStr(Start_Pos,RawPCO2,CHR(10),2)
-  If PCO2WStart <> 0 AND PCO2WEnd <> 0 Then
+  If Start_Pos <> 0 AND End_Pos <> 0 Then
     GetPCO2_Data = Mid(RawPCO2,Start_Pos, End_Pos - Start_Pos) 'Get the data from RawPCO2
   Else
     GetPCO2_Data = ""
@@ -141,18 +143,18 @@ Sub DownloadPCO2
 
   If NOT PCO2WaterIsDownloaded Then
     RawPCO2_Water = GetPCO2_Data(PCO2_Water_Tag)
-    If RawPCO2_Water <> = "" Then
+    If RawPCO2_Water <> "" Then
       PCO2WaterIsDownloaded = true
     EndIf
   EndIf
 
   If NOT PCO2AirIsDownloaded Then
     RawPCO2_Air = GetPCO2_Data(PCO2_Air_Tag)
-    If RawPCO2_Air <> = "" Then
+    If RawPCO2_Air <> "" Then
       PCO2AirIsDownloaded = true
     EndIf
   EndIf
-End
+EndSub
 
 
 Sub CollectPCO2  
@@ -165,7 +167,7 @@ EndSub
 
 Sub PCO2WatchDog
  'Watchdog if there's no data in 1Hour (if power disconnected during sampling) # FIXME MAKE A TIMER | Put it in another slow sequence
-  If (PCO2_Last_Sampling + 3600) < time_stamp Then  
+  If (PCO2_Last_Sampling + 3600) < Public.TimeStamp(1) Then  
     If PCO2WaterIsDownloaded OR PCO2AirIsDownloaded Then
       Call CollectPCO2
     EndIf  
@@ -176,12 +178,9 @@ Sub PCO2WatchDog
 EndSub
 
 
-Sub PCO2Sampling
-  Dim time_stamp
-  
+Sub PCO2Sampling  
   If With_PCO2 Then
     WhereAmI = "Entering PCO2 Loop"
-    time_stamp = Public.TimeStamp(1)
     
     If PCO2IsSampling Then
       Call DownloadPCO2
@@ -198,7 +197,7 @@ Sub PCO2Sampling
         Call PCO2WatchDog
       EndIf
     
-    ElseIf (PCO2_Last_Sampling + (PCO2_Interval_Hr*3600) - 60 <= time_stamp) Then 'minus 60sec to not skip a scan planned at PCO2_Interval hour (got 3599s and didn't sampled)
+    ElseIf (PCO2_Last_Sampling + (PCO2_Interval_Hr*3600) - 60 <= Public.TimeStamp(1)) Then 'minus 60sec to not skip a scan planned at PCO2_Interval hour (got 3599s and didn't sampled)
       Call StartPCO2  
     EndIf
 
