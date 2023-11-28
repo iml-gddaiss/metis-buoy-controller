@@ -1,5 +1,5 @@
 Sub logging(log_message As String * 2000)
-    if With_Logging Then
+    if Enable_Logging Then
         SerialOpen(SerialLogging, 115200,0,0,10000)
         SerialOut(SerialLogging, Public.TImestamp(4,1) & " - " & log_message & CHR(13) & CHR(10),"",0,1000)
         SerialClose(SerialLogging)

@@ -270,7 +270,7 @@ BeginProg
 
       Call WellSwitchSequence
 
-      'Call ADCPBreakSequence
+      Call ADCPBreakSequence
     NextScan
 EndProg
 

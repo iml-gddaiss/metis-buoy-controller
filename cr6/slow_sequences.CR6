@@ -1,6 +1,6 @@
-Public Manual_Tower_Switch = false
-Public Manual_Well_Switch = false
-'Public Send_Break_to_ADCP = false
+Public Manual_Tower_Switch As Boolean = false
+Public Manual_Well_Switch As Boolean = false
+Public Send_Break_to_ADCP As Boolean = false
 
 Sub TowerSwitchSequence
     If Manual_Tower_Switch AND Not Tower_IsPowered Then
@@ -26,10 +26,12 @@ Sub WellSwitchSequence
     EndIf
 EndSub
 
-' Sub ADCPBreakSequence 'Doest not work
-'     If Send_Break_to_ADCP Then
-'         ' SerialBrk(SerialADCP,200)
-'         Call SendADCPBreak
-'         Send_Break_to_ADCP = false
-'       EndIf
-' EndSub
+Sub ADCPBreakSequence 'Doest not work
+    If Send_Break_to_ADCP Then
+        #If 11 <= SerialADCP and SerialADCP <= 16 Then
+          SerialBrk(SerialADCP,200)
+        #EndIf
+        ' Call SendADCPBreak
+         Send_Break_to_ADCP = false
+    EndIf
+EndSub
