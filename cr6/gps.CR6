@@ -5,14 +5,16 @@
 
 '### Data Variables ###
 Dim RawGPS As String * 100
-Dim HVS(13) As String : Alias HVS = GPS_Header, GPS_Time, GPS_Status, Lat, Lat_Hem, Lon, Lon_Hem, Speed_Over_Ground, Course_Over_Ground, GPS_Date, Magnetic_Variation,Mag_Var_Dir, Check_GPS
+Dim GPS(13) As String : Alias GPS = GPS_Header, GPS_Time, GPS_Status, GPS_Lat, GPS_Lat_Hem, GPS_Lon, GPS_Lon_Hem, GPS_SOG, GPS_COG, GPS_Date, GPS_Mag_Var, GPS_Mag_Var_Dir, GPS_Check
 
-' Dim GPS_SOG_X As Float, GPS_SOG_Y As Float Changed to below
-Public GPS_SOG_X As Float, GPS_SOG_Y As Float
-
-Public Latitude As String,Longitude As String, SOG As Float, COG As Float, Mag_Var As Float
-
-Dim UTC_Date_Hyphen As String, UTC_Date_Slash As String, UTC_Date_Short As String, UTC_Time_Short As String, UTC_Time_DDot As String
+' Variable For GPS Tabe
+Dim GPS_Date_Slash As String ' Why not use GPS_Date and add the UTC time to the raw table ?
+Dim GPS_Time_DDot As String  ' Why not use GPS_Time and add the UTC time to the raw table ?
+Public Latitude As String
+Public Longitude As String
+Public SOG As Float 
+Public COG As Float 
+Public Mag_Var As Float
 
 
 '### Units ###
@@ -25,14 +27,69 @@ Dim UpdateGPSTable As Boolean = false
 '### Tables ###
 DataTable(FileGPS,UpdateGPSTable,-1)
     DataInterval(0,0,Sec,10)
-    Sample(1,UTC_Date_Slash,String)
-    Sample(1,UTC_Time_DDot,String)
-    Sample(1,Latitude,String)
-    Sample(1,Longitude,String)  
-    Sample(1,SOG,IEEE4)
-    Sample(1,COG,IEEE4)
-    Sample(1,Mag_Var,IEEE4)
+    Sample(1,GPS_Date_Slash, String)
+    ' FieldNames("Date") 'FIXME This would be nice, no ?
+    Sample(1,GPS_Time_DDot, String)
+    ' FieldNames("Time")  'FIXME This would be nice, no ?
+    Sample(1,Latitude, String)
+    Sample(1,Longitude, String)  
+    Sample(1,SOG, IEEE4)
+    Sample(1,COG, IEEE4)
+    Sample(1,Mag_Var, IEEE4)
 EndTable
+
+Sub StartGPS
+    SerialOpen(SerialGPS,19200,3,20,1000)
+    SerialFlush(SerialGPS)
+EndSub
+
+
+Sub CollectGPS
+    Dim UV(2) As Float = {"", ""}: Alias UV = U, V
+
+    RawGPS = "" ' (maybe not nescessary)
+    GPS() = "" ' Reset Var
+
+    SerialIn(RawGPS,SerialGPS,150,10,80) ' FIXME why
+    
+    For X = 1 To GPS_Sample_Size Step 1
+        SerialIn(RawGPS,SerialGPS,150,10,80)
+        SplitStr(GPS(),RawGPS,",",13,5)
+        
+        If GPS_SOG = "" Then
+            UV() = "" ' Does GPS returns COG and SOG on every reception ?
+            ExitFor
+        Else
+            U += GPS_SOG * COS(GPS_COG)
+            V += GPS_SOG * SIN(GPS_COG)
+        EndIf
+        
+        U += SOG * COS(COG)
+        V += SOG * SIN(COG)
+    Next
+    
+    'Processing COG and SOG
+    SOG = Round( SQR(U^2 + V^2) / GPS_Sample_Size, 2)
+    COG = Round( ATN2(V, U), 1) MOD 360
+
+    GPS_Date_Slash = Mid(ScanDateTime,1,4) &"/"& Mid(ScanDateTime,6,2) &"/"& Mid(ScanDateTime,9,2)
+    GPS_Time_DDot = Mid(GPS_Time,1,2)&":"&Mid(GPS_Time,3,2)&":"&Mid(GPS_Time,5,2)
+    
+
+    ' Converting Lat, Lon to Degree
+    Latitude = Mid(GPS_Lat,1,2)&"°"&Mid(GPS_Lat,3,6)&"'"&GPS_Lat_Hem
+    Longitude = Mid(GPS_Lon,1,3)&"°"&Mid(GPS_Lon,4,6)&"'"&GPS_Lon_Hem
+
+    ' Converting Magnetic Variation to decimal
+    If Mid(GPS_Mag_Var_Dir,1,1) = "W" Then
+        GPS_Mag_Var = "-"&Mid(GPS_Mag_Var,2,5)
+    Else
+        GPS_Mag_Var = "+"&Mid(GPS_Mag_Var,2,5)
+    EndIf
+    
+    'Putting the String value in Float or Long variables 
+    Mag_Var = GPS_Mag_Var  
+EndSub
 
 
 '### Sampling ###
@@ -42,64 +99,12 @@ Sub SampleGPS
     If With_GPS Then
         WhereAmI = "Sample GPS"
         
-        HVS() = 0 ' Reset Var
-        
-        SerialOpen(SerialGPS,19200,3,20,1000)
-        SerialFlush(SerialGPS)
-        SerialIn(RawGPS,SerialGPS,150,10,80)
-        
-        GPS_SOG_X = 0
-        GPS_SOG_Y = 0
-        SOG = 0
-        COG = 0
-        For X = 1 To GPS_Sample_Size Step 1
-            SerialIn(RawGPS,SerialGPS,150,10,80)
-            SplitStr(HVS(),RawGPS,",",13,5)
-            If Speed_Over_Ground = "" Then
-                COG = 0
-                SOG = 0
-            Else
-                COG = Course_Over_Ground
-                SOG = Speed_Over_Ground
-            EndIf
-            
-            GPS_SOG_X += SOG * COS(COG)
-            GPS_SOG_Y += SOG * SIN(COG)
-        Next
+        Call StartGPS
+
+        Call CollectGPS
         
         SerialClose(SerialGPS)
         
-        'Putting the CR6 at GPS Date/Time
-        UTC_Time_DDot = Mid(GPS_Time,1,2)&":"&Mid(GPS_Time,3,2)&":"&Mid(GPS_Time,5,2)
-        UTC_Date_Hyphen = "20"&Mid(GPS_Date,5,2)&"-"&Mid(GPS_Date,3,2)&"-"&Mid(GPS_Date,1,2)
-        ClockSet (UTC_Date_Hyphen&" "&UTC_Time_DDOt)
-        
-        'Creating variables with different formats
-        UTC_Time_Short = Mid(ScanDateTime,12,2)&Mid(ScanDateTime,15,2)&Mid(ScanDateTime,18,2)
-        UTC_Time_DDot = Mid(ScanDateTime,12,8)
-        
-        UTC_Date_Slash = Mid(ScanDateTime,1,4)&"/"&Mid(ScanDateTime,6,2)&"/"&Mid(ScanDateTime,9,2)
-        UTC_Date_Hyphen = Mid(ScanDateTime,1,10)
-        UTC_Date_Short = Mid(ScanDateTime,1,4)&Mid(ScanDateTime,6,2)&Mid(ScanDateTime,9,2)
-        
-        'Processing COG and SOG
-        SOG = Round(SQR(PWR(GPS_SOG_X,2)+PWR(GPS_SOG_Y,2))/GPS_Sample_Size,2)
-        COG = Round(ATN2(GPS_SOG_Y,GPS_SOG_X),1) MOD 360
-
-        'Processing Lat/Long & Magnetic Variation                  
-        Latitude = Mid(Lat,1,2)&"°"&Mid(Lat,3,6)&"'"&Lat_Hem
-        Longitude = Mid(Lon,1,3)&"°"&Mid(Lon,4,6)&"'"&Lon_Hem
-
-        ' Converting Magnetic Variation to decimal
-        If Mid(Mag_Var_Dir,1,1) = "W" Then
-            Magnetic_Variation = "-"&Mid(Magnetic_Variation,2,5)
-        Else
-            Magnetic_Variation = "+"&Mid(Magnetic_Variation,2,5)
-        EndIf
-        
-        'Putting the String value in Float or Long variables 
-        Mag_Var = Magnetic_Variation  
-
         UpdateGPSTable = true
         
         WhereAmI = "EndGPS, start Start Tower"

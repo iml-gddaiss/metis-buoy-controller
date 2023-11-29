@@ -81,7 +81,7 @@ EndSub
 Sub CollectSBE37
   Dim X
   Call logging("Collecting SBE37")
-  RawSBE37 = ""
+  RawSBE37 = "" ' (maybe not nescessary) Fixme
   SBE37() = ""
 
   For X = 1 To 3 Step 1

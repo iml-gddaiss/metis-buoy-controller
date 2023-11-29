@@ -61,7 +61,8 @@ EndSub
 Sub ResetWXT536
   If With_WXT536 Then        
     ' Reset Rain if 00:00 or active for more than 24h
-    If UTC_Time_DDot = "00:00:00" OR  Timer(Rain_Timer,Hr,4) >= Rain_Interval_Hr Then
+    ' UTC_Time_DDot (GPS) = Mid(ScanDateTime,12,8) FIXME Not Used to prevent confusion
+    If Mid(ScanDateTime,12,8) = "00:00:00" OR  Timer(Rain_Timer,Hr,4) >= Rain_Interval_Hr Then
       SerialOut(SerialTower,CHR(13)&CHR(10)&"2XZRU"&CHR(13)&CHR(10),"",1,0)
       SerialOut(SerialTower,CHR(13)&CHR(10)&"2XZRI"&CHR(13)&CHR(10),"",1,0)
       Timer(Rain_Timer,Hr,2) 'Timer #6 Reset&Start

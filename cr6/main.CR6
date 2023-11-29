@@ -46,6 +46,15 @@ Public TAGString As String * 200
 Dim TAGFile As Long 
 Dim ToTransmit As Long ' --------- Fixme ToTransmitFile ?
 
+' TIME VARIABLES 'FIXME Clean this.
+Dim UTC_Date_Hyphen As String ' Used in: GPS ClockSet, INIT Tag
+Dim UTC_Time_DDot As String        ' Also used in: Gps-ClockSet, INIT Tag, Winch, Wxt Rain Time Check 
+
+'Get RID of those below
+Dim UTC_Date_Slash As String   ' Also used in: Winch 
+Dim UTC_Date_Short As String  ' Used in: ToTransmit File Name
+Dim UTC_Time_Short As String  ' Used in: ToTransmit File Name
+
 ' Instruments state
 Include "CPU:buoy_config.cr6"                     '#   Declare Buoy Config
 Include "CPU:serials.cr6"
@@ -152,6 +161,31 @@ Sub ResetTablesUpdateFlag
 EndSub
 
 
+Sub FormatTimeVariables
+  UTC_Time_DDot = Mid(ScanDateTime,12,8)
+  UTC_Date_Hyphen = Mid(ScanDateTime,1,10)
+
+  ' Get Ride of those FIXME
+  UTC_Date_Short = Mid(ScanDateTime,1,4) & Mid(ScanDateTime,6,2) & Mid(ScanDateTime,9,2)  
+  UTC_Time_Short = Mid(ScanDateTime,12,2) & Mid(ScanDateTime,15,2) & Mid(ScanDateTime,18,2)
+
+  UTC_Date_Slash = Mid(ScanDateTime,1,4) &"/"& Mid(ScanDateTime,6,2) &"/"& Mid(ScanDateTime,9,2)
+EndSub
+
+Sub GPSTimeAjustment 
+  'Test FIXME ME
+  Dim formatted_date As String * 10
+  Dim formatted_time As String * 8
+  
+  If With_GPS AND GPS_Time <> "" AND GPS_Date <> "" Then
+    formatted_date = "20"&Mid(GPS_Date,5,2)&"-"&Mid(GPS_Date,3,2)&"-"&Mid(GPS_Date,1,2)
+    formatted_time = Mid(GPS_Time,1,2)&":"&Mid(GPS_Time,3,2)&":"&Mid(GPS_Time,5,2)
+    ClockSet(formatted_date &" "& formatted_time)
+  EndIf
+
+EndSub
+
+
 BeginProg
   SetSetting("WIFIconfig",4) 'This is turning the Wifi Off
  
@@ -163,7 +197,7 @@ BeginProg
 
   Scan(Buoy_Interval_Min,Min,0,0)
 
-  ScanDateTime = Public.TimeStamp(4,0)
+  ' ScanDateTime = Public.TimeStamp(4,0) -FIXME this needs to be done after GPS CLOCKSET
   WhereAmI = "Initializing instrument"
 
   Call logging("Scan Start: ")
@@ -177,6 +211,12 @@ BeginProg
   Call StartTower485         ' WXT536, WMT700, Compass
 
   Call SampleGPS             ' GPS samples for 10s. Gives time to other tower instrument to initialize.
+
+  Call GPSTimeAjustment
+
+  ScanDateTime = Public.TimeStamp(4,0)
+
+  Call FormatTimeVariables
   
   Call ResetWXT536
 
