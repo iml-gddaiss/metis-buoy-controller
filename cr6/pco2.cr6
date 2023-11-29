@@ -166,7 +166,7 @@ EndSub
 
 
 Sub PCO2WatchDog
- 'Watchdog if there's no data in 1Hour (if power disconnected during sampling) # FIXME MAKE A TIMER | Put it in another slow sequence
+ 'Watchdog if there's no data in 1Hour (if power disconnected during sampling)
   If (PCO2_Last_Sampling + 3600) < Public.TimeStamp(1) Then  
     If PCO2WaterIsDownloaded OR PCO2AirIsDownloaded Then
       Call CollectPCO2

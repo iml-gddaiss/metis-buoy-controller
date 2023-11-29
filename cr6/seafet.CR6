@@ -69,7 +69,7 @@ Sub CollectSeafet
   
   Next X
 
-  If Error_Flag = "0000" Then ' Jerome 0000 -> "0000" Is it supposed to be a string ? TODO FIXME
+  If Error_Flag = "0000" Then
     Error_Flag = 0
   Else
     Error_Flag = 1

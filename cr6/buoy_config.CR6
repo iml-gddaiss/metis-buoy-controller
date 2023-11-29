@@ -3,9 +3,9 @@ ConstTable (Buoy_Config,0)
     
     Const Buoy_Configuration = "As Follow" 
     ' ### Sampling Interval ####
-    Const Buoy_Interval_Min = 20 ' Minutes?
-    Const PCO2_Interval_Hr = 12 ' hours
-    Const Winch_Interval_Hr = 5 ' hours
+    Const Buoy_Interval_Min = 1 
+    Const PCO2_Interval_Hr = 12
+    Const Winch_Interval_Hr = 5
    
     ' ### Instruments Config ### 
     Const Depth_for_Winch = 210
@@ -15,7 +15,7 @@ ConstTable (Buoy_Config,0)
     Const Disable_Well_Pump As Boolean = false
     Const Seafet_Auto_Calculation As Boolean = true
 
-    Const Enable_Logging = true
+    Const Enable_Logging As Boolean = true
     
     ' ### Instruments Enable/Disable Switches ###
     Const Instrument_Installed = "As Follow" 

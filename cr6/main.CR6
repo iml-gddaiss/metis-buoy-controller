@@ -161,7 +161,7 @@ BeginProg
 
   Call StartRainTimer
 
-  Scan(Buoy_Interval_Min,Sec,0,0) ' TODO CHAGE BACK TO MINUTES
+  Scan(Buoy_Interval_Min,Min,0,0)
 
   ScanDateTime = Public.TimeStamp(4,0)
   WhereAmI = "Initializing instrument"
