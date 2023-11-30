@@ -158,11 +158,8 @@ EndSub
 
 Sub GPSTimeAjustment 
   'Test FIXME ME
-  Dim formatted_date As String * 10
-  Dim formatted_time As String * 8
-  
   If With_GPS AND GPS_Date <> "" AND GPS_Time <> "" Then
-    ClockSet(formatted_date &" "& formatted_time)
+    ClockSet(GPS_Date &" "& GPS_Time)
   EndIf
 
 EndSub
