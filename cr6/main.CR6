@@ -40,20 +40,11 @@ PreserveVariables
 
 Public WhereAmI As String ' Debug Purposes
 
-Public ScanDateTime As String ' FIXME this could be a Dim ?
+Public ScanTimeStamp(2) As String : Alias ScanTimeStamp = ScanDate, ScanTime 
 
 Public TAGString As String * 200
 Dim TAGFile As Long 
 Dim ToTransmit As Long ' --------- Fixme ToTransmitFile ?
-
-' TIME VARIABLES 'FIXME Clean this.
-Dim UTC_Date_Hyphen As String ' Used in: GPS ClockSet, INIT Tag
-Dim UTC_Time_DDot As String        ' Also used in: Gps-ClockSet, INIT Tag, Winch, Wxt Rain Time Check 
-
-'Get RID of those below
-Dim UTC_Date_Slash As String   ' Also used in: Winch 
-Dim UTC_Date_Short As String  ' Used in: ToTransmit File Name
-Dim UTC_Time_Short As String  ' Used in: ToTransmit File Name
 
 ' Instruments state
 Include "CPU:buoy_config.cr6"                     '#   Declare Buoy Config
@@ -94,8 +85,8 @@ Include "CPU:weather.cr6"                   ' Weather variables
 Include "CPU:slow_sequences.cr6"             ' ?
 
 
-' Raw data from the instruments
-DataTable (Raw,1,-1)
+' FileRaw data from the instruments
+DataTable (FileRaw,1,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,RawR1_Wind,String)
   Sample (1,RawR2_Weather,String)
@@ -122,10 +113,9 @@ Sub WriteTagString 'This needs to be declare before importing CR6 Files since th
 EndSub
 
 
-
 ' These need to be declared after the GPS files has been included. (maybe not TODO TEST)
 Sub OpenTagsFiles
-  ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & UTC_Date_Short & UTC_Time_Short & ".dat","a",-1)
+  ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & Replace(ScanDate, "-", "") & Replace(ScanTime, ":", "") & ".dat","a",-1)
   TAGFile = FileOpen("CRD:" & Buoy_Name & "_TAGFile.txt","a",-1)
 EndSub
 
@@ -135,7 +125,7 @@ Sub CloseTagsFiles
 EndSub
 
 Function InitTagString as String
-  InitTagString = "[INIT]" & Buoy_Name & "," & UTC_Date_Hyphen & "," & UTC_Time_DDot & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
+  InitTagString = "[INIT]" & Buoy_Name & "," & ScanDate & "," & ScanTime & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
 EndFunction
 
 Function EndTagString as String
@@ -161,15 +151,8 @@ Sub ResetTablesUpdateFlag
 EndSub
 
 
-Sub FormatTimeVariables
-  UTC_Time_DDot = Mid(ScanDateTime,12,8)
-  UTC_Date_Hyphen = Mid(ScanDateTime,1,10)
-
-  ' Get Ride of those FIXME
-  UTC_Date_Short = Mid(ScanDateTime,1,4) & Mid(ScanDateTime,6,2) & Mid(ScanDateTime,9,2)  
-  UTC_Time_Short = Mid(ScanDateTime,12,2) & Mid(ScanDateTime,15,2) & Mid(ScanDateTime,18,2)
-
-  UTC_Date_Slash = Mid(ScanDateTime,1,4) &"/"& Mid(ScanDateTime,6,2) &"/"& Mid(ScanDateTime,9,2)
+Sub GetScanDateTime
+  SplitStr(ScanTimeStamp, Public.TimeStamp(4,0), " ", 5, 2) ' ScanTimeStamp = (ScanDate, ScanTime)
 EndSub
 
 Sub GPSTimeAjustment 
@@ -177,9 +160,7 @@ Sub GPSTimeAjustment
   Dim formatted_date As String * 10
   Dim formatted_time As String * 8
   
-  If With_GPS AND GPS_Time <> "" AND GPS_Date <> "" Then
-    formatted_date = "20"&Mid(GPS_Date,5,2)&"-"&Mid(GPS_Date,3,2)&"-"&Mid(GPS_Date,1,2)
-    formatted_time = Mid(GPS_Time,1,2)&":"&Mid(GPS_Time,3,2)&":"&Mid(GPS_Time,5,2)
+  If With_GPS AND GPS_Date <> "" AND GPS_Time <> "" Then
     ClockSet(formatted_date &" "& formatted_time)
   EndIf
 
@@ -196,8 +177,9 @@ BeginProg
   Call StartRainTimer
 
   Scan(Buoy_Interval_Min,Min,0,0)
-
-  ' ScanDateTime = Public.TimeStamp(4,0) -FIXME this needs to be done after GPS CLOCKSET
+  
+  Call GetScanDateTime
+  
   WhereAmI = "Initializing instrument"
 
   Call logging("Scan Start: ")
@@ -214,10 +196,6 @@ BeginProg
 
   Call GPSTimeAjustment
 
-  ScanDateTime = Public.TimeStamp(4,0)
-
-  Call FormatTimeVariables
-  
   Call ResetWXT536
 
   Call StartWMT700           ' Slow to start
@@ -287,7 +265,7 @@ BeginProg
   CallTable FileADCP
   CallTable FilePCO2A
   CallTable FilePCO2W  
-  CallTable Raw
+  CallTable FileRaw
   
   Call ResetPCO2RawStrings
 

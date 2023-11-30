@@ -44,7 +44,7 @@ Sub CollectCompass
 
   SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",3,50) ' What is this for ? FIXME
   
-  For Y = 1 To Compass_Sample_Size
+  For Y = 1 To Compass_Sample_Size Step 1
     SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",1,50)  ' Command = h^D^A^D^I (68 04 01 04 09)
     SerialInRecord(SerialTower,ASCIIString,&H68,13,0,NBR,101)   ' First byte sent is address 68
     
@@ -71,7 +71,7 @@ Sub CollectCompass
     Heading_y = Heading_y + SIN(HeadingBuff)
     Delay(1,400,mSec)
     
-  Next 'Next sample (Y = 1 to 60)
+  Next
   
   ' Does Roll and Pitches need to be circularly averaged.
   Roll = Round(Roll/Compass_Sample_Size,2) ' Goes from -85 to 85 so this should be fine.
@@ -80,7 +80,7 @@ Sub CollectCompass
 EndSub
 
 Sub ApplyMagneticCorrection
-  Heading = Round((Heading + Mag_Var) MOD 360, 2)
+  Heading = Round((Heading + CTYPE(GPS_Mag_Var, Float)) MOD 360, 2)
 EndSub
 
 

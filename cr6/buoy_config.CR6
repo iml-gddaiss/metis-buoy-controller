@@ -48,7 +48,11 @@ Const With_Weather As Boolean = With_Wind OR With_PAR
 Const With_Well_Pump As Boolean = With_SBE37 OR With_Seafet OR With_SUNA OR With_OCR_R
 
 ' ###   Below are Constants the should not be changed by the user.  ###
-' ###                Hence not in the Constant Talbe                ###
+' ###                Hence not in the Constant Table                ###
+'  
+' + Winch also have constant use for checks.  Could be put here at 
+'   some point. 
+'
 ' Sampling Interval 
 Const Rain_Interval_Hr = 24 ' (Rain_Timer)
 
