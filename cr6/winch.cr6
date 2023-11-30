@@ -183,7 +183,7 @@ Sub InitWinchFile
     Dim Winch_Latitude As String
     Dim Winch_Longitude As String
     
-    SplitStr(WinchTimeStamp, FileGPS.TimeStamp(4, status.Record - Winch_Start_RecNum), " ", 2, 2) ' Fixme TO test
+    SplitStr(WinchTimeStamp, FileGPS.TimeStamp(4, status.Record - Winch_Start_RecNum), " ", 2, 5) ' Fixme TO test
     
     Winch_Latitude = FileGPS.Latitude(3, status.Record - Winch_Start_RecNum)
     Winch_Longitude = FileGPS.Longitude(4, status.Record - Winch_Start_RecNum)
