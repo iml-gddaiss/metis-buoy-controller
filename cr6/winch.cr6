@@ -183,9 +183,8 @@ Sub InitWinchFile
     Dim Winch_Latitude As String
     Dim Winch_Longitude As String
     
-    SplitStr(WinchTimeStamp, FileRaw.TimeStamp(4, status.Record - Winch_Start_RecNum), " ", 5, 2) ' Fixme TO test
-    Replace(WinchDate, "-", "") & "_" Replace(WinchTime, ":", "")
-        
+    SplitStr(WinchTimeStamp, FileGPS.TimeStamp(4, status.Record - Winch_Start_RecNum), " ", 2, 2) ' Fixme TO test
+    
     Winch_Latitude = FileGPS.Latitude(3, status.Record - Winch_Start_RecNum)
     Winch_Longitude = FileGPS.Longitude(4, status.Record - Winch_Start_RecNum)
 
@@ -193,7 +192,7 @@ Sub InitWinchFile
     WinchFile = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
 
     
-    FileWrite(WinchFile,Winch_Time&" "&Winch_Date&CHR(10),0) ' Not Date with Slash anymore but with hyphen. Fixme
+    FileWrite(WinchFile,WinchTime&" "&WinchDate&CHR(10),0) ' Not Date with Slash anymore but with hyphen. Fixme
     FileWrite(WinchFile,Buoy_Name&CHR(10),0)     
     FileWrite(WinchFile,Winch_Latitude&","&Winch_Longitude&CHR(10),0)    
     FileWrite(WinchFile,"D"&CHR(10),0)

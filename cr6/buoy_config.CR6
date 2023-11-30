@@ -19,7 +19,7 @@ ConstTable (Buoy_Config,0)
     
     ' ### Instruments Enable/Disable Switches ###
     Const Instrument_Installed = "As Follow" 
-    Const With_GPS As Boolean = false
+    Const With_GPS As Boolean = true
     Const With_WMT700 As Boolean = false
     Const With_WXT536 As Boolean = false
     Const With_Compass As Boolean = false
@@ -34,7 +34,7 @@ ConstTable (Buoy_Config,0)
     Const With_OCR_R As Boolean = false
 
     Const With_Wave As Boolean = false
-    Const With_ADCP As Boolean = true
+    Const With_ADCP As Boolean = false
     Const With_Winch As Boolean = false
     Const With_Water_Detection_Main As Boolean = false
     Const With_Power As Boolean = false

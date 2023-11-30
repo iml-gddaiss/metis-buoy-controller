@@ -152,7 +152,8 @@ EndSub
 
 
 Sub GetScanDateTime
-  SplitStr(ScanTimeStamp, Public.TimeStamp(4,0), " ", 5, 2) ' ScanTimeStamp = (ScanDate, ScanTime)
+  SplitStr(ScanTimeStamp, Public.TimeStamp(4,0), " ", 2, 2) ' ScanTimeStamp = (ScanDate, ScanTime)
+  Call logging("Scan TimeStamp: " & ScanDate &"T"& ScanTime)
 EndSub
 
 Sub GPSTimeAjustment 

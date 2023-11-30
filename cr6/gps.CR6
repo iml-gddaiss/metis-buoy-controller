@@ -1,13 +1,14 @@
-' GPS related code
+' GPS_HVS related code
 '### Serial Port ###
-' Const SerialGPS = 16 'U11-U12 (trouble with GPS on SDM)
+' Const SerialGPS = 16 'U11-U12 (trouble with GPS_HVS on SDM)
 
 
 '### Data Variables ###
 Dim RawGPS As String * 100
-Dim GPS(13) As String : Alias GPS = GPS_Header, GPS_Time, GPS_Status, GPS_Lat, GPS_Lat_Hem, GPS_Lon, GPS_Lon_Hem, GPS_SOG, GPS_COG, GPS_Date, GPS_Mag_Var, GPS_Mag_Var_Dir, GPS_Check
+'GPS is a builtin CR6 array 
+Dim GPS_HVS(13) As String : Alias GPS_HVS = GPS_Header, GPS_Time, GPS_Status, GPS_Lat, GPS_Lat_Hem, GPS_Lon, GPS_Lon_Hem, GPS_SOG, GPS_COG, GPS_Date, GPS_Mag_Var, GPS_Mag_Var_Dir, GPS_Check
 
-' Variable For GPS Tabe
+' Variable For GPS_HVS Tabe
 Public Latitude As String
 Public Longitude As String
 Public SOG As Float 
@@ -40,27 +41,25 @@ EndSub
 
 
 Sub CollectGPS
-    Dim UV(2) As Float = {"", ""}: Alias UV = U, V
+    Dim X
+    Dim UV(2) As Float = {0, 0}: Alias UV = U, V
 
     RawGPS = "" ' (maybe not nescessary)
-    GPS() = "" ' Reset Var
+    GPS_HVS() = "" ' Reset Var
 
     SerialIn(RawGPS,SerialGPS,150,10,80) ' FIXME why
     
     For X = 1 To GPS_Sample_Size Step 1
         SerialIn(RawGPS,SerialGPS,150,10,80)
-        SplitStr(GPS(),RawGPS,",",13,5)
+        SplitStr(GPS_HVS,RawGPS,",",13,5)
         
         If GPS_SOG = "" Then
-            UV() = "" ' Does GPS returns COG and SOG on every reception ?
+            UV() = ""
             ExitFor
         Else
-            U += GPS_SOG * COS(GPS_COG)
-            V += GPS_SOG * SIN(GPS_COG)
+            U += CTYPE(GPS_SOG, float) * COS(CTYPE(GPS_COG, float))
+            V += CTYPE(GPS_SOG, float) * SIN(CTYPE(GPS_COG, float))
         EndIf
-        
-        U += SOG * COS(COG)
-        V += SOG * SIN(COG)
     Next
     
     'Processing COG and SOG
@@ -86,10 +85,8 @@ EndSub
 
 '### Sampling ###
 Sub SampleGPS
-    Dim X
-    
     If With_GPS Then
-        WhereAmI = "Sample GPS"
+        WhereAmI = "Sample GPS_HVS"
         
         Call StartGPS
 

@@ -50,7 +50,6 @@ Sub SBE37SalinityCheck
     Call logging("SBE37 Salinity Check")
     
     RawSBE37_Test = ""
-    SBE37() = ""
     
     Call StartSBE37
     
