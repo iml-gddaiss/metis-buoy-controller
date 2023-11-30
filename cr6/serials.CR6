@@ -37,7 +37,7 @@ Sub CloseCR6SerialPorts
   Dim port
   'Close all serial port on CR6 if still open except ADCP
   For port = 11 To 16 Step 1
-    If port = SerialADCP Then
+    If port = SerialADCP OR (port = SerialPCO2 AND PCO2IsSampling) Then ' FIXME
       'Do not close the ADCP port
     Else If port = SerialWinch And WinchStatus <> "Standby" Then
       'Do not close port
@@ -52,7 +52,7 @@ Sub CloseSDM4SerialPorts
   Dim port
   'Close all serial port on SDM4, except for PCO2 (40) which must stays on is PCO2 is sampling
   For port = 32 To 47 Step 1
-    If port = SerialPCO2 AND PCO2IsSampling Then
+    If port = SerialADCP OR (port = SerialPCO2 AND PCO2IsSampling) Then ' FIXME
     'Do not close the port
     Else
       SerialClose(port)
