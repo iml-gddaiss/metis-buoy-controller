@@ -1,6 +1,5 @@
 'Wave related code
 '### Serial Port ###
-' Const SerialWave = 46 'RS232
 
 
 '### Data Variables ###
@@ -27,28 +26,36 @@ DataTable(FileWave,UpdateWaveTable,-1)
   Sample (1,Wave_Hmax,IEEE4)
 EndTable
 
+
+'### Sampling ###
 Function WaveTagString  As String
   WaveTagString = "[WAVE]" & Wave_Date & "," & Wave_Time & "," & Wave_Period & "," & Wave_Hm0 & "," & Wave_H13 & "," & Wave_Hmax
 EndFunction
 
-'### Sampling ###
+
+Sub CollectWave
+  RawWave = ""
+  Wave() = ""
+  For X = 1 To 3 Step 1
+    SerialOut(SerialWave,CHR(13)&CHR(10),"CMD >>",2,200)
+    SerialOut(SerialWave,"slt "&Buoy_Name&CHR(13)&CHR(10),",",1,100)
+    SerialIn(RawWave,SerialWave,50,CHR(13),60)
+    SplitStr(Wave(),RawWave,",",6,5)
+    If Len(RawWave) > 38 AND Wave(6) <> "" Then
+      ExitFor
+    EndIf        
+  Next X
+EndSub
+
+
 Sub SampleWave
   Dim X
   If With_Wave Then
     WhereAmI = "Sample Wave"
+
+    SerialOpen(SerialWave,19200,3,600,200) ' No flush ? FIXME
     
-    RawWave = ""
-    Wave() = ""
-    SerialOpen(SerialWave,19200,3,600,200)
-    For X = 1 To 3 Step 1
-      SerialOut(SerialWave,CHR(13)&CHR(10),"CMD >>",2,200)
-      SerialOut(SerialWave,"slt "&Buoy_Name&CHR(13)&CHR(10),",",1,100)
-      SerialIn(RawWave,SerialWave,50,CHR(13),60)
-      SplitStr(Wave(),RawWave,",",6,5)
-      If Len(RawWave) > 38 AND Wave(6) <> "" Then
-        ExitFor
-      EndIf        
-    Next X
+    Call CollectWave
     
     SerialClose(SerialWave)
 

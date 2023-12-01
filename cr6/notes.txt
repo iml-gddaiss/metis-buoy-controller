@@ -6,8 +6,6 @@
 ... Add better Docstring
 ... Reset some variable on every scan mostly those used for for processing other data. (SBE37, GPS, Compass)
 
-.. Ne pas ajuster l’heure du Campbell si le GPS n’est pas présent
-
 .. Envoyer des alarmes/emails/texto:
 ... Lorsque la bouée est hors position (dérive)
 ... Lorsque les batteries sont basses
@@ -35,7 +33,3 @@
 
 .. Compass
 .. Pourquoi un délais de 400ms
-
-.. GPS
-... Clean GPS. Set values to NAN ("") instead of 0 ?.
-... If no value is received adds 0 but still divide by the same number of sample.

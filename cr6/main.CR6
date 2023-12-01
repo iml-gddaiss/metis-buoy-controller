@@ -9,13 +9,15 @@
 ' TODO 
 
 '################################# Instruments #########################################
+' + Instrument Serial Port are defined in serials.CR6
+' + Water Detectio Channel is defined in water_detection.CR6
 '--------------------------------------------
-'[Tower]:         #T1 Anemometer WMT700
-'                 #T2 Weather station WMXT536
-'                 #T3 Compass DCM260B
-'                 #T4 GPS 19xHVS
-'                 #T5 PAR
-'                 #T6 HyperOCR_I
+'[Tower]: [Anemometer WMT700] >---------+--> [SerialTower(485)] >-----+-> [SDM-SIO4A] >--+--> [CR6]
+'         [Weather station WMXT536] >--/                             /                  /
+'         [Compass DCM260B] >---------/                             /                  /
+'         [PAR] >--------------------------> [SerialPAR(232)] >----/                  /
+'         [HyperOCR_I] >-------------------> [SerialOCRI(232)] >--/                  /
+'         [GPS 19xHVS] >-------------------> [SerialGPS(232)] >---------------------/
 '--------------------------------------------
 '[Well]           #W1 CTD SBE37 w/ Pump SBE05
 '                 #W2 SeaFet

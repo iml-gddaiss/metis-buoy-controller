@@ -1,13 +1,8 @@
 'Power Controller related code
-'### Serial Port ###
-' Const SerialPower = 45 'RS485
-
 
 '### Data Variables ###
 Dim RawPower As String * 150
-Dim Power(11) As Float : Alias Power = VBatt1, ABatt1, VBatt2, ABatt2, VSolar, ASolar, AMain, ATurbine, AWinch, PM_RH, Relay_State
-Dim PowerString(11) As String
-Dim VBatt_to_SD
+Dim Power(11) As String : Alias Power = VBatt1, ABatt1, VBatt2, ABatt2, VSolar, ASolar, AMain, ATurbine, AWinch, PM_RH, Relay_State
 
 Dim UpdatePowerTable As Boolean = false
 
@@ -25,17 +20,21 @@ DataTable(FilePower,UpdatePowerTable,-1)
   Sample (1,ATurbine,IEEE4)
   Sample (1,AWinch,IEEE4)
   Sample (1,PM_RH,IEEE4)
-  Sample (1,PowerString(11),String)
+  Sample (1,Relay_State,String)
  EndTable
 
 '### Sampling ###
 
 Function PowerTagString as String
-  PowerTagString = "[POWR]" & VBatt1 & "," & ABatt1 & "," & VBatt2 & "," & ABatt2 & "," & VSolar & "," & ASolar & "," & AMain & "," & ATurbine & "," & AWinch & "," & PM_RH & "," & PowerString(11)
+  PowerTagString = "[POWR]" & VBatt1 & "," & ABatt1 & "," & VBatt2 & "," & ABatt2 & "," & VSolar & "," & ASolar & "," & AMain & "," & ATurbine & "," & AWinch & "," & PM_RH & "," & Relay_State
 EndFunction
 
 Sub CollectPowerController
   Dim X
+
+  RawPower = ""
+  Power() = ""
+
   For X = 1 To 4
       SerialOut(SerialPower,CHR(13),">",2,50)
       SerialOut(SerialPower,"d",0,1,50)
@@ -44,7 +43,7 @@ Sub CollectPowerController
       SerialIn(RawPower,SerialPower,100,CHR(13),200)
       SplitStr(Power,RawPower,0,11,0)
       SplitStr(PowerString,RawPower,0,11,0)
-      If Len(Power(11)) > 5 Then
+      If Len(Power(11)) > 5 Then '  FIXME is this still working ???
         ExitFor
       EndIf
     Next X
@@ -56,17 +55,11 @@ Sub SamplePowerController
   If With_Power Then
     WhereAmI = "Sample Power Controller"
       
-    SerialOpen(SerialPower,19200,51,600,200)
+    SerialOpen(SerialPower,19200,51,600,200) 'No Flush FIXME 
       
     Call CollectPowerController  
     
     SerialClose(SerialPower)
-    
-    If VBatt1 > VBatt2 Then
-      VBatt_to_SD = VBatt1 
-    Else
-      VBatt_to_SD = VBatt2
-    EndIf
     
     UpdatePowerTable = true
 

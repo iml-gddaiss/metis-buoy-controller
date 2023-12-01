@@ -1,7 +1,5 @@
 'Winch related code
 '### Serial Port ###
-' Const SerialWinch = 13 'U5-U6
-
 
 '### Data Variables ###
 Const Min_Air_Temp_for_Winch = 1
@@ -38,12 +36,12 @@ Sub WinchAirCheck(Air_Temp)
 EndSub
 
 Sub WinchWaveCheck(Wave_H13, Wave_Period)
-    If Wave_H13 > Max_Wave_H13_for_Winch Then
+    If Wave_H13 > Max_Wave_H13_for_Winch Then  ' FIXME Wave_H13 is a String
         WinchMissingCondition += 1
         WinchMessage = "Average wave is too high"
     EndIf
         
-    If Wave_H13 > 1 AND Wave_Period < Min_Wave_Period_for_Winch  AND Wave_Period <> 0 Then
+    If Wave_H13 > 1 AND Wave_Period < Min_Wave_Period_for_Winch  AND Wave_Period <> 0 Then ' FIXME Wave_H13 are WavePeriod are Strings
         WinchMissingCondition += 1
         WinchMessage = "Wave period is too short"
     EndIf
@@ -57,10 +55,10 @@ Sub WinchGPSCheck(SOG)
 EndSub
 
 Sub WinchPowerCheck(VBatt1, VBatt2)
-    OnWhichBattery = Mid(PowerString(11),4,1)
+    OnWhichBattery = Mid(PowerString(11),4,1) ' FIXME IF POWER_CONTROLLER IS MODIFIED
     If OnWhichBattery = 1 Then
         Winch_Voltage = VBatt1
-   ElseIf OnWhichBattery = 2 Then
+    ElseIf OnWhichBattery = 2 Then
         Winch_Voltage = VBatt2
     EndIf
     
