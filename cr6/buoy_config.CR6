@@ -60,7 +60,7 @@ Const Rain_Interval_Hr = 24 ' (Rain_Timer)
 Const ADCP_Num_Bin = 27
 
 ' Sample Sizes (For time average)
-Const GPS_Sample_Size = 10     ' 1 per second for 10 seconds
+Const GPS_Sample_Size = 10     ' 1 per second for 10 seconds. ' GPS should be setup to 1 sec interval to get GPS_Sample_Size to correspond to seconds.
 Const Compass_Sample_Size = 60 ' 1 per second for 60 seconds
 
 ' Timers Delay                  -Associated Timers-

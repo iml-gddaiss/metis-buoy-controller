@@ -47,9 +47,10 @@ Sub CollectGPS
     RawGPS = "" ' (maybe not nescessary)
     GPS_HVS() = "" ' Reset Var
 
-    SerialIn(RawGPS,SerialGPS,150,10,80) ' FIXME why
-    
-    For X = 1 To GPS_Sample_Size Step 1
+    'SerialIn(RawGPS,SerialGPS,150,10,80) ' FIXME why
+
+    ' Averaging SOG and COG over time. 
+    For X = 1 To GPS_Sample_Size Step 1 ' GPS should be setup to 1 sec interval to get GPS_Sample_Size to correspond to seconds.
         SerialIn(RawGPS,SerialGPS,150,10,80)
         SplitStr(GPS_HVS,RawGPS,",",13,5)
         
@@ -62,10 +63,11 @@ Sub CollectGPS
         EndIf
     Next
     
-    'Processing COG and SOG
+    'COG and SOG time averaging.
     SOG = Round( SQR(U^2 + V^2) / GPS_Sample_Size, 2)
     COG = Round( ATN2(V, U), 1) MOD 360
 
+    ' The last reiceved data are used to set the remainings variables.
     'Formatting Date & Time String
     GPS_Date = "20"&Mid(GPS_Date,5,2) &"-"& Mid(GPS_Date,3,2) &"-"& Mid(GPS_Date,1,2)
     GPS_Time = Mid(GPS_Time,1,2) &":"& Mid(GPS_Time,3,2) &":"& Mid(GPS_Time,5,2)

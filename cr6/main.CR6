@@ -1,42 +1,43 @@
 '#####################################################################################
 'Date: 04 avril 2023
-'Program author: Anthony Ouellet
-'Modified by: Jerome Guay
+'Authors: Anthony Ouellet & Jérôme Guay
 '
-'#####################################################################################
-'------------------------------------------------------------------------------
-'----------------------------- Main Program -----------------------------------
-'------------------------------------------------------------------------------
+'--------------------------------------------------------------------------------------
+'--------------------------------- Main Program ---------------------------------------
+'--------------------------------------------------------------------------------------
 
-'################################ TODO ###############################################
+' TODO 
+
+'################################# Instruments #########################################
+'--------------------------------------------
+'[Tower]:         #T1 Anemometer WMT700
+'                 #T2 Weather station WMXT536
+'                 #T3 Compass DCM260B
+'                 #T4 GPS 19xHVS
+'                 #T5 PAR
+'                 #T6 HyperOCR_I
+'--------------------------------------------
+'[Well]           #W1 CTD SBE37 w/ Pump SBE05
+'                 #W2 SeaFet
+'                 #W3 ECO-Triplet
+'                 #W4 SUNA
+'                 #W5 PCO2
+'                 #W6 Flowmeter
+'                 #W7 HyperOCR_R
+'--------------------------------------------
+'[Miscellaneous]  #M1 Wave monitor
+'                 #M2 Water detection
+'                 #M3 Power controller
+'                 #M4 ADCP
+'                 #M5 Winch
+'--------------------------------------------
+'############################### Naming Conventions ####################################
+
+'#######################################################################################
 
 SequentialMode
 AngleDegrees
 PreserveVariables
-
-'Tower instruments
-'#T1 Anemometer WMT700
-'#T2 Weather station WMXT536
-'#T3 Compass DCM260B
-'#T4 GPS 19xHVS
-'#T5 PAR
-'#T6 HyperOCR_I
-
-'Well instruments
-'#W1 CTD SBE37 w/ Pump SBE05
-'#W2 SeaFet
-'#W3 ECO-Triplet
-'#W4 SUNA
-'#W5 PCO2
-'#W6 Flowmeter
-'#W7 HyperOCR_R
-
-'Miscellaneous instruments
-'#M1 Wave monitor
-'#M2 Water detection
-'#M3 Power controller
-'#M4 ADCP
-'#M5 Winch
 
 Public WhereAmI As String ' Debug Purposes
 
@@ -46,46 +47,43 @@ Public TAGString As String * 200
 Dim TAGFile As Long 
 Dim ToTransmit As Long ' --------- Fixme ToTransmitFile ?
 
-' Instruments state
-Include "CPU:buoy_config.cr6"                     '#   Declare Buoy Config
+'########### CR6 Scripts Imports (Includes)
+Include "CPU:buoy_config.cr6"                   '#   Declare Buoy Config
 Include "CPU:serials.cr6"
-Include "CPU:logging.cr6"                         '#   Logging module
-Include "CPU:timers.cr6"                         '#   Timer Values module
+Include "CPU:logging.cr6"                       '#   Logging module
+Include "CPU:timers.cr6"                        '#   Timer Values module
 
 
-'###### DECLARING INSUTRMENTS #####
-' Instrument serial a declered in their respective cr6 files.
-Include "CPU:wmt700.cr6"                    '#T1 Declare WMT700
-Include "CPU:wxt536.cr6"                    '#T2 Declare WXT536
-Include "CPU:compass.cr6"                   '#T3 Declare Compass
-Include "CPU:gps.cr6"                       '#T4 Declare GPS
-Include "CPU:par.cr6"                       '#T5 Declare PAR
-Include "CPU:sbe37.cr6"                     '#W1 Declare CTD SBE37 
-Include "CPU:eco_triplet.cr6"               '#W2 Declare ECO-Triplet
-Include "CPU:seafet.cr6"                    '#W3 Declare Seafet   (Needs to be included after CTD SBE37) ?
-Include "CPU:suna.cr6"                      '#W4 Declare SUNA 
-Include "CPU:pco2.cr6"                      '#W5 PCO2
-Include "CPU:ocr.cr6"                       '#W7 HyperOCR_R  & #T6 HyperOCR_I
-Include "CPU:wave.cr6"              '#M1 Wave_Monitor 
-Include "CPU:power_controller.cr6"          '#M3 Power Controller
-Include "CPU:adcp.cr6"                      '#M4 ADCP 
 
-Include "CPU:winch.cr6"                     '#M5 Winch 
+'#######  Instruments
+Include "CPU:wmt700.cr6"                    
+Include "CPU:wxt536.cr6"                    
+Include "CPU:compass.cr6"                   
+Include "CPU:gps.cr6"                       
+Include "CPU:par.cr6"                       
+Include "CPU:sbe37.cr6"                     
+Include "CPU:eco_triplet.cr6"               
+Include "CPU:seafet.cr6"                    
+Include "CPU:suna.cr6"                      
+Include "CPU:pco2.cr6"                      
+Include "CPU:ocr.cr6"                       
+Include "CPU:wave.cr6"             
+Include "CPU:power_controller.cr6"  
+Include "CPU:adcp.cr6"              
+Include "CPU:winch.cr6"             
 
-Include "CPU:tower.cr6"                     '  ?
-Include "CPU:water_detection.cr6"           '#M2
-Include "CPU:well_pump.cr6"                 ' ?
+Include "CPU:tower.cr6"                    
+Include "CPU:water_detection.cr6"          
+Include "CPU:well_pump.cr6"                
 
-'####### Different processing past this point #######
-'Wind compensation by Compass and GPS
-Include "CPU:weather.cr6"                   ' Weather variables  
+'####### Processing
+Include "CPU:weather.cr6"    ' Build Wind-Atms tables and Wind-Atms-PAR Tag Strings from WMT, WXT and PAR.
 
-
-'####### Slow Sequence | User Command Interface 
+'####### Slow Sequence | User Command Interface
 Include "CPU:slow_sequences.cr6"             ' ?
 
 
-' FileRaw data from the instruments
+' FileRaw data from the instruments. Needs to be decalred after the Imports
 DataTable (FileRaw,1,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,RawR1_Wind,String)
@@ -157,7 +155,6 @@ Sub GetScanDateTime
 EndSub
 
 Sub GPSTimeAjustment 
-  'Test FIXME ME
   If With_GPS AND GPS_Date <> "" AND GPS_Time <> "" Then
     ClockSet(GPS_Date &" "& GPS_Time)
   EndIf
