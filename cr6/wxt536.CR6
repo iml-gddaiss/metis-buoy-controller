@@ -1,9 +1,9 @@
 'WXT536 related code
 
 '### Data Variables ###
-Dim RawR1_Wind As String * 80
-Dim RawR2_Weather As String * 45
-Dim RawR3_Rain As String * 75
+Dim RawWXT536_Wind As String * 80
+Dim RawWXT536_Weather As String * 45
+Dim RawWXT536_Rain As String * 75
 
 Dim WXT536_Weather(3) As Float : Alias WXT536_Weather = Air_Temp, Air_Humidity, Air_Pressure
 'The wind is Dim because it depends on the presence of WMT700
@@ -78,40 +78,40 @@ Sub CollectWXT536
   
   If With_WXT536 Then
     WhereAmI = "Collect WXT536"
-    
-    RawR1_Wind = ""
-    RawR2_Weather = ""
-    RawR3_Rain = ""
+
+    WXT536_Wind () = ""
+    WXT536_Rain () = ""
+    WXT536_Weather() = ""
 
     For X = 1 To 3 Step 1
       SerialOut(SerialTower,CHR(13)&CHR(10),0,1,10)
-      If RawR1_Wind = "" Then
+      If RawWXT536_Wind = "" Then
         SerialOut(SerialTower,"2R1!",0,1,10)
-        SerialIn(RawR1_Wind,SerialTower,20,13,80)
-        RawR1_Wind = Mid(RawR1_Wind,5,80)
-        SplitStr(WXT536_Wind(),RawR1_Wind,",",6,0)
+        SerialIn(RawWXT536_Wind,SerialTower,20,13,80)
+        RawWXT536_Wind = Mid(RawWXT536_Wind,5,80)
+        SplitStr(WXT536_Wind(),RawWXT536_Wind,",",6,0)
         If WXT536_Wind(6) = "" Then
-          RawR1_Wind = ""
+          RawWXT536_Wind = ""
         EndIf
       EndIf
 
-      If RawR2_Weather = "" Then
+      If RawWXT536_Weather = "" Then
         SerialOut(SerialTower,"2R2!",0,1,10)
-        SerialIn(RawR2_Weather,SerialTower,20,13,30)
-        RawR2_Weather = Mid(RawR2_Weather,5,30)
-        SplitStr(WXT536_Weather(),RawR2_Weather,",",3,0)
+        SerialIn(RawWXT536_Weather,SerialTower,20,13,30)
+        RawWXT536_Weather = Mid(RawWXT536_Weather,5,30)
+        SplitStr(WXT536_Weather(),RawWXT536_Weather,",",3,0)
         If WXT536_Weather(3) = "" Then
-          RawR2_Weather = ""
+          RawWXT536_Weather = ""
         EndIf
       EndIf
 
-      If RawR3_Rain = "" Then
+      If RawWXT536_Rain = "" Then
         SerialOut(SerialTower,"2R3!",0,1,10)
-        SerialIn(RawR3_Rain,SerialTower,20,13,80)
-        RawR3_Rain = Mid(RawR3_Rain,5,80)
-        SplitStr(WXT536_Rain(),RawR3_Rain,",",6,0)
+        SerialIn(RawWXT536_Rain,SerialTower,20,13,80)
+        RawWXT536_Rain = Mid(RawWXT536_Rain,5,80)
+        SplitStr(WXT536_Rain(),RawWXT536_Rain,",",6,0)
         If WXT536_Rain(6) = "" Then
-          RawR3_Rain = ""
+          RawWXT536_Rain = ""
         EndIf
       EndIf
 

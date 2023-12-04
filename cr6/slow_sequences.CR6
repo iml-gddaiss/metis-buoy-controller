@@ -31,7 +31,6 @@ Sub ADCPBreakSequence 'Doest not work
         #If 11 <= SerialADCP and SerialADCP <= 16 Then
           SerialBrk(SerialADCP,200)
         #EndIf
-        ' Call SendADCPBreak
          Send_Break_to_ADCP = false
     EndIf
 EndSub

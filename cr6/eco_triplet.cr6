@@ -1,11 +1,11 @@
-' Const SerialTriplet = 37 'RS232
-
 Dim RawTriplet As String * 200
 
-Dim Triplet(11) As String : Alias Triplet = Triplet_Date, Triplet_Hour, Sct_wl, Raw_Sct, Sct_Value, Chl_wl, Raw_Chl, Chl_Value, FDOM_wl, Raw_FDOM, FDOM_Value
-Public Triplet_Value(3) As Float : Alias Triplet_Value = Scattering, Chlorophyll, FDOM
+Public Triplet(11) As String : Alias Triplet = Triplet_Date, Triplet_Hour, Sct_wl, Raw_Sct, Sct_Value, Chl_wl, Raw_Chl, Chl_Value, FDOM_wl, Raw_FDOM, FDOM_Value
 
 Dim UpdateTripleTable As Boolean = false
+    'Scattering = Round(Sct_Value,7)
+    'Chlorophyll = CTYPE(Chl_Value, float)
+    'FDOM = CTYPE(FDOM_Value, float)
 
 DataTable(FileTriplet,UpdateTripleTable,-1)
   DataInterval(0,0,Sec,10)
@@ -20,7 +20,9 @@ EndTable
 '### Sampling ###
 
 Function TripletTagString as String
-  TripletTagString = "[TRP1]" & Scattering & "," & Chlorophyll & "," & FDOM
+  'Values are put in CTYPE to convert from scientific notation (0.00E+00)  float notation.
+  SprintF(TripletTagString,"[TRP1]%.7f,%.7f,%.7f,", Sct_Value, Chl_Value, FDOM_Value) ' Fixme To test
+  'TripletTagString = "[TRP1]" & Round(Sct_Value,7) & "," & CTYPE(Chl_Value, float) & "," & CTYPE(FDOM_Value, float)
 EndFunction
 
 
@@ -52,7 +54,7 @@ Sub CollectTriplet
   If With_Triplet Then
     WhereAmI = "Collect triplet"
     
-    RawTriplet = ""
+    Triplet() = ""
     
     Call TimerDelay_Sec(Triplet_Timer, Triplet_Delay_Sec)
     
@@ -62,10 +64,6 @@ Sub CollectTriplet
     
     RawTriplet = "BB"+RawTriplet
     SplitStr(Triplet(),RawTriplet,CHR(09),11,4)
-    'Getting the values in long (0.000) from scientific values (0.00E+00) 
-    Scattering = Round(Sct_Value,7)
-    Chlorophyll = Chl_Value
-    FDOM = FDOM_Value
     
     UpdateTripleTable = true
     

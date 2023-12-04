@@ -41,11 +41,19 @@ ConstTable (Buoy_Config,0)
     
 EndConstTable
 
-Const With_Tower_485 As Boolean = With_WXT536 OR With_WMT700 OR With_Compass       
-Const With_Tower_Power As Boolean = With_PAR OR With_WMT700 OR With_Compass OR With_OCR_I
-Const With_Wind As Boolean = With_WXT536 OR With_WMT700
-Const With_Weather As Boolean = With_Wind OR With_PAR
-Const With_Well_Pump As Boolean = With_SBE37 OR With_Seafet OR With_SUNA OR With_OCR_R
+Public With_Tower_485 As Boolean = false
+Public With_Tower_Power As Boolean = false
+Public With_Wind As Boolean = false
+Public With_Weather As Boolean = false
+Public With_Well_Pump As Boolean = false
+
+Sub SetMetaInstrumentFlags
+    Public With_Tower_485 As Boolean = With_WXT536 OR With_WMT700 OR With_Compass       
+    Public With_Tower_Power As Boolean = With_PAR OR With_WMT700 OR With_Compass OR With_OCR_I
+    Public With_Wind As Boolean = With_WXT536 OR With_WMT700
+    Public With_Weather As Boolean = With_Wind OR With_PAR
+    Public With_Well_Pump As Boolean = With_SBE37 OR With_Seafet OR With_SUNA OR With_OCR_R
+EndSub
 
 ' ###   Below are Constants the should not be changed by the user.  ###
 ' ###                Hence not in the Constant Table                ###

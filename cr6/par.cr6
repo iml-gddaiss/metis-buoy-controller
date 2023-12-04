@@ -5,7 +5,7 @@
 
 '### Data Variables ###
 Dim RawPAR As String * 60
-Dim PARSensor(5) String : Alias PARSensor = PAR_Timer, PAR, PAR_Pitch, PAR_Roll, PAR_Int_Temp
+Dim PAR(5) String : Alias PAR = PAR_Timer, PAR, PAR_Pitch, PAR_Roll, PAR_Int_Temp
 
 Dim UpdatePARTable As Boolean = false
 
@@ -32,9 +32,11 @@ EndSub
 Sub CollectPAR
   If With_PAR Then
     WhereAmI = "Collect PAR"
+
+    PAR() = ""
     
     SerialIn(RawPAR,SerialPAR,10,CHR(13),60)
-    SplitStr(PARSensor(),RawPAR,",",5,4)
+    SplitStr(PAR(),RawPAR,",",5,4)
     SerialClose(SerialPAR)
 
     Call logging("RawPAR: `" & RawPAR & "`")

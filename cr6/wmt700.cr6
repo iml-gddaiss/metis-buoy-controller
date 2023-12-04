@@ -41,6 +41,8 @@ Sub CollectWMT700
   If With_WMT700 Then
     WhereAmI = "Collect WMT700"
 
+    WMT700() = ""
+
     SerialOut(SerialTower,"$Apoll,1"&CHR(13)&CHR(10),"Sx",1,100) 
     SerialInRecord(SerialTower,RawWMT700,&H574D,0,&H0D0A,NBR,101)  '  poll,1 is the WMT700 wind, Sx is the last data sent
     SerialOut(SerialTower,"$Asleep"&CHR(13)&CHR(10),"",1,0)

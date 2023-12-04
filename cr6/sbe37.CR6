@@ -7,7 +7,7 @@ Dim RawSBE37 As String * 40
 Const SBE37_RawSample_Length = 38
 
 Public SBE37_In_Saltwater As Boolean = false
-Public SBE37(4) As Float : Alias SBE37 = Water_Temp, Conductivity, Salinity, Density
+Public SBE37(4) As Float = {"", "", "", ""} : Alias SBE37 = Water_Temp, Conductivity, Salinity, Density
 
 '### Units ###
 Units Water_Temp = °C
@@ -31,6 +31,8 @@ Function SBE37TagString as String
   SBE37TagString = "[CTD]" & Water_Temp & "," & Conductivity & "," & Salinity & "," & Density
 EndFunction
 
+
+'### Sampling ###
 Sub StartSBE37
   Call logging("Starting SBE37")
   SerialOpen(SerialSBE37,19200,3,20,50) 'CTD string is 38 char.
@@ -78,11 +80,13 @@ EndSub
 
 
 Sub CollectSBE37
+  ' If the data were not received after sending the `tss` command,
+  ' we assume that the CTD has received the `tss` command thus, we send 
+  ' the `sl` command. Otherwise the ctd internal storage will have duplicate sample.
+  
   Dim X
   Call logging("Collecting SBE37")
-  RawSBE37 = "" ' (maybe not nescessary) Fixme
-  SBE37() = ""
-
+  
   For X = 1 To 3 Step 1
     
     SerialOut(SerialSBE37,CHR(13),"S>",1,50)            ' Contact SBE37, expect `S>`
@@ -108,13 +112,9 @@ Sub CollectSBE37
 EndSub
 
 
-
-'### Sampling ###
-
 Sub SampleSBE37
-  ' If the data were not received after sending the `tss` command,
-  ' we assume that the CTD has received the `tss` command thus, we send 
-  ' the `sl` command. Otherwise the ctd internal storage will have duplicate sample.
+  SBE37() = "" ' Always reset since it is used in calculation
+  
   If With_SBE37 Then
     WhereAmI = "Sampling SBE37"
     Call logging("Sampling SBE37")

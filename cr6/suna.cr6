@@ -63,6 +63,10 @@ Sub CollectSUNA
   ' &4C43 -> LC &0D0A -> CR LF
   Dim NBR ' Number of Bytes Returned
   If With_SUNA Then
+    
+    SUNADark() = ""
+    SUNALight() = ""
+
     Call TimerDelay_Sec(Suna_Timer, Suna_Delay_Sec)
     
     WhereAmI = "Collect SUNA"  

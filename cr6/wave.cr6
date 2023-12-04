@@ -34,7 +34,6 @@ EndFunction
 
 
 Sub CollectWave
-  RawWave = ""
   Wave() = ""
   For X = 1 To 3 Step 1
     SerialOut(SerialWave,CHR(13)&CHR(10),"CMD >>",2,200)

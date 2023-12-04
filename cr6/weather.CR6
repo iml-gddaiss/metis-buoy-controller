@@ -4,6 +4,7 @@ Dim WindTAG As String
 ' Weather manipulation with selection of better wind and compensation
 
 Dim Wind(6) As Float : Alias Wind = Wind_Dir_Min, Wind_Dir_Ave, Wind_Dir_Max, Wind_Spd_Min, Wind_Spd_Ave, Wind_Spd_Max
+
 Units Wind_Dir_Min = °
 Units Wind_Dir_Ave = °
 Units Wind_Dir_Max = °
@@ -64,7 +65,7 @@ Sub SelectWindInstrument
     Wind() = WXT536_Wind()
     WindTAG = "[W536]"                    ' Otherwise take the WXT536
   Else                                    '
-    Wind() = WMT700()
+    Wind() = WMT700()                     ' FIXME what if With_WMT700 is False
     WindTAG = "[W700]"                    '
   EndIf         
 EndSub

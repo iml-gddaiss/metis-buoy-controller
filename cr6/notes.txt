@@ -33,3 +33,10 @@
 
 .. Compass
 .. Pourquoi un délais de 400ms
+
+.. Test Winch code
+... Getting the Timestamp from the index of the winch start.
+
+.. Test New OCR
+
+.. Test Triplet String formatting

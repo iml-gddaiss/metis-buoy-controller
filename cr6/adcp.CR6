@@ -35,8 +35,14 @@ EndSub
  
 Sub CollectADCP
   Dim X, Y
+
   If With_ADCP Then
     Call logging("Collecting ADCP") 
+
+    RawADCP() = ""
+    ADCPHeader() = ""
+    ADCPBin1() = ""
+
     For X = 1 To ADCP_Num_Bin + 4 Step 1
       SerialIn(RawADCP(X),SerialADCP,10,10,100)
       Call logging("Row " & X & ": " & RawADCP(X))
@@ -57,23 +63,8 @@ Sub CollectADCP
     UpdateADCPTable = true
 
     TAGString = ADCPTagString()
-
     Call WriteTagString
 
   EndIf
 
 EndSub
-
-' Sub SendADCPBreak
-'   Dim Counter As Long
-'   Dim Breakstring As String
-
-'   Counter = 0
-'   Do While Counter <> 7200
-'      Breakstring &= CHR(00)
-'      Counter += 1
-'   Loop   
-
-'   SerialOutBlock(SerialADCP, Breakstring, 7200)
-
-' EndSub

@@ -47,10 +47,11 @@ EndSub
 Sub CollectSeafet
   Call logging("Collecting SeaFet")
   Dim X
+
+  Seafet_Value() = ""
+
   For X = 1 To 3 Step 1
     SerialFlush(SerialSeafet)
-    RawSeafet = ""
-    Seafet_Value() = ""
     SerialOut(SerialSeafet,CHR(13),"S>",2,50)
     
     If X = 1 Then
