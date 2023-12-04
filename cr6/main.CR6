@@ -167,7 +167,7 @@ Sub ResetRawStrings
   RawSUNALight = ""
   
   Call ResetPCO2RawStrings
-End
+EndSub
 
 
 

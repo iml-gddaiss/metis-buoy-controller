@@ -1,11 +1,8 @@
 'PAR related code
-'### Serial Port ###
-' Const SerialPAR = 33 'RS232
-
 
 '### Data Variables ###
 Dim RawPAR As String * 60
-Dim PAR(5) String : Alias PAR = PAR_Timer, PAR, PAR_Pitch, PAR_Roll, PAR_Int_Temp
+Dim PAR(5) String : Alias PAR = PAR_Timer, PAR_PAR, PAR_Pitch, PAR_Roll, PAR_Int_Temp
 
 Dim UpdatePARTable As Boolean = false
 
@@ -14,7 +11,7 @@ Dim UpdatePARTable As Boolean = false
 DataTable (FilePAR,UpdatePARTable,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,PAR_Timer,IEEE4)
-  Sample (1,PAR,IEEE4)
+  Sample (1,PAR_PAR,IEEE4)
   Sample (1,PAR_Pitch,IEEE4)
   Sample (1,PAR_Roll,IEEE4)
   Sample (1,PAR_Int_Temp,IEEE4)

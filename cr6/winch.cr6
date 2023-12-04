@@ -55,7 +55,7 @@ Sub WinchGPSCheck(SOG)
 EndSub
 
 Sub WinchPowerCheck(VBatt1, VBatt2)
-    OnWhichBattery = Mid(PowerString(11),4,1) ' FIXME IF POWER_CONTROLLER IS MODIFIED
+    OnWhichBattery = Mid(Power(11),4,1)
     If OnWhichBattery = 1 Then
         Winch_Voltage = VBatt1
     ElseIf OnWhichBattery = 2 Then

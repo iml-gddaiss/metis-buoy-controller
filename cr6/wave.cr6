@@ -34,6 +34,7 @@ EndFunction
 
 
 Sub CollectWave
+  Dim X
   Wave() = ""
   For X = 1 To 3 Step 1
     SerialOut(SerialWave,CHR(13)&CHR(10),"CMD >>",2,200)
@@ -48,7 +49,7 @@ EndSub
 
 
 Sub SampleWave
-  Dim X
+  
   If With_Wave Then
     WhereAmI = "Sample Wave"
 
