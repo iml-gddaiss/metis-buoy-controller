@@ -18,12 +18,12 @@ Dim UpdateTripleTable As Boolean = false
 
 DataTable(FileTriplet,UpdateTripleTable,-1)
   DataInterval(0,0,Sec,10)
-  Sample (1,Scattering_Raw,String)
-  Sample (1,Scattering_Value,String)
-  Sample (1,Chlorophyll_Raw,String)
-  Sample (1,Chlorophyll_Value,String)
-  Sample (1,FDOM_Raw,String)
-  Sample (1,FDOM_Value,String)
+  Sample (1,Scattering_Raw,String) ' Fixme set to float ??
+  Sample (1,Scattering_Value,String) ' Fixme set to float ??
+  Sample (1,Chlorophyll_Raw,String)' Fixme set to float ??
+  Sample (1,Chlorophyll_Value,String)' Fixme set to float ??
+  Sample (1,FDOM_Raw,String)' Fixme set to float ??
+  Sample (1,FDOM_Value,String)' Fixme set to float ??
 EndTable
 
 '### Sampling ###

@@ -307,6 +307,8 @@ BeginProg
       Call WellSwitchSequence
 
       Call ADCPBreakSequence
+
+      Call WinchStartSequence
     NextScan
 EndProg
 

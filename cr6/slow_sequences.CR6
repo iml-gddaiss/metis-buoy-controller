@@ -1,6 +1,7 @@
 Public Manual_Tower_Switch As Boolean = false
 Public Manual_Well_Switch As Boolean = false
 Public Send_Break_to_ADCP As Boolean = false
+Public Start_Winch_Override As Boolea  = false
 
 Sub TowerSwitchSequence
     If Manual_Tower_Switch AND Not Tower_IsPowered Then
@@ -29,8 +30,24 @@ EndSub
 Sub ADCPBreakSequence 'Doest not work
     If Send_Break_to_ADCP Then
         #If 11 <= SerialADCP and SerialADCP <= 16 Then
-          SerialBrk(SerialADCP,200)
+            SerialBrk(SerialADCP,200)
         #EndIf
-         Send_Break_to_ADCP = false
+        Send_Break_to_ADCP = false
     EndIf
+EndSub
+
+
+Sub WinchStartSequence 
+    If Start_Winch_Override Then
+        If With_Winch AND (SBE37_In_Saltwater OR Bypass_Salinity) Then
+            Call CheckWinchStatus          
+            If WinchStatus = "Standby" Then
+                Call WinchConditionsCheck
+                If WinchMissingCondition = 0 Then
+                    Call StartWinchMission
+                EndIf  
+            EndSub
+        EndSub
+        Start_Winch_Override = false
+    EndSub
 EndSub
