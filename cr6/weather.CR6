@@ -84,6 +84,8 @@ Sub ProcessWeather(Heading)
   If With_Weather Then
     WhereAmI = "Processing Weather"
 
+    Wind() = ""
+
     If With_Wind Then
       Call SelectWindInstrument   
       

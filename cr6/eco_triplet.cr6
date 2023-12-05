@@ -1,19 +1,28 @@
 Dim RawTriplet As String * 200
 
-Public Triplet(11) As String : Alias Triplet = Triplet_Date, Triplet_Hour, Sct_wl, Raw_Sct, Sct_Value, Chl_wl, Raw_Chl, Chl_Value, FDOM_wl, Raw_FDOM, FDOM_Value
+Public Triplet(11) As String
+Alias Triplet(1) = Triplet_Date
+Alias Triplet(2) = Triplet_Hour
+Alias Triplet(3) = Scattering_Wavelenght
+Alias Triplet(4) = Scattering_Raw
+Alias Triplet(5) = Scattering_Value
+Alias Triplet(6) = Chlorophyll_Wavelenght
+Alias Triplet(7) = Chlorophyll_Raw
+Alias Triplet(8) = Chlorophyll_Value
+Alias Triplet(9) = FDOM_Wavelenght
+Alias Triplet(10) = FDOM_Raw
+Alias Triplet(11) = FDOM_Value
+
 
 Dim UpdateTripleTable As Boolean = false
-    'Scattering = Round(Sct_Value,7)
-    'Chlorophyll = CTYPE(Chl_Value, float)
-    'FDOM = CTYPE(FDOM_Value, float)
 
 DataTable(FileTriplet,UpdateTripleTable,-1)
   DataInterval(0,0,Sec,10)
-  Sample (1,Raw_Sct,String)
-  Sample (1,Sct_Value,String)
-  Sample (1,Raw_Chl,String)
-  Sample (1,Chl_Value,String)
-  Sample (1,Raw_FDOM,String)
+  Sample (1,Scattering_Raw,String)
+  Sample (1,Scattering_Value,String)
+  Sample (1,Chlorophyll_Raw,String)
+  Sample (1,Chlorophyll_Value,String)
+  Sample (1,FDOM_Raw,String)
   Sample (1,FDOM_Value,String)
 EndTable
 
@@ -21,13 +30,15 @@ EndTable
 
 Function TripletTagString as String
   'Values are put in CTYPE to convert from scientific notation (0.00E+00)  float notation.
-  SprintF(TripletTagString,"[TRP1]%.7f,%.7f,%.7f,", Sct_Value, Chl_Value, FDOM_Value) ' Fixme To test
-  'TripletTagString = "[TRP1]" & Round(Sct_Value,7) & "," & CTYPE(Chl_Value, float) & "," & CTYPE(FDOM_Value, float)
+  Dim formatted_string As String * 40
+  SprintF(formatted_string,"[TRP1]%.8g,%.8g,%.8g", CTYPE(Scattering_Value, float), CTYPE(Chlorophyll_Value, float), CTYPE(FDOM_Value, float))
+  Call logging("Triplet Tag String: " & formatted_string)
+  TripletTagString = formatted_string
 EndFunction
 
 
 Sub StartTripletTimer
-  Timer(Triplet_Timer, Sec, 2)
+  Timer(Triplet_Timer, Sec, 2) 
 EndSub
 
 
@@ -36,12 +47,12 @@ Sub StartTriplet
   If With_Triplet Then
     WhereAmI = "Start Triplet"
     Call logging("Start Triplet")
-    SerialFlush(SerialTriplet)
+    SerialFlush(SerialTriplet) 'Fixme Why a we Flushing here
     SerialOpen(SerialTriplet,19200,3,20,500) 'Triplet string is around 100 char.
     SerialOut(SerialTriplet,CHR(13)&CHR(10),0,2,100)
     SerialOut(SerialTriplet,"!!!!!!!!","Mem",1,600)
     SerialOut(SerialTriplet,"$run"&CHR(13),0,1,10)
-    
+
     Call StartTripletTimer
 
   EndIf
@@ -49,17 +60,16 @@ EndSub
 
 
 Sub CollectTriplet
-  ' &4242 -> BB &0D0A -> CR LF
+  ' Eco-Triplet takes at least 17s to sample. Thus we need to wait at least 18 seconds before collecting the data.
   Dim NBR ' Number of Bytes Returned  
   If With_Triplet Then
     WhereAmI = "Collect triplet"
     
     Triplet() = ""
     
-    Call TimerDelay_Sec(Triplet_Timer, Triplet_Delay_Sec)
+    Call TimerDelay_Sec(Triplet_Timer, Triplet_Delay_Sec) 
     
-    SerialInRecord(SerialTriplet,RawTriplet,&H4242,0,&H0D0A,NBR,01)
-    
+    SerialInRecord(SerialTriplet,RawTriplet,&H4242,0,&H0D0A,NBR,01) ' &4242 -> BB &0D0A -> CR LF
     SerialClose(SerialTriplet)
     
     RawTriplet = "BB"+RawTriplet

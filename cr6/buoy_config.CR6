@@ -1,3 +1,5 @@
+StationName = "PMZA-RIKI" ' Stores Value in Status.StationName(1,1) FIXME
+
 ConstTable (Buoy_Config,0)
     Const Buoy_Name = "PMZA-RIKI" 
     
@@ -77,7 +79,7 @@ Const Weather_Delay_Sec = 60    '(Weather_Time)
 Const Suna_Delay_Sec = 12       '(Suna_Timer)
 Const WMT700_Delay_Sec = 8      '(Tower_Timer)
 Const Compass_Delay_Sec = 4     '(Tower_Timer)
-Const Triplet_Delay_Sec = 17    '(Triplet_Timer)
+Const Triplet_Delay_Sec = 20    '(Triplet_Timer): Triplet takes at least 17 seconds to sample.
 Const OCR_R_Delay_Sec = 8       '(Pump_Timer)
 Const OCR_I_Delay_Sec = 8       '(Tower_Timer)   
 

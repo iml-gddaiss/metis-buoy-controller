@@ -3,10 +3,10 @@
 
 
 '### Data Variables ###
-
 Dim Compass(9) As String
 
-Dim Compass_Angles(3) As Float = {"", "", ""} : Alias Compass_Angles = Heading, Pitch, Roll
+'Compass_Angles is the time averaged. These a values are used in the CompassTable
+Public Compass_Angles(3) As Float = {"", "", ""} : Alias Compass_Angles = Heading, Pitch, Roll
 
 Dim UpdateCompassTable As Boolean = false
 
@@ -19,9 +19,9 @@ Units Roll = °
 '### Tables ###
 DataTable (FileCompass,UpdateCompassTable,-1)
   DataInterval(0,0,Sec,10)
-  Sample (1,Heading,String) ' Why not IEEE4 Fixme
-  Sample (1,Pitch,String) ' Why not IEEE4 Fixme
-  Sample (1,Roll,String) ' Why not IEEE4 Fixme
+  Sample (1,Heading, IEEE4) ' Why not IEEE4 Fixme
+  Sample (1,Pitch, IEEE4) ' Why not IEEE4 Fixme
+  Sample (1,Roll, IEEE4) ' Why not IEEE4 Fixme
 EndTable
 
 
@@ -37,7 +37,6 @@ EndFunction
 
 Sub CollectCompass
   ' Roll and Pitch are not circularly average.
-  ' &h -> SA &0D0A -> CR LF
   Dim NBR ' Number of Bytes Returned  
   Dim X, Y
   Dim raw_compass As String * 100
@@ -49,16 +48,16 @@ Sub CollectCompass
   
   For Y = 1 To Compass_Sample_Size Step 1
     SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",1,50)  ' Command = h^D^A^D^I (68 04 01 04 09)
-    SerialInRecord(SerialTower,raw_compass,&H68,13,0,NBR,101)   ' First byte sent is address 68
+    SerialInRecord(SerialTower,raw_compass,&H68,13,0,NBR,101)   ' First byte sent is address 68 ' &68 -> $
     
     If raw_compass = "NAN" Then
       Compass_Angles() = ""
       ExitSub
     EndIf        
 
-    For X = 4 To 12                                      ' Setting each HEX byte in Compass Array
+    For X = 4 To 12                                   ' Setting each HEX byte in Compass Array
       Compass(X-3) = Hex(ASCII(raw_compass(1,1,X)))   ' Received message looks like 68 0D 01 84 00 11 22 10 33 44 05 66 77 99
-    Next X                                               '                             ID LG AD MS (- Roll) (+Pitch) ( Head ) CHK
+    Next X                                            '                             ID LG AD MS (- Roll) (+Pitch) ( Head ) CHK
             
     If Len(Compass(8)) = 1 Then
       Compass(8) = "0" + Compass(8)
@@ -81,7 +80,7 @@ Sub CollectCompass
 EndSub
 
 Sub ApplyMagneticCorrection
-  Heading = Round((Heading + CTYPE(GPS_Mag_Var, Float)) MOD 360, 2)
+  Heading = Round((Heading + Magnetic_Variation) MOD 360, 2)
 EndSub
 
 

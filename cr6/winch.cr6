@@ -9,10 +9,10 @@ Const Max_Flow_for_Winch = 1
 Const Max_Buoy_Speed_for_Winch = 1
 Const Min_Voltage_for_Winch = 12.2
 
-Public OnWhichBattery ' On?Winch?Battery
+Public OnWhichBattery ' On?Winch?Battery Fixme
 Public WinchMessage As String * 50
 Public WinchMissingCondition As Long
-Public Winch_Voltage As Float
+Public Winch_Voltage As Float = ""
 Public Winch_Last_Sample As Long
 Public WinchString As String * 50
 Public WinchFileName As String * 50

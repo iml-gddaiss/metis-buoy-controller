@@ -11,8 +11,9 @@ Dim GPS_HVS(13) As String : Alias GPS_HVS = GPS_Header, GPS_Time, GPS_Status, GP
 ' Variable For GPS_HVS Tabe
 Public Latitude As String
 Public Longitude As String
-Public SOG As Float 
-Public COG As Float
+Public SOG As Float = ""
+Public COG As Float = ""
+Public Magnetic_Variation As Float = ""
 
 
 '### Units ###
@@ -31,7 +32,7 @@ DataTable(FileGPS,UpdateGPSTable,-1)
     Sample(1,Longitude, String)  
     Sample(1,SOG, IEEE4)
     Sample(1,COG, IEEE4)
-    Sample(1,GPS_Mag_Var, IEEE4) ' Fixme this could not work (GPS_Mag is String not float) 
+    Sample(1,Magnetic_Variation , IEEE4)
 EndTable
 
 Sub StartGPS
@@ -45,6 +46,11 @@ Sub CollectGPS
     Dim UV(2) As Float = {0, 0}: Alias UV = U, V
 
     GPS_HVS() = "" ' Reset Var
+    
+    Latitude = "" ' Reset to missing ? -> "#°#'#" or empty
+    Longitude = ""
+    SOG = ""
+    COG = ""
 
     'SerialIn(RawGPS,SerialGPS,150,10,80) ' FIXME why
 
@@ -76,11 +82,16 @@ Sub CollectGPS
     Longitude = Mid(GPS_Lon,1,3) &"°"& Mid(GPS_Lon,4,6) &"'"& GPS_Lon_Hem
 
     ' Converting Magnetic Variation to decimal
-    If Mid(GPS_Mag_Var_Dir,1,1) = "W" Then
-        GPS_Mag_Var = "-"&Mid(GPS_Mag_Var,2,5)
-    Else
-        GPS_Mag_Var = "+"&Mid(GPS_Mag_Var,2,5)
-    EndIf 
+    Magnetic_Variation  = CTYPE(GPS_Mag_Var, float) ' Test if it works
+    If GPS_Mag_Var_Dir = "W" Then
+        Magnetic_Variation  += -1
+    EndIf
+
+    'If Mid(GPS_Mag_Var_Dir,1,1) = "W" Then 
+    '    GPS_Mag_Var = "-"&Mid(GPS_Mag_Var,2,5)
+    'Else
+    '    GPS_Mag_Var = "+"&Mid(GPS_Mag_Var,2,5)
+    'EndIf 
 EndSub
 
 

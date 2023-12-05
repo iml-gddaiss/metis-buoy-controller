@@ -4,7 +4,7 @@
 
 
 '### Data Variables ###
-Dim RawADCP(ADCP_Num_Bin + 4) As String * 100
+Dim ADCP(ADCP_Num_Bin + 4) As String * 100
 
 Dim ADCPHeader(3) As String : Alias ADCPHeader = ADCPDate, ADCPTime, ADCPSmpNbr
 Dim ADCPBin1(11) As Float : Alias ADCPBin1 = Bin, ADCPDir, ADCPMag, EW, NS, Vert, Err, Echo1, Echo2, Echo3, Echo4
@@ -15,7 +15,7 @@ Dim UpdateADCPTable As Boolean = false
 '### Tables ###
 DataTable(FileADCP,UpdateADCPTable,-1)
   DataInterval(0,0,Sec,10)
-  Sample(ADCP_Num_Bin + 4, RawADCP,String)
+  Sample(ADCP_Num_Bin + 4, ADCP,String) ' Test Fixme
 EndTable
 
 
@@ -39,24 +39,24 @@ Sub CollectADCP
   If With_ADCP Then
     Call logging("Collecting ADCP") 
 
-    RawADCP() = ""
+    ADCP() = ""
     ADCPHeader() = ""
     ADCPBin1() = ""
 
     For X = 1 To ADCP_Num_Bin + 4 Step 1
-      SerialIn(RawADCP(X),SerialADCP,10,10,100)
-      Call logging("Row " & X & ": " & RawADCP(X))
+      SerialIn(ADCP(X),SerialADCP,10,10,100)
+      Call logging("Row " & X & ": " & ADCP(X))
       If X > 3 Then
         For Y = 1 To 4 Step 1 'Removes all single spaces (up to 8 space -> 1)
-          RawADCP(X) = Replace(RawADCP(X),"  "," ")
+          ADCP(X) = Replace(ADCP(X),"  "," ")
         Next Y
-        RawADCP(X) = LTrim(RawADCP(X))
-       RawADCP(X) = Replace(RawADCP(X)," ",",")
+        ADCP(X) = LTrim(ADCP(X))
+       ADCP(X) = Replace(ADCP(X)," ",",")
       EndIf
     Next X
 
-    SplitStr(ADCPHeader,RawADCP(1)," ",3,5)
-    SplitStr(ADCPBin1,RawADCP(5),",",11,5)
+    SplitStr(ADCPHeader,ADCP(1)," ",3,5)
+    SplitStr(ADCPBin1,ADCP(5),",",11,5)
 
     SerialFlush(SerialADCP)
 
