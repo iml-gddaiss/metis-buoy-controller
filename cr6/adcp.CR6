@@ -62,7 +62,7 @@ Sub CollectADCP
 
     UpdateADCPTable = true
 
-    TAGString = ADCPTagString()
+    TAGString &= "\n" & ADCPTagString()
     Call WriteTagString
 
   EndIf

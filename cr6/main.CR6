@@ -45,7 +45,7 @@ Public WhereAmI As String ' Debug Purposes
 
 Public ScanTimeStamp(2) As String : Alias ScanTimeStamp = ScanDate, ScanTime 
 
-Public TAGString As String * 200
+Public TAGString As String * 2000
 Dim TAGFile As Long 
 Dim ToTransmit As Long ' --------- Fixme ToTransmitFile ?
 
@@ -106,23 +106,28 @@ DataTable (FileRaw,1,-1)
   Sample (1,WinchMessage,String)
 EndTable
 
+DataTable (FileTAGS,1,-1) ' fixme change name
+  DataInterval(0,0,Sec,10)
+  Sample (1, TAGString, String)
+EndTable
 
-Sub WriteTagString 'This needs to be declare before importing CR6 Files since they used it. (maybe not TODO TEST)
-  FileWrite(TAGFile,TAGString & CHR(10),0)
-  FileWrite(ToTransmit,TAGString & CHR(10),0)
-EndSub
+
+' Sub WriteTagString 'This needs to be declare before importing CR6 Files since they used it. (maybe not TODO TEST)
+'   FileWrite(TAGFile,TAGString & CHR(10),0)
+'   FileWrite(ToTransmit,TAGString & CHR(10),0)
+' EndSub
 
 
 ' These need to be declared after the GPS files has been included. (maybe not TODO TEST)
-Sub OpenTagsFiles
-  ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & Replace(ScanDate, "-", "") & Replace(ScanTime, ":", "") & ".dat","a",-1)
-  TAGFile = FileOpen("CRD:" & Buoy_Name & "_TAGFile.txt","a",-1)
-EndSub
+' Sub OpenTagsFiles
+'   ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & Replace(ScanDate, "-", "") & Replace(ScanTime, ":", "") & ".dat","a",-1)
+'   TAGFile = FileOpen("CRD:" & Buoy_Name & "_TAGFile.txt","a",-1)
+' EndSub
 
-Sub CloseTagsFiles
-  FileClose(TAGFile)
-  FileClose(ToTransmit)
-EndSub
+' Sub CloseTagsFiles
+'   FileClose(TAGFile)
+'   FileClose(ToTransmit)
+' EndSub
 
 Function InitTagString as String
   InitTagString = "[INIT]" & Buoy_Name & "," & ScanDate & "," & ScanTime & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
@@ -230,10 +235,10 @@ BeginProg
   
   Call CheckWaterDectectionMain
 
-  Call OpenTagsFiles
+  ' Call OpenTagsFiles
 
   TAGString = InitTagString()             'Requires Gps, Compass and WaterDectection Variables.
-  Call WriteTagString
+  ' Call WriteTagString
     
   Call SamplePowerController
 
@@ -289,10 +294,10 @@ BeginProg
 
   Call ResetTablesUpdateFlag
   
-  TAGString = EndTagString()
-  Call WriteTagString   
-
-  Call CloseTagsFiles
+  TAGString &= "\n" & EndTagString()
+  CallTable FileTAGS
+  ' Call WriteTagString   
+  ' Call CloseTagsFiles
 
   Call CollectWinch
   

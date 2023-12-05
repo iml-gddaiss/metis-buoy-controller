@@ -154,7 +154,7 @@ Sub WinchMission
             EndIf
         EndIf
     
-        TAGString = "[WNCH]" + WinchMessage
+        TAGString &= "\n" & "[WNCH]" + WinchMessage
         Call WriteTagString
     EndIf
 EndSub

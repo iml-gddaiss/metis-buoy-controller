@@ -189,7 +189,7 @@ Sub PCO2Sampling
         Call ClosePC02
         UpdatePCO2Tables = true
     
-        TAGString = PCO2TagString()
+        TAGString &= "\n" & PCO2TagString()
         Call WriteTagString
 
         PCO2IsSampling = false
