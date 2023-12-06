@@ -36,17 +36,12 @@ Sub ADCPBreakSequence 'Doest not work
     EndIf
 EndSub
 
-Sub WinchStartSequence 
+Sub WinchStartSequence
+    ' FIXME: Might be problematic if Scan Starts.
     If Start_Winch_Override Then
-        If With_Winch AND (SBE37_In_Saltwater OR Bypass_Salinity) Then
-            Call CheckWinchStatus          
-            If WinchStatus = "Standby" Then
-                Call WinchConditionsCheck
-                If WinchMissingCondition = 0 Then
-                    Call StartWinchMission
-                EndIf  
-            EndIf
-        EndIf
+        'TODO Add a check to skip if its too close to a scan
+        Call WinchMission
+
         Start_Winch_Override = false
     EndIf
 EndSub

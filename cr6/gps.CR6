@@ -41,8 +41,8 @@ Sub StartGPS
 EndSub
 
 
-Sub CollectGPS
-    Dim X
+Sub CollectGPS(Optional single_sample As Boolean = false)
+    Dim X, number_of_sample
     Dim UV(2) As Float = {0, 0}: Alias UV = U, V
 
     GPS_HVS() = "" ' Reset Var
@@ -52,10 +52,15 @@ Sub CollectGPS
     SOG = ""
     COG = ""
 
-    'SerialIn(RawGPS,SerialGPS,150,10,80) ' FIXME why
+    If single_sample Then
+        number_of_sample = 1
+    Else
+        number_of_sample = GPS_Sample_Size
+    EndIf
 
     ' Averaging SOG and COG over time. 
-    For X = 1 To GPS_Sample_Size Step 1 ' GPS should be setup to 1 sec interval to get GPS_Sample_Size to correspond to seconds.
+    ' FIXME test if the For Loop stops when X = number_of_sample or when X > number_of_sample
+    For X = 1 To number_of_sample Step 1 ' GPS should be setup to 1 sec interval to get GPS_Sample_Size to correspond to seconds.
         SerialIn(RawGPS,SerialGPS,150,10,80)
         SplitStr(GPS_HVS,RawGPS,",",13,5)
         
@@ -69,7 +74,7 @@ Sub CollectGPS
     Next
     
     'COG and SOG time averaging.
-    SOG = Round( SQR(U^2 + V^2) / GPS_Sample_Size, 2)
+    SOG = Round( SQR(U^2 + V^2) / number_of_sample, 2)
     COG = Round( ATN2(V, U), 1) MOD 360
 
     ' The last reiceved data are used to set the remainings variables. ' FIXME what if GPS_Date and GPS_TIME are bad. (Missing)

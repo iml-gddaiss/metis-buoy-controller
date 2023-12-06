@@ -1,7 +1,5 @@
 'Winch related code
-'### Serial Port ###
 
-'### Data Variables ###
 Const Min_Air_Temp_for_Winch = 1
 Const Max_Wave_H13_for_Winch = 2
 Const Min_Wave_Period_for_Winch = 6
@@ -10,46 +8,45 @@ Const Max_Buoy_Speed_for_Winch = 1
 Const Min_Voltage_for_Winch = 12.2
 
 Public OnWhichBattery ' On?Winch?Battery Fixme
-Public WinchMessage As String * 50
-Public WinchMissingCondition As Long
 Public Winch_Voltage As Float = ""
-Public Winch_Last_Sample As Long
-Public WinchString As String * 50
-Public WinchFileName As String * 50
 
 Public WinchStatus as String * 10 'Standby / Sampling / Completed
+Public WinchMessage As String * 50
+Public WinchMissingCondition As Long
 
-Dim Winch_Start_RecNum as Long
-
+Public WinchString As String * 50
+Public WinchFileName As String * 50
 Dim WinchFile As Long
 
-'### Units ###
-'### Tables ###
-'### Sampling ###
 
+Public Winch_Last_Sample AS Long = ""
+Public Winch_DateTime(2) As String : Alias Winch_DateTime = Winch_Date, Winch_Time  
+Public Winch_Latitude As String
+Public Winch_Longitude As String
 
+' ####################### Start Conditions ############################## 
 Sub WinchAirCheck(Air_Temp)
     If Air_Temp < Min_Air_Temp_for_Winch Then
-        WinchMissingCondition += 1
+        WinchMissingCondition += 1 ' 2^0
         WinchMessage = "The air temperature is too cold"
     EndIf
 EndSub
 
 Sub WinchWaveCheck(Wave_H13, Wave_Period)
     If Wave_H13 > Max_Wave_H13_for_Winch Then  ' FIXME Wave_H13 is a String
-        WinchMissingCondition += 1
+        WinchMissingCondition += 2 ' 2^1
         WinchMessage = "Average wave is too high"
     EndIf
         
     If Wave_H13 > 1 AND Wave_Period < Min_Wave_Period_for_Winch  AND Wave_Period <> 0 Then ' FIXME Wave_H13 are WavePeriod are Strings
-        WinchMissingCondition += 1
+        WinchMissingCondition += 4 ' 2^2
         WinchMessage = "Wave period is too short"
     EndIf
 EndSub
 
 Sub WinchGPSCheck(SOG)
     If SOG > Max_Buoy_Speed_for_Winch Then
-        WinchMissingCondition += 1
+        WinchMissingCondition += 8 ' 2^3
         WinchMessage = "The buoy is moving too fast"
     EndIf
 EndSub
@@ -63,7 +60,7 @@ Sub WinchPowerCheck(VBatt1, VBatt2)
     EndIf
     
     If Winch_Voltage < Min_Voltage_for_Winch Then
-        WinchMissingCondition += 1
+        WinchMissingCondition += 16 ' 2^4
         WinchMessage = "The Winch voltage is too low"
     EndIf
 EndSub
@@ -88,6 +85,7 @@ Sub WinchConditionsCheck
     EndIf
 EndSub
 
+' ####################### Winch Mission Start ############################## 
 Sub CheckWinchStatus 'Should it be started earlier ?? 'Should it be close afterward
     SerialOpen(SerialWinch,19200,3,20,100) 'Should it be started earlier ??
     SerialFlush(SerialWinch)
@@ -122,9 +120,20 @@ Sub StartWinchMission
             SerialOut(SerialWinch,"Y"&Depth_for_Winch&CHR(13)&CHR(10),CHR(13),1,0)
             
             WinchStatus = "Sampling"
+            
+            If Start_Winch_Override Then
+                'Updating GPS Values for Winch TimeStamp
+                Call StartGPS              
+                Call CollectGPS(true) ' single_sample = true
+                SerialClose(SerialGPS)
+            ElseIf
+                ' The next winch is still scheduled isn't changed if Start_Winch_Override is True.
+                Winch_Last_Sample = Public.TimeStamp(1)
+            EndIf
 
-            Winch_Last_Sample = Public.TimeStamp(1)
-            Winch_Start_RecNum = Status.Record
+            SplitStr(Winch_DateTime, Public.TimeStamp(4), " ", 2, 5) ' Fixme TO test
+            Winch_Latitude = Latitude
+            Winch_Longitude = Longitude
 
             WinchMessage = "Winch Mission Started"
     Else 'No string from CTD
@@ -133,31 +142,53 @@ Sub StartWinchMission
 EndSub
 
 Sub WinchMission
-    'Start a Winch Mission if its not started and possible.
+    'Start a Winch Mission if its not Ongoing and possible.
     If With_Winch AND (SBE37_In_Saltwater OR Bypass_Salinity) Then
                
-        WhereAmI = "Entering the Winch Block"
-
-        Call CheckWinchStatus
+        WhereAmI = "Entering the WinchMission"
         
-        If WinchStatus = "Standby" Then
-            If (Winch_Last_Sample + Winch_Interval_Hr*3600 - 60) <= Public.TimeStamp(1) Then   'minus 60sec to not skip a scan planned at Winch_Interval hour (got 3599s and didn't sampled)
-                WhereAmI = "Starting A Winch"
-
-                Call WinchConditionsCheck
-
-                If WinchMissingCondition = 0 Then
-                    Call StartWinchMission
-                EndIf  
-            Else
-                WinchMessage = "Interval not reach"
-            EndIf
+        If ((Winch_Last_Sample + Winch_Interval_Hr * 3600 - 60) > Public.TimeStamp(1)) AND NOT Start_Winch_Override Then
+            ' Skipped if Start_Winch_Override is True.
+            ' minus 60sec to not skip a scan planned at Winch_Interval hour (got 3599s and didn't sampled)
+            WinchMessage = "Interval not reach"
+            TAGString &= "\n" & "[WNCH]" + WinchMessage
+            Call WriteTagString
+            ExitSub
         EndIf
-    
-        TAGString &= "\n" & "[WNCH]" + WinchMessage
-        Call WriteTagString
+        
+        Call CheckWinchStatus
+
+        If WinchStatus = "Standby" Then
+
+            WhereAmI = "Starting A Winch"
+
+            Call WinchConditionsCheck
+
+            If WinchMissingCondition = 0 Then
+                Call StartWinchMission
+            EndIf  
+        EndIf
+        
+        If NOT Start_Winch_Override Then
+            ' Skipped if Start_Winch_Override is True.
+            TAGString &= "\n" & "[WNCH]" + WinchMessage
+            Call WriteTagString
+        EndIf
     EndIf
 EndSub
+
+' ####################### Collecting Data ############################## 
+
+Sub InitWinchFile
+    WinchFileName = Buoy_Name &"_"& Replace(Winch_Date, "-", "") &"_"& Replace(Winch_Time, ":", "")
+    WinchFile = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
+
+    FileWrite(WinchFile,Winch_Time&" "&Winch_Date&CHR(10),0) ' Not Date with Slash anymore but with hyphen. Fixme
+    FileWrite(WinchFile,Buoy_Name&CHR(10),0)     
+    FileWrite(WinchFile,Winch_Latitude&","&Winch_Longitude&CHR(10),0)    
+    FileWrite(WinchFile,"D"&CHR(10),0)
+EndSub
+
 
 Sub DownloadWinchData
     SerialOpen(SerialWinch,19200,3,20,100) 'Should it be started earlier ??
@@ -174,26 +205,6 @@ Sub DownloadWinchData
     WinchString = ""
 EndSub
 
-Sub InitWinchFile
-    Dim WinchTimeStamp(2) As String : Alias WinchTimeStamp = WinchDate, WinchTime
-    
-    Dim Winch_Latitude As String
-    Dim Winch_Longitude As String
-    
-    SplitStr(WinchTimeStamp, FileGPS.TimeStamp(4, status.Record - Winch_Start_RecNum), " ", 2, 5) ' Fixme TO test
-    
-    Winch_Latitude = FileGPS.Latitude(3, status.Record - Winch_Start_RecNum)
-    Winch_Longitude = FileGPS.Longitude(4, status.Record - Winch_Start_RecNum)
-
-    WinchFileName = Buoy_Name &"_"& Replace(WinchDate, "-", "") &"_"& Replace(WinchTime, ":", "")
-    WinchFile = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
-
-    
-    FileWrite(WinchFile,WinchTime&" "&WinchDate&CHR(10),0) ' Not Date with Slash anymore but with hyphen. Fixme
-    FileWrite(WinchFile,Buoy_Name&CHR(10),0)     
-    FileWrite(WinchFile,Winch_Latitude&","&Winch_Longitude&CHR(10),0)    
-    FileWrite(WinchFile,"D"&CHR(10),0)
-EndSub
 
 Sub CollectWinch
     Call CheckWinchStatus
