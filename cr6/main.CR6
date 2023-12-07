@@ -46,8 +46,8 @@ Public WhereAmI As String ' Debug Purposes
 Public ScanTimeStamp(2) As String : Alias ScanTimeStamp = ScanDate, ScanTime 
 
 Public TAGString As String * 2000
-Dim TAGFile As Long 
-Dim ToTransmit As Long ' --------- Fixme ToTransmitFile ?
+' Dim TAGFile As Long 
+' Dim ToTransmit As Long ' --------- Fixme ToTransmitFile ?
 
 '########### CR6 Scripts Imports (Includes)
 Include "CPU:buoy_config.cr6"                   '#   Declare Buoy Config
@@ -129,7 +129,7 @@ EndTable
 '   FileClose(ToTransmit)
 ' EndSub
 
-Function InitTagString as String
+Function InitTagString as String * 300 ' may be too much, but maybe not FIXME
   InitTagString = "[INIT]" & Buoy_Name & "," & ScanDate & "," & ScanTime & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
 EndFunction
 
@@ -199,13 +199,13 @@ BeginProg
 
   Scan(Buoy_Interval_Min,Min,0,0)
 
-  Call SetMetaInstrumentFlags
-  
-  Call GetScanDateTime
-  
   WhereAmI = "Initializing instrument"
 
   Call logging("Scan Start: ")
+
+  Call SetMetaInstrumentFlags
+  
+  Call GetScanDateTime
     
   Call PowerWaterDetectionMain
       
