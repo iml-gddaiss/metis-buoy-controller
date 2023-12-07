@@ -94,11 +94,11 @@ Sub ProcessWeather(Heading)
       EndIf
 
       TAGString &= "\n" & WindTagString()
-      Call WriteTagString
+      ' Call WriteTagString
     EndIf
     
     TAGString &= "\n" & ATMSTagString()
-    Call WriteTagString
+    ' Call WriteTagString
 
     UpdateWeatherTable = true
     

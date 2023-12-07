@@ -63,7 +63,7 @@ Sub SamplePowerController
     UpdatePowerTable = true
 
     TAGString &= "\n" & PowerTagString()
-    Call WriteTagString
+    ' Call WriteTagString
   
   EndIf
 EndSub

@@ -90,7 +90,7 @@ Sub CollectSUNA
     UpdateSUNATable = true
 
     TAGString &= "\n" & SUNATagString()
-    Call WriteTagString
+    ' Call WriteTagString
 
     WhereAmI = "End SUNA"
   EndIf

@@ -78,6 +78,6 @@ Sub CollectTriplet
     UpdateTripleTable = true
     
     TAGString &= "\n" & TripletTagString()
-    Call WriteTagString
+    ' Call WriteTagString
   EndIf
 EndSub

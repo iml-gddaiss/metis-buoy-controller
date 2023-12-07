@@ -238,7 +238,7 @@ BeginProg
   ' Call OpenTagsFiles
 
   TAGString = InitTagString()             'Requires Gps, Compass and WaterDectection Variables.
-  ' Call WriteTagString
+  ' ' Call WriteTagString
     
   Call SamplePowerController
 
@@ -296,7 +296,7 @@ BeginProg
   
   TAGString &= "\n" & EndTagString()
   CallTable FileTAGS
-  ' Call WriteTagString   
+  ' ' Call WriteTagString   
   ' Call CloseTagsFiles
 
   Call CollectWinch

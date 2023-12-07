@@ -129,7 +129,7 @@ Sub SampleSBE37
     UpdateSBE37Table = true
   
     TAGString &= "\n" & SBE37TagString()
-    Call WriteTagString
+    ' Call WriteTagString
     WhereAmI = "SBE37 Sampling finished"
     Call logging("SBE37 Sampled")
   EndIf
