@@ -314,7 +314,7 @@ BeginProg
 
       Call ADCPBreakSequence
 
-      Call ADCPUpdateSequence
+      ' Call ADCPUpdateSequence
 
       Call ADCPDeploySequence
 
