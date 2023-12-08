@@ -183,6 +183,7 @@ EndSub
 Sub GPSTimeAjustment 
   If With_GPS AND GPS_Date <> "" AND GPS_Time <> "" Then
     ClockSet(GPS_Date &" "& GPS_Time)
+    Call logging("Update Buoy  Clock with GPS")
   EndIf
 
 EndSub
@@ -312,6 +313,12 @@ BeginProg
       Call WellSwitchSequence
 
       Call ADCPBreakSequence
+
+      Call ADCPUpdateSequence
+
+      Call ADCPDeploySequence
+
+      Call ADCPShutdownSequence
 
       Call WinchStartSequence
     NextScan

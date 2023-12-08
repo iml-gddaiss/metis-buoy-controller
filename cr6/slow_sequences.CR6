@@ -59,6 +59,7 @@ Sub ADCPShutdownSequence
     If Shutdown_ADCP_Switch = true Then
         Call ShutdownADCP
     Shutdown_ADCP_Switch = false
+    EndIf
 EndSub
 
 Sub WinchStartSequence

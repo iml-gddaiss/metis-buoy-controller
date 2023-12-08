@@ -74,13 +74,13 @@ Public adcp_config_start_time As String * 20 ' 2023/01/01, 00:00:00
 Public adcp_config_ping_rate As String * 8 ' MM:SS.ss
 Public adcp_config_sampling_rate As String * 11 ' HH:MM:SS.ss
 
-Sub UpdateADCPConfiguration
-  Dim adcp_return_message As String * 200
+Dim adcp_return_message As String * 200
 
+Sub UpdateADCPConfiguration
   Call logging("Entering ADCP update sequence.")
   If 11 <= SerialADCP and SerialADCP <= 16 Then
     SerialBrk(SerialADCP,200)
-    Delay(1,Sec)
+    Delay(1,1,Sec)
     SerialIn(adcp_return_message,SerialADCP,200,"All Rights Reserved."&CHR(13),120)
     Call logging(adcp_return_message)   
   Else
@@ -91,7 +91,7 @@ Sub UpdateADCPConfiguration
   If adcp_config_start_time <> "" Then
     Call logging("TG"&adcp_config_start_time)   
     SerialOut(SerialADCP,"TG"&adcp_config_start_time&CHR(13),"",1,100)  
-    Delay(1,Sec)
+    Delay(1,1,Sec)
     SerialIn(adcp_return_message,SerialADCP,200,13,120)
     Call logging(adcp_return_message)   
   EndIf
@@ -99,28 +99,28 @@ Sub UpdateADCPConfiguration
   If adcp_config_ping_rate <> "" Then
     Call logging("TP"&adcp_config_ping_rate)
     SerialOut(SerialADCP,"TP"&adcp_config_ping_rate&CHR(13),"",1,100)
-    Delay(1,Sec)
+    Delay(1,1,Sec)
     SerialIn(adcp_return_message,SerialADCP,200,13,120)
     Call logging(adcp_return_message)     
   EndIf
 
-  If adcp_config_ensemble_rate <> "" Then
+  If adcp_config_sampling_rate <> "" Then
     Call logging("WP"&adcp_config_sampling_rate)
     SerialOut(SerialADCP,"WP"&adcp_config_sampling_rate&CHR(13),"",1,100)
-    Delay(1,Sec)
+    Delay(1,1,Sec)
     SerialIn(adcp_return_message,SerialADCP,200,13,120)
     Call logging(adcp_return_message)   
   EndIf
 
   Call logging("CK")
   SerialOut(SerialADCP,"CK"&CHR(13),"",1,100)
-  Delay(1,Sec)
+  Delay(1,1,Sec)
   SerialIn(adcp_return_message,SerialADCP,200,13,120)
   Call logging(adcp_return_message)   
   
   Call logging("CS")
   SerialOut(SerialADCP,"CS"&CHR(13),"",1,100)
-  Delay(1,Sec)
+  Delay(1,1,Sec)
   SerialIn(adcp_return_message,SerialADCP,200,13,120)
   Call logging(adcp_return_message)   
   
@@ -130,7 +130,7 @@ Sub DeployADCP
   Call logging("Entering ADCP Deploy sequence.")
   If 11 <= SerialADCP and SerialADCP <= 16 Then
     SerialBrk(SerialADCP,200)
-    Delay(1,Sec)
+    Delay(1,1,Sec)
     SerialIn(adcp_return_message,SerialADCP,200,"All Rights Reserved."&CHR(13),120)
     Call logging(adcp_return_message)   
   Else
@@ -139,7 +139,7 @@ Sub DeployADCP
   EndIf
   Call logging("CS")
   SerialOut(SerialADCP,"CS"&CHR(13),"",1,100)
-  Delay(1,Sec)
+  Delay(1,1,Sec)
   SerialIn(adcp_return_message,SerialADCP,200,13,120)
   Call logging(adcp_return_message)   
 EndSub
@@ -148,7 +148,7 @@ Sub ShutdownADCP
   Call logging("Entering ADCP Shutdown sequence.")
   If 11 <= SerialADCP and SerialADCP <= 16 Then
     SerialBrk(SerialADCP,200)
-    Delay(1,Sec)
+    Delay(1,1,Sec)
     SerialIn(adcp_return_message,SerialADCP,200,"All Rights Reserved."&CHR(13),120)
     Call logging(adcp_return_message)   
   Else
@@ -158,7 +158,7 @@ Sub ShutdownADCP
   
   Call logging("CK")
   SerialOut(SerialADCP,"CK"&CHR(13),"",1,100)
-  Delay(1,Sec)
+  Delay(1,1,Sec)
   SerialIn(adcp_return_message,SerialADCP,200,13,120)
   Call logging(adcp_return_message)   
 EndSub
