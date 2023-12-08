@@ -7,7 +7,7 @@ Sub PowerWellPump
     Call logging("Starting Well Pump")
     'Open Switch #2 to control pump for X sec
     SW12(SW12_2,1)
-    Well_IsPowered = True
+    Well_IsPowered = true
     
     Timer(Pump_Timer,Sec,2) 'Start timer #3 for the pump working for min. 30 sec
   
@@ -30,6 +30,6 @@ Sub StopWellPump
   WhereAmI = "Close pump"
   If Well_IsPowered Then
     SW12(SW12_2,0)
-    Well_IsPowered = False
+    Well_IsPowered = false
   EndIf
 EndSub

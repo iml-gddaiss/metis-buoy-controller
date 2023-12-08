@@ -17,8 +17,8 @@ Dim PCO2_Air(14) As String : Alias PCO2_Air = PCO2_A_Year, PCO2_A_Month, PCO2_A_
 Public PCO2_Last_Sampling As Long
 Public PCO2IsSampling As Boolean
 
-Dim PCO2AirIsCollected = false
-Dim PCO2WaterIsCollected = false
+Public PCO2AirIsCollected = false
+Public PCO2WaterIsCollected = false
 
 Dim UpdatePCO2Tables As Boolean = false
 
@@ -88,6 +88,7 @@ EndFunction
 
 Sub StartPCO2
   If (SBE37_In_Saltwater OR Bypass_Salinity) Then
+    Call logging("Starting PCO2")
     WhereAmI = "Start PCO2"  
 
     RawPCO2 = ""
@@ -114,6 +115,8 @@ Sub StartPCO2
     PCO2_Last_Sampling = Public.TimeStamp(1)
     PCO2WaterIsCollected = false
     PCO2AirIsCollected = false
+  Else
+    Call logging("Unable to start PCO2 (No salinity detected)")  
   EndIf
 EndSub
 
@@ -128,6 +131,7 @@ Function Collect_PCO2_Data(PCO2_Tag) As String
   'PCO2_Tag = "A M" or "W M"
   Dim Start_Pos  As Long
   Dim End_Pos As Long
+  Call logging("Collecting PCO2 Data")
   Start_Pos = InStr(1,RawPCO2,PCO2_Tag & ",",4) 'Search in RawPCO2
   End_Pos = InStr(Start_Pos,RawPCO2,CHR(10),2)
   If Start_Pos <> 0 AND End_Pos <> 0 Then
@@ -135,6 +139,7 @@ Function Collect_PCO2_Data(PCO2_Tag) As String
   Else
     Collect_PCO2_Data = ""
   EndIf
+  Call logging("PCO2 Data Collected: " & Collect_PCO2_Data)
 EndFunction
 
 
@@ -180,6 +185,7 @@ EndSub
 Sub PCO2Sampling  
   If With_PCO2 Then
     WhereAmI = "Entering PCO2 Loop"
+    Call logging("Entering PCO2 Sequence")
     
     If PCO2IsSampling Then
       Call CollectPCO2
@@ -198,6 +204,7 @@ Sub PCO2Sampling
       EndIf
     
     ElseIf (PCO2_Last_Sampling + (PCO2_Interval_Hr*3600) - 60 <= Public.TimeStamp(1)) Then 'minus 60sec to not skip a scan planned at PCO2_Interval hour (got 3599s and didn't sampled)
+      Call logging("PCO2 Ready to start.")
       Call StartPCO2  
     EndIf
 
