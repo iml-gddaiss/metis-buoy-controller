@@ -3,6 +3,11 @@ Public Manual_Well_Switch As Boolean = false
 Public Send_Break_to_ADCP As Boolean = false
 Public Start_Winch_Override As Boolean  = false
 
+Public Update_ADCP_Config As Boolean = false
+Public Deploy_ADCP_Switch As Boolean = false
+Public Shutdown_ADCP_Switch As Boolean = false
+
+
 Sub TowerSwitchSequence
     If Manual_Tower_Switch AND Not Tower_IsPowered Then
         SW12(SW12_1,1)
@@ -29,11 +34,31 @@ EndSub
 
 Sub ADCPBreakSequence 'Doest not work
     If Send_Break_to_ADCP Then
-        #If 11 <= SerialADCP and SerialADCP <= 16 Then
+        If 11 <= SerialADCP and SerialADCP <= 16 Then
             SerialBrk(SerialADCP,200)
-        #EndIf
+        EndIf
         Send_Break_to_ADCP = false
     EndIf
+EndSub
+
+Sub ADCPUpdateSequence
+    If Update_ADCP_Config = true Then
+        Call UpdateADCPConfiguration
+    EndIf   
+    Update_ADCP_Config = false
+EndSub
+
+Sub ADCPDeploySequence
+    If Deploy_ADCP_Switch = true Then
+        Call DeployADCP
+    EndIf
+    Deploy_ADCP_Switch = false
+EndSub
+
+Sub ADCPShutdownSequence
+    If Shutdown_ADCP_Switch = true Then
+        Call ShutdownADCP
+    Shutdown_ADCP_Switch = false
 EndSub
 
 Sub WinchStartSequence
