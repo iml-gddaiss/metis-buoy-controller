@@ -202,7 +202,10 @@ BeginProg
 
   WhereAmI = "Initializing instrument"
 
-  Call logging("Scan Start: ")
+  Call logging("Scan Start")
+
+  Call logging("SlowSequenceLock Set (Well, Tower, Winch)")
+  SlowSequenceLocked = True
 
   Call SetMetaInstrumentFlags
   
@@ -306,6 +309,9 @@ BeginProg
   ' Call CloseTagsFiles
 
   Call CollectWinch
+
+  Call logging("SlowSequenceLock Unset (Well, Tower, Winch)")
+  SlowSequenceLocked = false
   
   WhereAmI = "Scan end"
   Call logging("Scan finished.")
@@ -314,9 +320,13 @@ BeginProg
 	
   SlowSequence
     Scan(1,Sec,0,0)
-      Call TowerSwitchSequence
+      If NOT SlowSequenceLocked Then
+        Call TowerSwitchSequence
 
-      Call WellSwitchSequence
+        Call WellSwitchSequence
+
+        Call WinchStartSequence
+      EndIf
 
       Call ADCPBreakSequence
 
@@ -326,7 +336,6 @@ BeginProg
 
       Call ADCPShutdownSequence
 
-      Call WinchStartSequence
     NextScan
 EndProg
 

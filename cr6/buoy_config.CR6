@@ -13,7 +13,7 @@ ConstTable (Buoy_Config,0)
     Const Depth_for_Winch = 210
 
     ' ### Control Switches ###
-    Const Bypass_Salinity As Boolean = false
+    Const Bypass_Salinity As Boolean = true
     Const Disable_Well_Pump As Boolean = false
     Const Seafet_Auto_Calculation As Boolean = true
 

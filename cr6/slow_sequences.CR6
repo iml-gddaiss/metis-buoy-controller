@@ -1,8 +1,10 @@
+Public SlowSequenceLocked As Boolean = false
 Public Manual_Tower_Switch As Boolean = false
 Public Manual_Well_Switch As Boolean = false
-Public Send_Break_to_ADCP As Boolean = false
+
 Public Start_Winch_Override As Boolean  = false
 
+Public Send_Break_to_ADCP As Boolean = false
 'Public Update_ADCP_Config As Boolean = false
 Public Deploy_ADCP_Switch As Boolean = false
 Public Shutdown_ADCP_Switch As Boolean = false
@@ -26,7 +28,7 @@ Sub WellSwitchSequence
         Well_IsPowered = true
     EndIf
         
-    If NOT Manual_Well_Switch AND Well_IsPowered Then
+    If NOT Manual_Well_Switch AND Well_IsPowered Then 
         SW12(SW12_2,0)
         Well_IsPowered = false
     EndIf
@@ -63,9 +65,7 @@ Sub ADCPShutdownSequence
 EndSub
 
 Sub WinchStartSequence
-    ' FIXME: Might be problematic if Scan Starts.
     If Start_Winch_Override Then
-        'TODO Add a check to skip if its too close to a scan
         Call WinchMission
 
         Start_Winch_Override = false
