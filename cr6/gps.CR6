@@ -44,14 +44,8 @@ EndSub
 Sub CollectGPS(Optional single_sample As Boolean = false)
     Dim X, number_of_sample
     Dim UV(2) As Float = {0, 0}: Alias UV = U, V
-    Dim TestVar As String * 100 = "ABCDEF"
-    
-    Call logging("TestVar: " & TestVar)
-
-    TestVar = "Dim in Subs are not ReInitialized ..."
 
     UV() = 0
-    Call logging("Test for var reset (UV): " & UV() & "//" & UV & "//" & UV(1) & UV(2)) 
     GPS_HVS() = "" ' Reset Var
     
     Latitude = "" ' Reset to missing ? -> "#°#'#" or empty

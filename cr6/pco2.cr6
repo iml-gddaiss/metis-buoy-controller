@@ -64,9 +64,9 @@ DataTable(FilePCO2A,UpdatePCO2Tables,-1)
   Sample (1,PCO2_A_Gaz_Pressure,IEEE4)
   Sample (1,PCO2_A_Voltage,IEEE4)
   Sample (1,RawPCO2,String)
-   Sample (1,RawPCO2_Air,String)
+  Sample (1,RawPCO2_Air,String)
 EndTable
-
+  
 
 Function PCO2TagString As String
   Dim CO2_Air = "#.#"
@@ -122,6 +122,7 @@ EndSub
 
 
 Sub ClosePC02
+  Call logging("Closing PCO2 Serial Port")
   SerialFlush(SerialPCO2)
   SerialClose(SerialPCO2)
 EndSub
@@ -131,7 +132,7 @@ Function Collect_PCO2_Data(PCO2_Tag) As String
   'PCO2_Tag = "A M" or "W M"
   Dim Start_Pos  As Long
   Dim End_Pos As Long
-  Call logging("Collecting PCO2 Data")
+  
   Start_Pos = InStr(1,RawPCO2,PCO2_Tag & ",",4) 'Search in RawPCO2
   End_Pos = InStr(Start_Pos,RawPCO2,CHR(10),2)
   If Start_Pos <> 0 AND End_Pos <> 0 Then
@@ -144,6 +145,7 @@ EndFunction
 
 
 Sub CollectPCO2
+  Call logging("Collecting PCO2 Data")
   SerialIn(RawPCO2,SerialPCO2,10,"Sample Complete",500)
 
   If NOT PCO2WaterIsCollected Then
@@ -170,7 +172,8 @@ EndSub
 
 Sub PCO2WatchDog
  'Watchdog if there's no data in 1Hour (if power disconnected during sampling)
-  If (PCO2_Last_Sampling + 3600) < Public.TimeStamp(1) Then  
+  If (PCO2_Last_Sampling + 3600) < Public.TimeStamp(1) Then
+    Call logging("PCO2 Watchdog Triggered")
     If PCO2WaterIsCollected OR PCO2AirIsCollected Then
       Call WritePCO2Tables
       UpdatePCO2Tables = true
@@ -213,6 +216,7 @@ EndSub
 
 Sub ResetPCO2RawStrings
   If UpdatePCO2Tables Then
+    Call logging("PCO2 String Resetted")
     RawPCO2_Air = ""
     RawPCO2_Water = ""
     PCO2WaterIsCollected = false
