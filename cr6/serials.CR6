@@ -1,3 +1,5 @@
+' Water Detectuin Channel is declared in water_detection.CR6
+
 Const SerialLogging = 1 ' RS232 CPI
 Const SerialADCP = 12 'U3-U4
 
@@ -26,11 +28,14 @@ Const SerialSUNA = 41 'RS232
 '## -------  ##
 
 '## Address 8 ##
-' 44                 ' Doesn't Compile when using 44 as serial.
+' 44                 ' Doesn't Compile if a BreakSignal is sent to serial 44.
 Const SerialPower = 45 'RS485
 Const SerialWave = 46 'RS232
 ' 47 Does Not Exist
 '## -------  ##
+
+'## CHANNELS IO ##
+Const Water_Detection_Channel = U1 'Voltage reading
 
 
 Sub CloseCR6SerialPorts

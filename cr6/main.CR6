@@ -183,7 +183,7 @@ EndSub
 Sub GPSTimeAjustment 
   If With_GPS AND GPS_Date <> "" AND GPS_Time <> "" Then
     ClockSet(GPS_Date &" "& GPS_Time)
-    Call logging("Update Buoy  Clock with GPS")
+    Call logging("Update Buoy Clock with GPS")
   EndIf
 
 EndSub
@@ -266,12 +266,17 @@ BeginProg
   Call CollectADCP
   
   Call PCO2Sampling
+
+  Call logging("Scan Sampling Done.")
   
-  Call WinchMission      
+  Call WinchMission
+
+  Call logging("Closing serial ports.")
 
   Call CloseSerialPorts
 
   ' ### Updating Table Files ### ' Each Table is define with an update Condition.
+  Call logging("Updating Tables.")
   CallTable FileGPS
   CallTable FileCompass
   CallTable FilePower
@@ -303,6 +308,7 @@ BeginProg
   Call CollectWinch
   
   WhereAmI = "Scan end"
+  Call logging("Scan finished.")
   
   NextScan
 	

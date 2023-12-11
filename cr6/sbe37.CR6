@@ -47,7 +47,7 @@ Sub SBE37SalinityCheck
 
   SBE37_In_Saltwater = false
   
-  If With_SBE37 Then
+  If With_SBE37 Then ' NOT IF BYPASS SALINITY IS TRUE ?? FIMXE
     WhereAmI = "SBE37 Salinity Check"
     Call logging("SBE37 Salinity Check")
     

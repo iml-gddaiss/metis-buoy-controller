@@ -17,8 +17,8 @@ Dim PCO2_Air(14) As String : Alias PCO2_Air = PCO2_A_Year, PCO2_A_Month, PCO2_A_
 Public PCO2_Last_Sampling As Long
 Public PCO2IsSampling As Boolean
 
-Public PCO2AirIsCollected = false
-Public PCO2WaterIsCollected = false
+Public PCO2AirIsCollected As Boolean = false
+Public PCO2WaterIsCollected As Boolean = false
 
 Dim UpdatePCO2Tables As Boolean = false
 

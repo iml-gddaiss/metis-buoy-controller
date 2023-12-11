@@ -49,9 +49,10 @@ Sub CollectADCP
         For Y = 1 To 4 Step 1 'Removes all single spaces (up to 8 space -> 1)
           ADCP(X) = Replace(ADCP(X),"  "," ")
         Next Y
-        ADCP(X) = LTrim(ADCP(X))
-       ADCP(X) = Replace(ADCP(X)," ",",")
+        ADCP(X) = LTrim(ADCP(X)) 
+        ADCP(X) = Replace(ADCP(X)," ",",")
       EndIf
+      ADCP(X) = Replace(ADCP(X),CHR(13),"") ' Fixme Check if its ok.
       Call logging("Row " & X & ": " & ADCP(X))
     Next X
 

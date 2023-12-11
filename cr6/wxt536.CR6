@@ -52,6 +52,7 @@ EndTable
 
 Sub StartRainTimer
   If With_WXT536 Then
+    Call logging("Starting Rain Timer")
     Timer(Rain_Timer,Hr, 0)
   EndIf
 EndSub
