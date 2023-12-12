@@ -5,7 +5,7 @@ ConstTable (Buoy_Config,0)
     
     Const Buoy_Configuration = "As Follow" 
     ' ### Sampling Interval ####
-    Const Buoy_Interval_Min = 1 
+    Const Buoy_Interval_Min = 5
     Const PCO2_Interval_Hr = 12
     Const Winch_Interval_Hr = 5
    
@@ -13,7 +13,7 @@ ConstTable (Buoy_Config,0)
     Const Depth_for_Winch = 210
 
     ' ### Control Switches ###
-    Const Bypass_Salinity As Boolean = false
+    Const Bypass_Salinity As Boolean = true
     Const Disable_Well_Pump As Boolean = false
     Const Seafet_Auto_Calculation As Boolean = true
 
@@ -22,40 +22,41 @@ ConstTable (Buoy_Config,0)
     ' ### Instruments Enable/Disable Switches ###
     Const Instrument_Installed = "As Follow" 
     Const With_GPS As Boolean = true
-    Const With_WMT700 As Boolean = false
-    Const With_WXT536 As Boolean = false
-    Const With_Compass As Boolean = false
-    Const With_PAR As Boolean = false
+    Const With_WMT700 As Boolean = true
+    Const With_WXT536 As Boolean = true
+    Const With_Compass As Boolean = true
+    Const With_PAR As Boolean = true
     Const With_OCR_I As Boolean = false
 
-    Const With_SBE37 As Boolean = false
-    Const With_Seafet As Boolean = false
-    Const With_Triplet As Boolean = false
-    Const With_SUNA As Boolean = false
-    Const With_PCO2 As Boolean = false
+    Const With_SBE37 As Boolean = true
+    Const With_Seafet As Boolean = true
+    Const With_Triplet As Boolean = true
+    Const With_SUNA As Boolean = true
+    Const With_PCO2 As Boolean = true
     Const With_OCR_R As Boolean = false
 
-    Const With_Wave As Boolean = false
-    Const With_ADCP As Boolean = false
+    Const With_Wave As Boolean = true
+    Const With_ADCP As Boolean = true
     Const With_Winch As Boolean = false
-    Const With_Water_Detection_Main As Boolean = false
-    Const With_Power As Boolean = false
+    Const With_Water_Detection_Main As Boolean = true
+    Const With_Power As Boolean = true
     
 EndConstTable
 
-Public With_Tower_485 As Boolean = false
-Public With_Tower_Power As Boolean = false
-Public With_Wind As Boolean = false
-Public With_Weather As Boolean = false
-Public With_Well_Pump As Boolean = false
+Public With_Tower_485 = With_WXT536 OR With_WMT700 OR With_Compass       
+Public With_Tower_Power= With_PAR OR With_WMT700 OR With_Compass OR With_OCR_I
+Public With_Wind = With_WXT536 OR With_WMT700
+Public With_Weather = With_Wind OR With_PAR
+Public With_Well_Pump = With_SBE37 OR With_Seafet OR With_SUNA OR With_OCR_R
 
-Sub SetMetaInstrumentFlags
-    With_Tower_485 = With_WXT536 OR With_WMT700 OR With_Compass       
-    With_Tower_Power= With_PAR OR With_WMT700 OR With_Compass OR With_OCR_I
-    With_Wind = With_WXT536 OR With_WMT700
-    With_Weather = With_Wind OR With_PAR
-    With_Well_Pump = With_SBE37 OR With_Seafet OR With_SUNA OR With_OCR_R
-EndSub
+' ### Probably not needed, the programmed shoud be recompiled when apply/restart is set to true.
+' Sub SetMetaInstrumentFlags 
+'     With_Tower_485 = With_WXT536 OR With_WMT700 OR With_Compass       
+'     With_Tower_Power= With_PAR OR With_WMT700 OR With_Compass OR With_OCR_I
+'     With_Wind = With_WXT536 OR With_WMT700
+'     With_Weather = With_Wind OR With_PAR
+'     With_Well_Pump = With_SBE37 OR With_Seafet OR With_SUNA OR With_OCR_R
+' EndSub
 
 ' ###   Below are Constants the should not be changed by the user.  ###
 ' ###                Hence not in the Constant Table                ###
@@ -71,11 +72,11 @@ Const ADCP_Num_Bin = 27
 
 ' Sample Sizes (For time average)
 Const GPS_Sample_Size = 10     ' 1 per second for 10 seconds. ' GPS should be setup to 1 sec interval to get GPS_Sample_Size to correspond to seconds.
-Const Compass_Sample_Size = 60 ' 1 per second for 60 seconds
+Const Compass_Sample_Size = 60 ' 2 per second for 30 seconds
 
 ' Timers Delay                  -Associated Timers-
 Const Well_Pump_Delay_Sec = 30  '(Pump_Timer)
-Const Weather_Delay_Sec = 60    '(Weather_Time)
+Const Weather_Delay_Sec = 61    '(Weather_Time): PAR takes at least 60 s
 Const Suna_Delay_Sec = 12       '(Suna_Timer)
 Const WMT700_Delay_Sec = 8      '(Tower_Timer)
 Const Compass_Delay_Sec = 4     '(Tower_Timer)

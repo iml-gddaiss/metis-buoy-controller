@@ -31,7 +31,7 @@ Units Hail_Intensity = mm/h
 
 
 '### Tables ###
-DataTable(FileWXT536,UpdateWXT536Table,-1) 'Set table size to # of records, or -1 to autoallocate.
+DataTable(FileWXT536,UpdateWXT536Table,-1)
   DataInterval (0,0,Sec,10)
   Sample (1,Air_Temp,IEEE4)
   Sample (1,Air_Humidity,IEEE4)
@@ -52,6 +52,7 @@ EndTable
 
 Sub StartRainTimer
   If With_WXT536 Then
+    Call logging("Starting Rain Timer")
     Timer(Rain_Timer,Hr, 0)
   EndIf
 EndSub

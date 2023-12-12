@@ -61,8 +61,8 @@ Sub SampleWave
 
     UpdateWaveTable = true
     
-    TAGString = WaveTagString()
-    Call WriteTagString
+    TAGString &= "\n" & WaveTagString()
+    ' Call WriteTagString
 
     WhereAmI = "Finish Wave"
   EndIf

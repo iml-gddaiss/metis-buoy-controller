@@ -1,15 +1,15 @@
 Dim Well_IsPowered As Boolean  ' Flag for Well Pump State
 
 Sub PowerWellPump
-  'Starting pump
   If (SBE37_In_SaltWater OR Bypass_Salinity) AND (With_Well_Pump AND NOT Disable_Well_Pump) Then
     WhereAmI = "Start Well Pump"
     Call logging("Starting Well Pump")
-    'Open Switch #2 to control pump for X sec
-    SW12(SW12_2,1)
-    Well_IsPowered = True
+   
+    SW12(SW12_2,1)  'Open Switch #2 to control pump for X sec
+    Well_IsPowered = true
     
-    Timer(Pump_Timer,Sec,2) 'Start timer #3 for the pump working for min. 30 sec
+    Timer(Pump_Timer,Sec,2) 'Well pump need to be run at least 30 sec
+                            'for SBE37, Seafet, SUNA, OCR_R (Sensor Conditionning).
   
   EndIf
 EndSub
@@ -21,6 +21,7 @@ Sub WaitForWellPump
     WhereAmI = "See if pump is running 30sec"
     Call TimerDelay_Sec(Pump_Timer, Well_Pump_Delay_Sec)
     WhereAmI = "Pump ran 30sec"
+    Call logging("Pump ran 30sec")
   EndIf
 EndSub
 
@@ -29,6 +30,6 @@ Sub StopWellPump
   WhereAmI = "Close pump"
   If Well_IsPowered Then
     SW12(SW12_2,0)
-    Well_IsPowered = False
+    Well_IsPowered = false
   EndIf
 EndSub

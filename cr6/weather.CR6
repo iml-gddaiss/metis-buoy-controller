@@ -93,12 +93,12 @@ Sub ProcessWeather(Heading)
         Call WindHeadingCorrection(Heading)
       EndIf
 
-      TAGString = WindTagString()
-      Call WriteTagString
+      TAGString &= "\n" & WindTagString()
+      ' Call WriteTagString
     EndIf
     
-    TAGString = ATMSTagString()
-    Call WriteTagString
+    TAGString &= "\n" & ATMSTagString()
+    ' Call WriteTagString
 
     UpdateWeatherTable = true
     

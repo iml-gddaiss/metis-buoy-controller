@@ -230,8 +230,8 @@ Sub SampleSeafet(Water_Temp, Salinity)
 
     UpdateSeafetTable = false
     
-    TAGString = PHTagString() 
-    Call WriteTagString
+    TAGString &= "\n" & PHTagString() 
+    ' Call WriteTagString
     WhereAmI = "End Seafet"
     Call logging("Seafet Sampled")
   EndIf

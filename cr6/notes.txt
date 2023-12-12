@@ -4,16 +4,14 @@
 
 .. General
 ... Add better Docstring
+.... Add script depency (on other script variables) in the script doc strings
 ... Reset some variable on every scan mostly those used for for processing other data. (SBE37, GPS, Compass)
+... DIM in SUB are only init at compilation time. TODO reset them manually.
 
 .. Envoyer des alarmes/emails/texto:
 ... Lorsque la bouée est hors position (dérive)
 ... Lorsque les batteries sont basses
 ... Lorsque qu'un instrument n'a pas échantionné correctement.
-
-.. Data Files.
-... Ajouter un fichier qui contiendrait tous les profils de winch (comme le TagFile.dat qui contient toutes les transmissions), pour qu’on puisse supprimer les fichiers de transmission et de profil unique.
-... Tester l’enregistrement des DataTable sur le carte µSD, pour voir si ça s’ajoute dans le « Connect > File Control » ou si ça reste transparent.
 
 .. PortFlags
 ... BatteryLow = Voltage < BatteryLow_Thres
@@ -27,16 +25,21 @@
 
 
 .. DataTables
-... Make new Table TagString.
-.... Check how Collect work. Size wise, to know how much that is transfered. If all the table is transfered every time, we can just overwrite the same row.
 ... Add units to every table. 
+
+.. Winch on Demand
+.... Skip if its too close to the next scan. to prevent unexpected threading problem.
 
 .. Compass
 .. Pourquoi un délais de 400ms
 
-.. Test Winch code
+.. To Test
+.. Test Timer (set / resets)
+.. Winch code
 ... Getting the Timestamp from the index of the winch start.
-
-.. Test New OCR
-
-.. Test Triplet String formatting
+... Winch on Demande.
+.. GPS: test new GPS optional single_sample for Winch.
+.. New OCR
+.. Triplet String formatting
+.. TagString Table
+.. 

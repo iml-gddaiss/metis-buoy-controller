@@ -47,11 +47,9 @@ Sub SBE37SalinityCheck
 
   SBE37_In_Saltwater = false
   
-  If With_SBE37 Then
+  If With_SBE37 AND Not Bypass_Salinity Then ' NOT IF BYPASS SALINITY IS TRUE ?? FIMXE
     WhereAmI = "SBE37 Salinity Check"
     Call logging("SBE37 Salinity Check")
-    
-    RawSBE37_Test = ""
     
     Call StartSBE37
     
@@ -72,9 +70,8 @@ Sub SBE37SalinityCheck
       EndIf
     Next X
     
-    
-    Call logging("SBE37_In_Saltwater: " & SBE37_In_Saltwater)
     SerialClose(SerialSBE37)
+    Call logging("SBE37_In_Saltwater: " & SBE37_In_Saltwater)
   EndIf  
 EndSub
 
@@ -128,8 +125,8 @@ Sub SampleSBE37
 
     UpdateSBE37Table = true
   
-    TAGString = SBE37TagString()
-    Call WriteTagString
+    TAGString &= "\n" & SBE37TagString()
+    ' Call WriteTagString
     WhereAmI = "SBE37 Sampling finished"
     Call logging("SBE37 Sampled")
   EndIf
