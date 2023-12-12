@@ -2,18 +2,6 @@
 '### Serial Port ###
 ' Const SerialPCO2 = 40 'RS232
 
-
-'### Data Variables ###
-Dim RawPCO2 As String * 1000
-Dim RawPCO2_Air As String * 100
-Dim RawPCO2_Water As String * 100
-
-Const PCO2_Water_Tag = "W M"
-Const PCO2_Air_Tag = "A M"
-
-Dim PCO2_Water(14) As String : Alias PCO2_Water = PCO2_W_Year, PCO2_W_Month, PCO2_W_Day, PCO2_W_Hour, PCO2_W_Minute, PCO2_W_Second, PCO2_W_Zero, PCO2_W_AD, PCO2_W_CO2, Ave_W_IRGA, PCO2_W_Humidity, PCO2_W_Temp, PCO2_W_Gaz_Pressure, PCO2_W_Voltage
-Dim PCO2_Air(14) As String : Alias PCO2_Air = PCO2_A_Year, PCO2_A_Month, PCO2_A_Day, PCO2_A_Hour, PCO2_A_Minute, PCO2_A_Second, PCO2_A_Zero, PCO2_A_AD, PCO2_A_CO2, Ave_A_IRGA, PCO2_A_Humidity, PCO2_A_Temp, PCO2_A_Gaz_Pressure, PCO2_A_Voltage
-
 Public PCO2_Last_Sampling As Long
 Public PCO2IsSampling As Boolean
 
@@ -23,29 +11,60 @@ Public PCO2WaterIsCollected As Boolean = false
 Dim UpdatePCO2Tables As Boolean = false
 
 
-'### Units ###
-Units PCO2_W_CO2 = ppm
-Units PCO2_A_CO2 = ppm
-Units PCO2_W_Gaz_Pressure = mbar
-Units PCO2_A_Gaz_Pressure = mbar
-Units PCO2_W_Humidity = % ' <------------------- Why ? FIXME
-Units PCO2_A_Humidity = % 'added  FIXME
+'### Data Variables ###
+Dim RawPCO2 As String * 1000
+Dim RawPCO2_Air As String * 100
+Dim RawPCO2_Water As String * 100
+
+Const PCO2_Water_Tag = "W M"
+Const PCO2_Air_Tag = "A M"
+
+StructureType PCO2_Struct
+  Year As String
+  Month As String
+  Day As String
+  Hour As String
+  Minute As String
+  Second As String
+  Zero As Float
+  Current As Float
+  CO2 As Float
+  IRGA As Float
+  Humidity As Float
+  Temperature As Float
+  Gaz_Pressure As Float
+  Voltage As Float
+  
+  Units Zero = counts
+  Units Current = counts
+  Units CO2 = ppm
+  Units IRGA = °C
+  Units Humidity = %
+  Units Temperature = °C
+  Units Gaz_Pressure = mbar
+  Units Voltage = volts
+  
+  ReadOnly Year, Month, Day, Hour, Minute, Second, Zero, Current, CO2, IRGA, Humidity, Temperature, Gaz_Pressure, Voltage
+EndStructureType
+
+Dim PCO2_Water As PCO2_Struct
+Dim PCO2_Air As PCO2_Struct
 
 
 '### Tables ###
 DataTable(FilePCO2W,UpdatePCO2Tables,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,PCO2_Water_Tag,String) ' Is it nescessary ? FIXME
-  Sample (1,PCO2_W_Year &"-"& PCO2_W_Month &"-"& PCO2_W_Day,String) : FieldNames("PCO2_W_Date")
-  Sample (1,PCO2_W_Hour &":"& PCO2_W_Minute &":"& PCO2_W_Second,String) : FieldNames("PCO2_W_Time")
-  Sample (1,PCO2_W_Zero,IEEE4)
-  Sample (1,PCO2_W_AD,IEEE4)
-  Sample (1,PCO2_W_CO2,String)
-  Sample (1,Ave_W_IRGA,IEEE4)
-  Sample (1,PCO2_W_Humidity,IEEE4)
-  Sample (1,PCO2_W_Temp,IEEE4)
-  Sample (1,PCO2_W_Gaz_Pressure,IEEE4)
-  Sample (1,PCO2_W_Voltage,IEEE4)
+  Sample (1,PCO2_Water.Year &"-"& PCO2_Water.Month &"-"& PCO2_Water.Day, String) : FieldNames("Date")
+  Sample (1,PCO2_Water.Hour &":"& PCO2_Water.Minute &":"& PCO2_Water.Second, String) : FieldNames("Time")
+  Sample (1,PCO2_Water.Zero,IEEE4)
+  Sample (1,PCO2_Water.Current,IEEE4)
+  Sample (1,PCO2_Water.CO2,String)
+  Sample (1,PCO2_Water.IRGA,IEEE4)
+  Sample (1,PCO2_Water.Humidity,IEEE4)
+  Sample (1,PCO2_Water.Temperature,IEEE4)
+  Sample (1,PCO2_Water.Gaz_Pressure,IEEE4)
+  Sample (1,PCO2_Water.Voltage,IEEE4)
   Sample (1,RawPCO2,String)
   Sample (1,RawPCO2_Water,String)
 EndTable
@@ -53,20 +72,21 @@ EndTable
 DataTable(FilePCO2A,UpdatePCO2Tables,-1)
   DataInterval(0,0,Sec,10)
   Sample (1,PCO2_Air_Tag,String) ' Is it nescessary ? FIXME
-  Sample (1,PCO2_A_Year &"-"& PCO2_A_Month &"-"& PCO2_A_Day,String) : FieldNames("PCO2_A_Date")
-  Sample (1,PCO2_A_Hour &":"& PCO2_A_Minute &":"& PCO2_A_Second,String) : FieldNames("PCO2_A_Time")
-  Sample (1,PCO2_A_Zero,IEEE4)
-  Sample (1,PCO2_A_AD,IEEE4)
-  Sample (1,PCO2_A_CO2,String)
-  Sample (1,Ave_A_IRGA,IEEE4)
-  Sample (1,PCO2_A_Humidity,IEEE4)
-  Sample (1,PCO2_A_Temp,IEEE4)
-  Sample (1,PCO2_A_Gaz_Pressure,IEEE4)
-  Sample (1,PCO2_A_Voltage,IEEE4)
+  Sample (1,PCO2_Air.Year &"-"& PCO2_Air.Month &"-"& PCO2_Air.Day, String) : FieldNames("Date")
+  Sample (1,PCO2_Air.Hour &":"& PCO2_Air.Minute &":"& PCO2_Air.Second, String) : FieldNames("Time")
+  Sample (1,PCO2_Air.Zero,IEEE4)
+  Sample (1,PCO2_Air.Current,IEEE4)
+  Sample (1,PCO2_Air.CO2,String)
+  Sample (1,PCO2_Air.IRGA,IEEE4)
+  Sample (1,PCO2_Air.Humidity,IEEE4)
+  Sample (1,PCO2_Air.Temperature,IEEE4)
+  Sample (1,PCO2_Air.Gaz_Pressure,IEEE4)
+  Sample (1,PCO2_Air.Voltage,IEEE4)
   Sample (1,RawPCO2,String)
   Sample (1,RawPCO2_Air,String)
 EndTable
-  
+
+
 
 Function PCO2TagString As String
   Dim CO2_Air As String 
@@ -83,7 +103,7 @@ Function PCO2TagString As String
     CO2_Water = PCO2_A_CO2
   Endif
     
-  PCO2TagString = "[PCO2]" & CO2_Air & "," & CO2_Water & "," & PCO2_W_Gaz_Pressure & "," & PCO2_A_Gaz_Pressure & "," & PCO2_A_Humidity
+  PCO2TagString = "[PCO2]" & PCO2_Air.CO2 & "," & PCO2_Water.CO2 & "," & PCO2_Water.Gaz_Pressure & "," & PCO2_Air.Gaz_Pressure & "," & PCO2_Air.Humidity
 EndFunction
 
 

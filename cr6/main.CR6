@@ -230,7 +230,7 @@ BeginProg
   Call StartSUNA         ' why don't isn't SUNA started in THE begining --- FIXME ---
   Call SampleOCRs
   Call SampleSBE37
-  Call SampleSeafet(Water_Temp, Salinity)
+  Call SampleSeafet(SBE37.WaterTemperature, SBE37.Salinity)
   Call CollectSUNA
   Call StopWellPump 
   

@@ -19,8 +19,8 @@ DataTable (FileSeafet,UpdateSeafetTable,-1)
   DataInterval (0,0,Sec,10)
   Sample (1,Ext_pH_Calc,IEEE4).  ' Pourquoi il y a un point -------------------------
   Sample (1,Int_pH_Calc,IEEE4)
-  Sample (1,Water_Temp,IEEE4)
-  Sample (1,Salinity,IEEE4)
+  Sample (1,SBE37.Temperature,IEEE4)
+  Sample (1,SBE37.Salinity,IEEE4)
   Sample (1,K0_Ext,IEEE4)
   Sample (1,K2_Ext,IEEE4)
   Sample (1,K0_Int,IEEE4)
@@ -122,7 +122,7 @@ Function LOG_10(X) As Float
   LOG_10 = LOG(X) / LOG(10)
 EndFunction
 
-Sub SeafetpH_Calc(Water_Temp, Salinity)
+Sub SeafetpH_Calc(Temperature, Salinity)
   ' Compute pH Ext and Int from raw Voltage and InSitu temperature and salinity.
   ' From Sea-Bird Scientific documentation.
   '
@@ -187,33 +187,33 @@ Sub SeafetpH_Calc(Water_Temp, Salinity)
   Call logging("Carrying Seafet Correction")
   Seafet_pH_Calc() = ""
   
-  Dim Snernst, Clt, log_yHClT, St, Water_Temp_K, I, Adh
+  Dim Snernst, Clt, log_yHClT, St, Temperature_K, I, Adh
   Dim Ks_Tab(6) : Alias Ks_Tab = Ks1, Ks2, Ks3, Ks4, Ks5, Ks
     
-  Water_Temp_K = KelvinToCelsius + Water_Temp
+  Temperature_K = KelvinToCelsius + Temperature
   
-  Snernst = (GasConstantR*Water_Temp_K*LOG(10))/FaradayConstant                    ' Nernst equation
+  Snernst = (GasConstantR*Temperature_K*LOG(10))/FaradayConstant                    ' Nernst equation
   Clt = (0.99889/35.453)*(Salinity/1.80655)*(1000/(1000-(1.005*Salinity)))         ' total_chloride_in_seawater
   I = (19.924*Salinity)/(1000-(1.005*Salinity))                                    ' sample_ionic_strength
-  Adh = (0.0000034286*(Water_Temp^2))+(0.00067524*Water_Temp)+0.49172143           ' debye_huckel_HCl_activity_constant
-  log_yHClT = (-Adh*SQR(I))/(1+(1.394*SQR(I)))+((0.08885-(0.000111*Water_Temp))*I) ' log_of_HCl_activity_as_temperature_function
+  Adh = (0.0000034286*(Temperature^2))+(0.00067524*Temperature)+0.49172143           ' debye_huckel_HCl_activity_constant
+  log_yHClT = (-Adh*SQR(I))/(1+(1.394*SQR(I)))+((0.08885-(0.000111*Temperature))*I) ' log_of_HCl_activity_as_temperature_function
   St = (0.1400/96.062)*(Salinity/1.80655)                                          ' total_sulfate_in_seawater
   
   ' acid_dissociation_constant_HSO4
-  Ks1 = (-4276.1/Water_Temp_K)+141.328-(23.093*LOG(Water_Temp_K))
-  Ks2 = ((-13856/Water_Temp_K)+324.57-(47.986*LOG(Water_Temp_K)))*SQR(I)
-  Ks3 = ((35474/Water_Temp_K)-771.54+(114.723*LOG(Water_Temp_K)))*I
-  Ks4 = -(2698/Water_Temp_K)*I^1.5
-  Ks5 = (1776/Water_Temp_K)*I^2
+  Ks1 = (-4276.1/Temperature_K)+141.328-(23.093*LOG(Temperature_K))
+  Ks2 = ((-13856/Temperature_K)+324.57-(47.986*LOG(Temperature_K)))*SQR(I)
+  Ks3 = ((35474/Temperature_K)-771.54+(114.723*LOG(Temperature_K)))*I
+  Ks4 = -(2698/Temperature_K)*I^1.5
+  Ks5 = (1776/Temperature_K)*I^2
   Ks = (1-(0.001005*Salinity))*EXP(Ks1+Ks2+Ks3+Ks4+Ks5)
   
-  Int_pH_Calc = Round((CTYPE(Volt_Int_pH,Float) - K0_Int - (K2_Int*Water_Temp))/Snernst,4)
-  Ext_pH_Calc = Round(((CTYPE(Volt_Ext_pH,Float) - K0_Ext - (K2_Ext*Water_Temp))/Snernst) + LOG_10(Clt) + (2*log_yHClT) - LOG_10(1+(St/Ks)) - LOG_10((1000-(1.005*Salinity))/1000),4)
+  Int_pH_Calc = Round((CTYPE(Volt_Int_pH,Float) - K0_Int - (K2_Int*Temperature))/Snernst,4)
+  Ext_pH_Calc = Round(((CTYPE(Volt_Ext_pH,Float) - K0_Ext - (K2_Ext*Temperature))/Snernst) + LOG_10(Clt) + (2*log_yHClT) - LOG_10(1+(St/Ks)) - LOG_10((1000-(1.005*Salinity))/1000),4)
 
 EndSub
 
 
-Sub SampleSeafet(Water_Temp, Salinity)
+Sub SampleSeafet(Temperature, Salinity)
   If With_Seafet Then
     Call logging("Sampling Seafet")
     WhereAmI = "Sample Seafet"
@@ -225,7 +225,7 @@ Sub SampleSeafet(Water_Temp, Salinity)
     If Seafet_Auto_Calculation AND SBE37_In_Saltwater Then      
       Call FetchSeafetCoefficents
 
-      Call SeafetpH_Calc(Water_Temp, Salinity)    
+      Call SeafetpH_Calc(Temperature, Salinity)    
     EndIf
 
     UpdateSeafetTable = false
