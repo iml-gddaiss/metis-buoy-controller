@@ -30,7 +30,7 @@ Function CollectOCR(OCR_Type As String) As String * 1000
   Dim String_Buffer As String
   Dim OCR_String As String * 1000
 
-  OCR_String = "" ' Need to be reinitialized. Dim declared in SubRoutines are only initialized at compile time.
+  OCR_String = ""
 
         
   For Y = 1 To 3

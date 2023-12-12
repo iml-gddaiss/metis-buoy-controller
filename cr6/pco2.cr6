@@ -69,8 +69,11 @@ EndTable
   
 
 Function PCO2TagString As String
-  Dim CO2_Air = "#.#"
-  Dim CO2_Water = "#.#"
+  Dim CO2_Air As String 
+  Dim CO2_Water As String 
+
+  CO2_Water = "#.#"
+  CO2_Air = "#.#"
   
   If PCO2_W_CO2 <> "" Then
     CO2_Air = PCO2_W_CO2
@@ -140,13 +143,15 @@ Function Collect_PCO2_Data(PCO2_Tag) As String
   Else
     Collect_PCO2_Data = ""
   EndIf
-  Call logging("PCO2 Data Collected: " & Collect_PCO2_Data)
+  Call logging("PCO2 " &PCO2_Tag& " Data Collected: " & Collect_PCO2_Data)
 EndFunction
 
 
 Sub CollectPCO2
   Call logging("Collecting PCO2 Data")
+  
   SerialIn(RawPCO2,SerialPCO2,10,"Sample Complete",500)
+  Call logging("RawPCO2: " & RawPCO2)
 
   If NOT PCO2WaterIsCollected Then
     RawPCO2_Water = Collect_PCO2_Data(PCO2_Water_Tag)

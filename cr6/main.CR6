@@ -41,17 +41,15 @@ SequentialMode
 AngleDegrees
 PreserveVariables
 
-Public WhereAmI As String ' Debug Purposes
+Public WhereAmI As String ' Debug Purposes ' Maybe merge WhereAmI and Loggings
 
 Public ScanTimeStamp(2) As String : Alias ScanTimeStamp = ScanDate, ScanTime 
 
-Public TAGString As String * 2000
-' Dim TAGFile As Long 
-' Dim ToTransmit As Long ' --------- Fixme ToTransmitFile ?
+Public TAGString As String * 2000 ' TODO fixme check if lengths is ok
 
 '########### CR6 Scripts Imports (Includes)
 Include "CPU:buoy_config.cr6"                   '#   Declare Buoy Config
-Include "CPU:serials.cr6"
+Include "CPU:serials.cr6"                       '#   Define all Serials and Channels
 Include "CPU:logging.cr6"                       '#   Logging module
 Include "CPU:timers.cr6"                        '#   Timer Values module
 
@@ -110,24 +108,6 @@ DataTable (FileTAGS,1,-1) ' fixme change name
   DataInterval(0,0,Sec,10)
   Sample (1, TAGString, String)
 EndTable
-
-
-' Sub WriteTagString 'This needs to be declare before importing CR6 Files since they used it. (maybe not TODO TEST)
-'   FileWrite(TAGFile,TAGString & CHR(10),0)
-'   FileWrite(ToTransmit,TAGString & CHR(10),0)
-' EndSub
-
-
-' These need to be declared after the GPS files has been included. (maybe not TODO TEST)
-' Sub OpenTagsFiles
-'   ToTransmit = FileOpen("CRD:" & Buoy_Name & "_" & Replace(ScanDate, "-", "") & Replace(ScanTime, ":", "") & ".dat","a",-1)
-'   TAGFile = FileOpen("CRD:" & Buoy_Name & "_TAGFile.txt","a",-1)
-' EndSub
-
-' Sub CloseTagsFiles
-'   FileClose(TAGFile)
-'   FileClose(ToTransmit)
-' EndSub
 
 Function InitTagString as String * 300 ' may be too much, but maybe not FIXME
   InitTagString = "[INIT]" & Buoy_Name & "," & ScanDate & "," & ScanTime & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
@@ -201,13 +181,13 @@ BeginProg
   Scan(Buoy_Interval_Min,Min,0,0)
 
   WhereAmI = "Initializing instrument"
-
-  Call logging("Scan Start")
+  
+  Call logging(">>>>>>>>>>>> Scan Start")
 
   Call logging("SlowSequenceLock Set (Well, Tower, Winch)")
   SlowSequenceLocked = True
 
-  Call SetMetaInstrumentFlags
+  ' Call SetMetaInstrumentFlags ' Probably not needed, the programmed shoud be recompiled when apply/restart is set to true. FIXME TEST
   
   Call GetScanDateTime
     
@@ -229,7 +209,7 @@ BeginProg
   
   Call StartATMSTimer
 
-  Call SBE37SalinityCheck
+  Call SBE37SalinityCheck ' Skipped if BypassSalinity is true.
     
   Call PowerWellPump        ' Power Well Pump and Start Well Timer.
   
@@ -239,15 +219,13 @@ BeginProg
   
   Call CheckWaterDectectionMain
 
-  ' Call OpenTagsFiles
-
   TAGString = InitTagString()             'Requires Gps, Compass and WaterDectection Variables.
-  ' ' Call WriteTagString
     
   Call SamplePowerController
 
   Call CollectTriplet
   
+  ' ### Well Pump InstrumentTower ###
   Call WaitForWellPump   ' Well Instrument that required SBE37, Seafet, SUNA, OCR_R (Sensor Conditionning).
   Call StartSUNA         ' why don't isn't SUNA started in THE begining --- FIXME ---
   Call SampleOCRs
@@ -256,6 +234,7 @@ BeginProg
   Call CollectSUNA
   Call StopWellPump 
   
+  ' ### Tower Instruments ##
   Call WaitForWeather        ' Tower Instrument that required to sample over time
   Call CollectPAR
   Call CollectWXT536 
@@ -305,8 +284,6 @@ BeginProg
   
   TAGString &= "\n" & EndTagString()
   CallTable FileTAGS
-  ' ' Call WriteTagString   
-  ' Call CloseTagsFiles
 
   Call CollectWinch
 
@@ -314,7 +291,7 @@ BeginProg
   SlowSequenceLocked = false
   
   WhereAmI = "Scan end"
-  Call logging("Scan finished.")
+  Call logging("Scan finished. <<<<<<<<<<<<" & CHR(13) & CHR(10))
   
   NextScan
 	

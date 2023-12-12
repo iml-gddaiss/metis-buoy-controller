@@ -4,7 +4,9 @@
 
 .. General
 ... Add better Docstring
+.... Add script depency (on other script variables) in the script doc strings
 ... Reset some variable on every scan mostly those used for for processing other data. (SBE37, GPS, Compass)
+... DIM in SUB are only init at compilation time. TODO reset them manually.
 
 .. Envoyer des alarmes/emails/texto:
 ... Lorsque la bouée est hors position (dérive)
@@ -32,6 +34,7 @@
 .. Pourquoi un délais de 400ms
 
 .. To Test
+.. Test Timer (set / resets)
 .. Winch code
 ... Getting the Timestamp from the index of the winch start.
 ... Winch on Demande.

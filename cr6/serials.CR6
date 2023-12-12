@@ -1,7 +1,7 @@
 ' Water Detectuin Channel is declared in water_detection.CR6
 
 'Const SerialLogging = 1 ' RS232 CPI
-Const SerialADCP = 12 'U3-U4
+Const SerialADCP = 12 'U3-U4 | If ADCP port is not between 11 and 16, Modify the ClosePorts functions to keep ADCP open.
 
 Const SerialWinch = 13 'U5-U6
 
@@ -21,7 +21,7 @@ Const SerialOCRR = 39 'RS232
 '## -------  ##
 
 '## Address 8 ##
-Const SerialPCO2 = 40 'RS232
+Const SerialPCO2 = 40 'RS232 | If ADCP port is not between 32 and 47, Modify the ClosePorts functions to keep PCO2 open
 Const SerialSUNA = 41 'RS232
 ' 42
 ' 43
@@ -42,7 +42,7 @@ Sub CloseCR6SerialPorts
   Dim port
   'Close all serial port on CR6 if still open except ADCP
   For port = 11 To 16 Step 1
-    If port = SerialADCP OR (port = SerialPCO2 AND PCO2IsSampling) Then ' FIXME
+    If port = SerialADCP Then ' FIXME
       'Do not close the ADCP port
     Else If port = SerialWinch And WinchStatus <> "Standby" Then
       'Do not close port
@@ -52,12 +52,11 @@ Sub CloseCR6SerialPorts
   Next port
 EndSub
 
-
 Sub CloseSDM4SerialPorts
   Dim port
   'Close all serial port on SDM4, except for PCO2 (40) which must stays on is PCO2 is sampling
   For port = 32 To 47 Step 1
-    If port = SerialADCP OR (port = SerialPCO2 AND PCO2IsSampling) Then ' FIXME
+    If port = SerialPCO2 AND PCO2IsSampling Then ' FIXME
     'Do not close the port
     Else
       SerialClose(port)
