@@ -184,8 +184,7 @@ BeginProg
   
   Call logging(">>>>>>>>>>>> Scan Start")
 
-  Call logging("SlowSequenceLock Set (Well, Tower, Winch)")
-  SlowSequenceLocked = True
+  SlowSequenceLocked = True ' Lockling Slow Sequence
   
   Call GetScanDateTime
     
@@ -285,8 +284,7 @@ BeginProg
 
   Call CollectWinch
 
-  Call logging("SlowSequenceLock Unset (Well, Tower, Winch)")
-  SlowSequenceLocked = false
+  TriggerSequence (1,0) ' Unlocking Slow Sequence
   
   WhereAmI = "Scan end"
   Call logging("Scan finished. <<<<<<<<<<<<" & CHR(13) & CHR(10))
@@ -295,21 +293,29 @@ BeginProg
 	
   SlowSequence
     Scan(1,Sec,0,0)
-      If NOT SlowSequenceLocked Then
-        Call TowerSwitchSequence
-
-        Call WellSwitchSequence
-
-        Call WinchStartSequence
+      'Do While NOT SlowSequenceLocked
+      
+      If SlowSequenceLock Then
+        Call logging("Slow Sequence Locked")
+        WaitTriggerSequence
+        SlowSequenceLocked = false
+        Call logging("Slow Sequence Unlocked")
       EndIf
+      
+      Call TowerSwitchSequence
+
+      Call WellSwitchSequence
+
+      Call WinchStartSequence
 
       Call ADCPBreakSequence
 
-      ' Call ADCPUpdateSequence
+        ' Call ADCPUpdateSequence
 
       Call ADCPDeploySequence
 
       Call ADCPShutdownSequence
+'      Next
 
     NextScan
 EndProg
