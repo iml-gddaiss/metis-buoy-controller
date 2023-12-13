@@ -61,13 +61,18 @@ EndSub
 
 
 Sub SelectWindInstrument
-  If WMT700(5) = CHR(00) OR WMT700(5) = 0 Then  ' If there's data from WMT700, taking them as Wind
+  'If WMT700(5) = CHR(00) OR WMT700(5) = 0 Then  ' If there's data from WMT700, taking them as Wind
+
+  If With_WMT700 AND WMT700(6) <> "NAN" Then ' Check the six value (so at least 6 values)
+    Wind() = WMT700()   
+    WindTAG = "[W700]"
+  ElseIf With_WMT536 Then
     Wind() = WXT536_Wind()
-    WindTAG = "[W536]"                    ' Otherwise take the WXT536
-  Else                                    '
-    Wind() = WMT700()                     ' FIXME what if With_WMT700 is False
-    WindTAG = "[W700]"                    '
-  EndIf         
+    WindTAG = "[W536]"
+  Else
+    Wind() = ""
+    WindTag = ""
+  EndIf
 EndSub
 
 
@@ -84,17 +89,10 @@ Sub ProcessWeather(Heading)
   If With_Weather Then
     WhereAmI = "Processing Weather"
 
-    Wind() = ""
+    Call SelectWindInstrument   
 
-    If With_Wind Then
-      Call SelectWindInstrument   
-      
-      IF Heading <> "NAN" Then 
-        Call WindHeadingCorrection(Heading)
-      EndIf
-
+    If WindTag <> "" Then
       TAGString &= "\n" & WindTagString()
-      ' Call WriteTagString
     EndIf
     
     TAGString &= "\n" & ATMSTagString()
