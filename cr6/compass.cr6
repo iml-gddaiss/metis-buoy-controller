@@ -72,6 +72,8 @@ Sub CollectCompass
     Delay(1,400,mSec)
     
   Next
+
+  Call logging("Last Raw Compass: " & raw_compass)
   
   ' Does Roll and Pitches need to be circularly averaged.
   Roll = Round(Roll/Compass_Sample_Size,2) ' Goes from -85 to 85 so this should be fine.
@@ -99,6 +101,6 @@ Sub SampleCompass
     UpdateCompassTable = true
     
     WhereAmI = "End Compass"
-    Call logging("Compass Sampled")
+    Call logging("Compass Done")
   EndIf
 EndSub

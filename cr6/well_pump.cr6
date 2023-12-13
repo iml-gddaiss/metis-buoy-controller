@@ -28,6 +28,7 @@ EndSub
 
 Sub StopWellPump
   WhereAmI = "Close pump"
+  Call logging("Well Pump Closed")
   If Well_IsPowered Then
     SW12(SW12_2,0)
     Well_IsPowered = false

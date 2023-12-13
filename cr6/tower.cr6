@@ -16,6 +16,7 @@ Sub StartTower485
   'Opening SDM and PAR (T5) voltage. 1sec before communication  
   If With_Tower_485 Then
     SerialOpen(SerialTower,19200,51,20,500) 'for 2R! test
+    Call logging("Starting Tower")
   EndIf
 EndSub
 
@@ -25,6 +26,7 @@ Sub StopTower485
     SerialClose(SerialTower)
     SW12(SW12_1,0)
     Tower_IsPowered = False
+    Call logging("Tower Closed")
     WhereAmI = "Close Tower"
   EndIf	  
 EndSub

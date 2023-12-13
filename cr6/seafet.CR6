@@ -242,6 +242,6 @@ Sub SampleSeafet(Temperature, Salinity)
     TAGString &= "\n" & PHTagString() 
     ' Call WriteTagString
     WhereAmI = "End Seafet"
-    Call logging("Seafet Sampled")
+    Call logging("Seafet Done")
   EndIf
 EndSub

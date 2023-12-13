@@ -63,7 +63,8 @@ Sub CollectTriplet
   ' Eco-Triplet takes at least 17s to sample. Thus we need to wait at least 18 seconds before collecting the data.
   Dim NBR ' Number of Bytes Returned  
   If With_Triplet Then
-    WhereAmI = "Collect triplet"
+    Call logging("Collecting Triplet")
+    WhereAmI = "Collect Triplet"
     
     Triplet() = ""
     
@@ -79,5 +80,7 @@ Sub CollectTriplet
     
     TAGString &= "\n" & TripletTagString()
     ' Call WriteTagString
+
+    Call logging("Triplet Done")
   EndIf
 EndSub

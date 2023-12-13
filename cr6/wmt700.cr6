@@ -39,6 +39,7 @@ Sub CollectWMT700
   '&H0DA -> WM | &H0DA0 -> \r\n  (CR)(CF)
   '&H0D0A is the hexadecimal representation for carriage return/line feed
   If With_WMT700 Then
+    Call logging("Collect WMT700")
     WhereAmI = "Collect WMT700"
 
     WMT700() = ""
@@ -57,10 +58,9 @@ Sub CollectWMT700
       SplitStr(WMT700(),RawWMT700,",",6,10)
     EndIf
 
-    Call logging("WMT700: " & WMT700) 
-    
     UpdateWMT700Table = true
 
+    Call logging("WMT700 Done")
     WhereAmI = "Finish WMT700"
   EndIf
 EndSub

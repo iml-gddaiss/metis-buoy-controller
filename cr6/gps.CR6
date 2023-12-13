@@ -77,6 +77,8 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
             V += CTYPE(GPS_SOG, float) * SIN(CTYPE(GPS_COG, float))
         EndIf
     Next
+
+    Call logging("Last Raw GPS: " & RawGPS)
     
     If RawGPS <> "" Then
         'COG and SOG time averaging.
@@ -120,6 +122,7 @@ Sub SampleGPS
         
         UpdateGPSTable = true
         
+        Call logging("GPS Done")
         WhereAmI = "EndGPS"
     EndIf
 EndSub
