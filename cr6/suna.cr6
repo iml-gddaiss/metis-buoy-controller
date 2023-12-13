@@ -79,12 +79,12 @@ Sub CollectSUNA
     EndIf
     
     If RawSUNADark <> "NAN" Then
-      SplitStr(SUNADark(),RawSUNADark,",",8,4)
+      SplitStr(SUNADark(),RawSUNADark,",",8,4) ' Ignoring serial number (Option 4: strings after the first split sep)
     EndIf
     
     If RawSUNALight <> "NAN" Then
       RawSUNALight = "SATSLC"&RawSUNALight
-      SplitStr(SUNALight(),RawSUNALight,",",8,4)
+      SplitStr(SUNALight(),RawSUNALight,",",8,4) ' Ignoring serial number (Option 4: strings after the first split sep)
     EndIf
 
     UpdateSUNATable = true

@@ -73,7 +73,7 @@ Sub CollectTriplet
     SerialClose(SerialTriplet)
     
     RawTriplet = "BB"+RawTriplet
-    SplitStr(Triplet(),RawTriplet,CHR(09),11,4)
+    SplitStr(Triplet(),RawTriplet,CHR(09),11,4) ' Ignoring serial number (Option 4: strings after the first split sep)
     
     UpdateTripleTable = true
     

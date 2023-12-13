@@ -3,8 +3,10 @@
 '### Data Variables ###
 Public RawSeafet As String * 120
 
-Public Seafet_Value(10) As String : Alias Seafet_Value = Date_Time_Seafet, Sample_Number, Error_Flag, Ext_pH, Int_pH, Volt_Ext_pH, Volt_Int_pH, pH_Temp, Seafet_Rel_Hum, Seafet_Int_Temp
+Public Seafet_Value(11) As String : Alias Seafet_Value = SeaFet_Serial, Seafet_Date_Time, Sample_Number, Error_Flag, Ext_pH, Int_pH, Volt_Ext_pH, Volt_Int_pH, pH_Temp, Seafet_Rel_Hum, Seafet_Int_Temp
 Public Seafet_pH_Calc(2) As Float = {"", ""} : Alias Seafet_pH_Calc = Ext_pH_Calc, Int_pH_Calc
+
+Public Seafet_SerialNumber As String * 15 ' Should be Length 11.
 
 'Constant to auto-proceed the pH value with Temp and Sal from CTD
 Const GasConstantR = 8.3144621 'Universal Gas constant in J/Kmol
@@ -62,8 +64,8 @@ Sub CollectSeafet
     
     SerialIn(RawSeafet,SerialSeafet,800,CHR(13),125) 'Seafet string is around 100
     Call logging("Raw Seafet: " & RawSeafet)
-    SplitStr(Seafet_Value,RawSeafet,",",10,14) ' Change to keep SerialNumber and check. If serial change redownload coeff
-    
+    SplitStr(Seafet_Value,RawSeafet,",",11,15)
+
     If Len(RawSeafet) > 97 AND Mid(RawSeafet,24,1) = "T" AND CTYPE(Int_pH,Float) < 12 AND CTYPE(Int_pH,Float) > 3 AND CTYPE(Ext_pH,Float) < 12 AND CTYPE(Ext_pH,Float) > 3 Then
       ExitFor
     EndIf
@@ -98,6 +100,7 @@ EndFunction
 Sub FetchSeafetCoefficents
   Call logging("Collecting SeaFet Coefficient")
   Dim X
+  Seafet_Coeff() = ""
   For X = 1 To 5 Step 1 ' Fixme Question: Is this to have 5 attemps -------------------------------------------?
     If K0_Ext = "NAN" Then
       K0_Ext = Fetch_Seafet_Coefficient("K0")
@@ -222,9 +225,15 @@ Sub SampleSeafet(Temperature, Salinity)
     
     Call CollectSeafet
     
-    If Seafet_Auto_Calculation AND SBE37_In_Saltwater Then      
-      Call FetchSeafetCoefficents
+    If Seafet_Auto_Calculation AND SBE37_In_Saltwater Then
 
+      If SeaFet_Serial <> Seafet_SerialNumber Then
+        'Fetch the Coefficients only if the serial number doesn't match the one previously recorded.
+        Call FetchSeafetCoefficents
+        Seafet_SerialNumber = SeaFet_Serial
+      EndIf
+      ' Calculation is carried out even if the Temperature/Salinity/Seafet_Coeff are Nan. 
+      ' In the case, Nan values are returned for the Ph_Calc Values.
       Call SeafetpH_Calc(Temperature, Salinity)    
     EndIf
 

@@ -66,7 +66,7 @@ Sub SBE37SalinityCheck
       SerialOut(SerialSBE37,CHR(13),"S>",1,50)          ' Contact SBE37, expect `S>`
       SerialOut(SerialSBE37,"ts"&CHR(13),CHR(10),1,50)  ' Send: `Take, Send` sample command.
       SerialIn(RawSBE37_Test,SerialSBE37,400,13,120) 
-      SplitStr(SBE37_Test, RawSBE37_Test,",",4,0)
+      SplitStr(SBE37_Test, RawSBE37_Test,",",4,0) ' With option 0: filter string ignored
       
       Call logging("SBE attempt: " & X)
       Call logging("RawSBE37: `" & RawSBE37_Test & "`")
