@@ -43,20 +43,11 @@ ConstTable (Buoy_Config,0)
     
 EndConstTable
 
-Public With_Tower_485 = With_WXT536 OR With_WMT700 OR With_Compass       
-Public With_Tower_Power= With_PAR OR With_WMT700 OR With_Compass OR With_OCR_I
-Public With_Wind = With_WXT536 OR With_WMT700
-Public With_Weather = With_Wind OR With_PAR
-Public With_Well_Pump = With_SBE37 OR With_Seafet OR With_SUNA OR With_OCR_R
+Const With_Tower_485 = With_WXT536 OR With_WMT700 OR With_Compass       
+Const With_Tower_Power= With_PAR OR With_WMT700 OR With_Compass OR With_OCR_I
+Const With_Weather = With_WXT536 OR With_WMT700 OR With_PAR
+Const With_Well_Pump = With_SBE37 OR With_Seafet OR With_SUNA OR With_OCR_R
 
-' ### Probably not needed, the programmed shoud be recompiled when apply/restart is set to true.
-' Sub SetMetaInstrumentFlags 
-'     With_Tower_485 = With_WXT536 OR With_WMT700 OR With_Compass       
-'     With_Tower_Power= With_PAR OR With_WMT700 OR With_Compass OR With_OCR_I
-'     With_Wind = With_WXT536 OR With_WMT700
-'     With_Weather = With_Wind OR With_PAR
-'     With_Well_Pump = With_SBE37 OR With_Seafet OR With_SUNA OR With_OCR_R
-' EndSub
 
 ' ###   Below are Constants the should not be changed by the user.  ###
 ' ###                Hence not in the Constant Table                ###

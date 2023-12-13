@@ -19,9 +19,9 @@ Units Roll = °
 '### Tables ###
 DataTable (FileCompass,UpdateCompassTable,-1)
   DataInterval(0,0,Sec,10)
-  Sample (1,Heading, IEEE4) ' Why not IEEE4 Fixme
-  Sample (1,Pitch, IEEE4) ' Why not IEEE4 Fixme
-  Sample (1,Roll, IEEE4) ' Why not IEEE4 Fixme
+  Sample (1,Heading, IEEE4)
+  Sample (1,Pitch, IEEE4)
+  Sample (1,Roll, IEEE4)
 EndTable
 
 
@@ -44,7 +44,7 @@ Sub CollectCompass
 
   Compass() = ""
 
-  SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",3,50) ' What is this for ? FIXME
+  ' SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",3,50) ' What is this for ? FIXME TEST (maybe its to wake him up)
   
   For Y = 1 To Compass_Sample_Size Step 1
     SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",1,50)  ' Command = h^D^A^D^I (68 04 01 04 09)

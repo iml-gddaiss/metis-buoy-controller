@@ -42,7 +42,7 @@ Sub CollectPowerController
       SerialOut(SerialPower,CHR(13),CHR(13),1,50) 
       SerialIn(RawPower,SerialPower,100,CHR(13),200)
       SplitStr(Power,RawPower,0,11,0)
-      If Len(Relay_State) > 5 Then '  FIXME  what does this mean (Relay_State="02020200")
+      If Len(Relay_State) > 5 Then 
         ExitFor
       EndIf
     Next X

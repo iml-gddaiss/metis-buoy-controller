@@ -109,7 +109,7 @@ DataTable (FileTAGS,1,-1) ' fixme change name
   Sample (1, TAGString, String)
 EndTable
 
-Function InitTagString as String * 300 ' may be too much, but maybe not FIXME
+Function InitTagString as String * 120 ' may be too much, but maybe not FIXME
   InitTagString = "[INIT]" & Buoy_Name & "," & ScanDate & "," & ScanTime & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
 EndFunction
 
@@ -186,8 +186,6 @@ BeginProg
 
   Call logging("SlowSequenceLock Set (Well, Tower, Winch)")
   SlowSequenceLocked = True
-
-  ' Call SetMetaInstrumentFlags ' Probably not needed, the programmed shoud be recompiled when apply/restart is set to true. FIXME TEST
   
   Call GetScanDateTime
     
@@ -215,7 +213,7 @@ BeginProg
   
   Call StartTriplet         ' Starts Triplet_Timer
   
-  Call SampleCompass        ' Requires GPS Magnetic Declination (If Magnetic Declination is sampled, last collected value is used ?) --- FIXME ---
+  Call SampleCompass        ' Requires GPS Magnetic Declination
   
   Call CheckWaterDectectionMain
 

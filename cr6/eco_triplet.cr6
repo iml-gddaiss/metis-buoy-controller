@@ -18,12 +18,12 @@ Dim UpdateTripleTable As Boolean = false
 
 DataTable(FileTriplet,UpdateTripleTable,-1)
   DataInterval(0,0,Sec,10)
-  Sample (1,Scattering_Raw,String) ' Fixme set to float ??
-  Sample (1,Scattering_Value,String) ' Fixme set to float ??
-  Sample (1,Chlorophyll_Raw,String)' Fixme set to float ??
-  Sample (1,Chlorophyll_Value,String)' Fixme set to float ??
-  Sample (1,FDOM_Raw,String)' Fixme set to float ??
-  Sample (1,FDOM_Value,String)' Fixme set to float ??
+  Sample (1,Scattering_Raw,IEEE4)
+  Sample (1,Scattering_Value,IEEE4)
+  Sample (1,Chlorophyll_Raw,IEEE4)
+  Sample (1,Chlorophyll_Value,IEEE4)
+  Sample (1,FDOM_Raw,IEEE4)
+  Sample (1,FDOM_Value,IEEE4)
 EndTable
 
 '### Sampling ###
@@ -47,7 +47,7 @@ Sub StartTriplet
   If With_Triplet Then
     WhereAmI = "Start Triplet"
     Call logging("Start Triplet")
-    SerialFlush(SerialTriplet) 'Fixme Why a we Flushing here
+    SerialFlush(SerialTriplet)
     SerialOpen(SerialTriplet,19200,3,20,500) 'Triplet string is around 100 char.
     SerialOut(SerialTriplet,CHR(13)&CHR(10),0,2,100)
     SerialOut(SerialTriplet,"!!!!!!!!","Mem",1,600)

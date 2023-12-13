@@ -62,7 +62,7 @@ Sub CollectSeafet
     
     SerialIn(RawSeafet,SerialSeafet,800,CHR(13),125) 'Seafet string is around 100
     Call logging("Raw Seafet: " & RawSeafet)
-    SplitStr(Seafet_Value,RawSeafet,",",10,14)
+    SplitStr(Seafet_Value,RawSeafet,",",10,14) ' Change to keep SerialNumber and check. If serial change redownload coeff
     
     If Len(RawSeafet) > 97 AND Mid(RawSeafet,24,1) = "T" AND CTYPE(Int_pH,Float) < 12 AND CTYPE(Int_pH,Float) > 3 AND CTYPE(Ext_pH,Float) < 12 AND CTYPE(Ext_pH,Float) > 3 Then
       ExitFor
