@@ -67,6 +67,7 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
     ' FIXME test if the For Loop stops when X = number_of_sample or when X > number_of_sample
     For X = 1 To number_of_sample Step 1 ' GPS should be setup to 1 sec interval to get GPS_Sample_Size to correspond to seconds.
         SerialIn(RawGPS,SerialGPS,150,10,80)
+        Call logging("Last Raw GPS(" &X& "): " & RawGPS)
         SplitStr(GPS_HVS,RawGPS,",",13,5)
         
         If GPS_SOG = "" Then
@@ -78,8 +79,6 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
         EndIf
     Next
 
-    Call logging("Last Raw GPS: " & RawGPS)
-    
     If RawGPS <> "" Then
         'COG and SOG time averaging.
         SOG = Round( SQR(U^2 + V^2) / number_of_sample, 2)

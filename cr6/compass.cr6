@@ -1,11 +1,8 @@
-'compass related code
-'### Serial Port ###
-
-
 '### Data Variables ###
-Dim Compass(9) As String
+Dim raw_compass As String * 100 ' Doesn't need to be Reset. (Not saved in a Table)
+Dim Compass(9) As String ' Doesn't need to be Reset.
+Dim Compass_Angles_Sum(5) As Float : Alias Compass_Angles_Sum = RollSum, PitchSum, Heading_x_Sum, Heading_y_Sum
 
-'Compass_Angles is the time averaged. These a values are used in the CompassTable
 Public Compass_Angles(3) As Float = {"", "", ""} : Alias Compass_Angles = Heading, Pitch, Roll
 
 Dim UpdateCompassTable As Boolean = false
@@ -15,7 +12,6 @@ Units Heading = °
 Units Pitch = °
 Units Roll = °
 
-
 '### Tables ###
 DataTable (FileCompass,UpdateCompassTable,-1)
   DataInterval(0,0,Sec,10)
@@ -24,8 +20,8 @@ DataTable (FileCompass,UpdateCompassTable,-1)
   Sample (1,Roll, IEEE4)
 EndTable
 
-
-Function HexaSign(RawSign) as String * 1
+'min length for a string is 4 (I think)
+Function HexaSign(RawSign As String) as String * 4 
   Select Case RawSign
     Case 10
       HexaSign = "+"
@@ -39,49 +35,51 @@ Sub CollectCompass
   ' Roll and Pitch are not circularly average.
   Dim NBR ' Number of Bytes Returned  
   Dim X, Y
-  Dim raw_compass As String * 100
-  Dim HeadingBuff As Float , Heading_x As Float , Heading_y As Float 
+  Dim HeadingBuff As Float ' Doesn't need to be Reset.
 
-  Compass() = ""
-
-  ' SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",3,50) ' What is this for ? FIXME TEST (maybe its to wake him up)
+  ' Fixme test if Raw_compass need to be reset
+ 
+  Heading_Angles_Sum() = 0 'Need to be reste for summation
   
+  SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",3,50) ' What is this for ? (Maybe its to wake up the compass)
   For Y = 1 To Compass_Sample_Size Step 1
     SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",1,50)  ' Command = h^D^A^D^I (68 04 01 04 09)
     SerialInRecord(SerialTower,raw_compass,&H68,13,0,NBR,101)   ' First byte sent is address 68 ' &68 -> $
-    
     If raw_compass = "NAN" Then
       Compass_Angles() = ""
+      Call logging("Compass Returned: NAN.")
       ExitSub
     EndIf        
 
     For X = 4 To 12                                   ' Setting each HEX byte in Compass Array
       Compass(X-3) = Hex(ASCII(raw_compass(1,1,X)))   ' Received message looks like 68 0D 01 84 00 11 22 10 33 44 05 66 77 99
     Next X                                            '                             ID LG AD MS (- Roll) (+Pitch) ( Head ) CHK
-            
+
     If Len(Compass(8)) = 1 Then
       Compass(8) = "0" + Compass(8)
     EndIf
 
     'Array are in order of Roll, Pitch & Heading
-    Roll = Roll + CTYPE(HexaSign(Compass(1)) & Compass(2) & "." & Compass(3), Float)
-    Pitch = Pitch + CTYPE(HexaSign(Compass(4)) & Compass(5) & "." & Compass(6), Float)
-    HeadingBuff = CTYPE(Compass(7) & Compass(8) & "." & Compass(9), Float)
-    Heading_x = Heading_x + COS(HeadingBuff)
-    Heading_y = Heading_y + SIN(HeadingBuff)
-    Delay(1,400,mSec)
+    ' maybe use a variable to Dump it in ?
+    RollSum = RollSum + CTYPE(   HexaSign(Compass(1)) & Compass(2) &"."& Compass(3), Float)
+    PitchSum = PitchSum + CTYPE( HexaSign(Compass(4)) & Compass(5) &"."& Compass(6), Float)
     
+    HeadingBuff = CTYPE(Compass(7) & Compass(8) & "." & Compass(9), Float)
+    Heading_x_Sum = Heading_x_Sum + COS(HeadingBuff)
+    Heading_y_Sum = Heading_y_Sum + SIN(HeadingBuff)
+    
+    Delay(1,400,mSec)
   Next
 
-  Call logging("Last Raw Compass: " & raw_compass)
   
   ' Does Roll and Pitches need to be circularly averaged.
-  Roll = Round(Roll/Compass_Sample_Size,2) ' Goes from -85 to 85 so this should be fine.
-  Pitch = Round(Pitch/Compass_Sample_Size,2) ' Goes from -85 to 85 so this should be fine.
-  Heading = ATN2(Heading_y, Heading_x)
+  Roll = Round(RollSum / Compass_Sample_Size, 2) ' Goes from -85 to 85 so this should be fine.
+  Pitch = Round(PitchSum / Compass_Sample_Size, 2) ' Goes from -85 to 85 so this should be fine.
+  Heading = ATN2(Heading_y_Sum, Heading_x_Sum)
 EndSub
 
 Sub ApplyMagneticCorrection
+  Call logging("Magnetic Correction: " & Heading & " + " & Magnetic)
   Heading = Round((Heading + Magnetic_Variation) MOD 360, 2)
 EndSub
 

@@ -121,11 +121,11 @@ Sub FetchSeafetCoefficents
   Call logging("SeaFet Coefficient. K0 Ext: " & K0_Ext & ", K2 Ext: " & K2_Ext & ", K0 Int: " & K0_Int & ", K2 Int: " & K2_INT)          
 EndSub
 
-Function LOG_10(X) As Float
+Function LOG_10(X as float) As Float
   LOG_10 = LOG(X) / LOG(10)
 EndFunction
 
-Sub SeafetpH_Calc(Temperature, Salinity)
+Sub SeafetpH_Calc(Temperature As Float, Salinity As Float)
   ' Compute pH Ext and Int from raw Voltage and InSitu temperature and salinity.
   ' From Sea-Bird Scientific documentation.
   '
@@ -187,7 +187,7 @@ Sub SeafetpH_Calc(Temperature, Salinity)
   '         Determination of hydrogen ion concentrations in seawater from 5C to 40C: standard potentials at salinities 20 to 45%
   '  .. [4]  Dickson et al. 2007, IOCCP Report No.8, Guide to Best Practices for Ocean CO2 Measurements
   '  .. [5] Sea-Bird Scientific, Technical Note on Calculating pH, Application Note 99
-  Call logging("Carrying Seafet Correction")
+  Call logging("Calculating pH")
   Seafet_pH_Calc() = ""
   
   Dim Snernst, Clt, log_yHClT, St, Temperature_K, I, Adh
@@ -212,11 +212,12 @@ Sub SeafetpH_Calc(Temperature, Salinity)
   
   Int_pH_Calc = Round((CTYPE(Volt_Int_pH,Float) - K0_Int - (K2_Int*Temperature))/Snernst,4)
   Ext_pH_Calc = Round(((CTYPE(Volt_Ext_pH,Float) - K0_Ext - (K2_Ext*Temperature))/Snernst) + LOG_10(Clt) + (2*log_yHClT) - LOG_10(1+(St/Ks)) - LOG_10((1000-(1.005*Salinity))/1000),4)
-
+  
+  Call logging("Calculated pH. Ext: " & Ext_pH_Calc & ", Int: " & Int_pH_Calc)
 EndSub
 
 
-Sub SampleSeafet(Temperature, Salinity)
+Sub SampleSeafet(Temperature As Float, Salinity As Float)
   If With_Seafet Then
     Call logging("Sampling Seafet")
     WhereAmI = "Sample Seafet"
@@ -237,7 +238,7 @@ Sub SampleSeafet(Temperature, Salinity)
       Call SeafetpH_Calc(Temperature, Salinity)    
     EndIf
 
-    UpdateSeafetTable = false
+    UpdateSeafetTable = true
     
     TAGString &= "\n" & PHTagString() 
     ' Call WriteTagString

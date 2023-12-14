@@ -93,12 +93,12 @@ Function PCO2TagString As String
   CO2_Water = "#.#"
   CO2_Air = "#.#"
   
-  If PCO2_W_CO2 <> "" Then
-    CO2_Air = PCO2_W_CO2
+  If PCO2_Water.CO2 <> "" Then
+    CO2_Air = PCO2_Water.CO2
   EndIf
 
-  If PCO2_A_CO2 <> "" Then 
-    CO2_Water = PCO2_A_CO2
+  If PCO2_Air.CO2 <> "" Then 
+    CO2_Water = PCO2_Air.CO2
   Endif
     
   PCO2TagString = "[PCO2]" & PCO2_Air.CO2 & "," & PCO2_Water.CO2 & "," & PCO2_Water.Gaz_Pressure & "," & PCO2_Air.Gaz_Pressure & "," & PCO2_Air.Humidity
@@ -149,7 +149,7 @@ Sub ClosePC02
 EndSub
 
 
-Function Collect_PCO2_Data(PCO2_Tag) As String
+Function Collect_PCO2_Data(PCO2_Tag As String) As String
   'PCO2_Tag = "A M" or "W M"
   Dim Start_Pos  As Long
   Dim End_Pos As Long

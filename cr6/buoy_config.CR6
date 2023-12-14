@@ -56,25 +56,25 @@ Const With_Well_Pump = With_SBE37 OR With_Seafet OR With_SUNA OR With_OCR_R
 '   some point. 
 '
 ' Sampling Interval 
-Const Rain_Interval_Hr = 24 ' (Rain_Timer)
+Const Rain_Interval_Hr As Long  = 24 ' (Rain_Timer)
 
 ' Instruments Config
-Const ADCP_Num_Bin = 27
+Const ADCP_Num_Bin As Long = 27
 
 ' Sample Sizes (For time average)
-Const GPS_Sample_Size = 10     ' 1 per second for 10 seconds. ' GPS should be setup to 1 sec interval to get GPS_Sample_Size to correspond to seconds.
-Const Compass_Sample_Size = 60 ' 2 per second for 30 seconds
+Const GPS_Sample_Size As Long = 10     ' 1 per second for 10 seconds. ' GPS should be setup to 1 sec interval to get GPS_Sample_Size to correspond to seconds.
+Const Compass_Sample_Size As Long = 60 ' 2 per second for 30 seconds
 
 ' Timers Delay                  -Associated Timers-
-Const Well_Pump_Delay_Sec = 30  '(Pump_Timer)
-Const Weather_Delay_Sec = 61    '(Weather_Time): PAR takes at least 60 s
-Const Suna_Delay_Sec = 12       '(Suna_Timer)
-Const WMT700_Delay_Sec = 8      '(Tower_Timer)
-Const Compass_Delay_Sec = 4     '(Tower_Timer)
-Const Triplet_Delay_Sec = 20    '(Triplet_Timer): Triplet takes at least 17 seconds to sample.
-Const OCR_R_Delay_Sec = 8       '(Pump_Timer)
-Const OCR_I_Delay_Sec = 8       '(Tower_Timer)   
+Const Well_Pump_Delay_Sec As Long = 30  '(Pump_Timer)
+Const Weather_Delay_Sec As Long = 61    '(Weather_Time): PAR takes at least 60 s
+Const Suna_Delay_Sec As Long = 12       '(Suna_Timer)
+Const WMT700_Delay_Sec As Long = 8      '(Tower_Timer)
+Const Compass_Delay_Sec As Long = 4     '(Tower_Timer)
+Const Triplet_Delay_Sec As Long = 20    '(Triplet_Timer): Triplet takes at least 17 seconds to sample.
+Const OCR_R_Delay_Sec As Long = 8       '(Pump_Timer)
+Const OCR_I_Delay_Sec As Long = 8       '(Tower_Timer)   
 
 ' ### Misc Parameters ###
-Const Required_Salinity = 10 ' (PSU) Threshold for the Salinity Check
+Const Required_Salinity As Long = 10 ' (PSU) Threshold for the Salinity Check
 ' #####################################################################

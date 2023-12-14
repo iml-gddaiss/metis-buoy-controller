@@ -1,4 +1,5 @@
 Public SlowSequenceLocked As Boolean = false
+
 Public Manual_Tower_Switch As Boolean = false
 Public Manual_Well_Switch As Boolean = false
 
