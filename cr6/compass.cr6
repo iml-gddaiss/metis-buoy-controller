@@ -41,10 +41,8 @@ Sub CollectCompass
  
   Compass_Angles_Sum() = 0 'Need to be reste for summation
 
-  Call logging("PitchSum: " & PitchSum & ", RollSum: " & RollSum)
   SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",3,50) ' What is this for ? (Maybe its to wake up the compass)
   For Y = 1 To Compass_Sample_Size Step 1
-    Call logging("Compass Debug Sample: " & Y)
     SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",1,50)  ' Command = h^D^A^D^I (68 04 01 04 09)
     SerialInRecord(SerialTower,raw_compass,&H68,13,0,NBR,101)   ' First byte sent is address 68 ' &68 -> $
     If raw_compass = "NAN" Then
@@ -63,20 +61,14 @@ Sub CollectCompass
 
     'Array are in order of Roll, Pitch & Heading
     ' maybe use a variable to Dump it in ?
-    Call logging("Pitch String: " & HexaSign(Compass(1)) & Compass(2) &"."& Compass(3))
-    Call logging("Roll String: " & HexaSign(Compass(4)) & Compass(5) &"."& Compass(6))
-    Call logging("Heading String: " & Compass(7) & Compass(8) & "." & Compass(9))
-    
+    Call logging("Compass sample ("&Y&"): R=" & HexaSign(Compass(1)) & Compass(2) &"."& Compass(3) & ", P=" & HexaSign(Compass(4)) & Compass(5) &"."& Compass(6) & ", H=" & Compass(7) & Compass(8) & "." & Compass(9)) 'FIXME
+
     RollSum = RollSum + CTYPE( HexaSign(Compass(1)) & Compass(2) &"."& Compass(3), float)
     PitchSum = PitchSum + CTYPE( HexaSign(Compass(4)) & Compass(5) &"."& Compass(6), float)
-
-    Call logging("PitchSum: " & PitchSum & ", RollSum: "  & RollSum)
     
     HeadingBuff = CTYPE(Compass(7) & Compass(8) & "." & Compass(9), float)
     Heading_x_Sum = Heading_x_Sum + COS(HeadingBuff)
     Heading_y_Sum = Heading_y_Sum + SIN(HeadingBuff)
-    
-    Call logging("Heading_x_Sum: " & Heading_x_Sum & ", Heading_y_Sum: " & Heading_y_Sum)
 
     Delay(1,400,mSec)
   Next

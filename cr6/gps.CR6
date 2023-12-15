@@ -19,7 +19,7 @@ Public Magnetic_Variation As Float = ""
 '### Units ###
 Units SOG = Kn
 Units COG = °
-Units GPS_Mag_Var = °
+Units Magnetic_Variation = °
 
 Dim UpdateGPSTable As Boolean = false
 
