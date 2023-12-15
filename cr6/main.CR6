@@ -61,7 +61,7 @@ Include "CPU:wxt536.cr6"
 Include "CPU:compass.cr6"                   
 Include "CPU:gps.cr6"                       
 Include "CPU:par.cr6"                       
-Include "CPU:sbe37.cr6"                     
+Include "CPU:SBE37_cr6"                     
 Include "CPU:eco_triplet.cr6"               
 Include "CPU:seafet.cr6"                    
 Include "CPU:suna.cr6"                      
@@ -227,7 +227,7 @@ BeginProg
   Call StartSUNA         ' why don't isn't SUNA started in THE begining --- FIXME ---
   Call SampleOCRs
   Call SampleSBE37
-  Call SampleSeafet(SBE37.Temperature, SBE37.Salinity)
+  Call SampleSeafet(SBE37_Temperature, SBE37_Salinity)
   Call CollectSUNA
   Call StopWellPump 
   
