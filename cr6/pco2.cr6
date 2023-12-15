@@ -22,7 +22,7 @@ Const PCO2_Air_Tag = "A M"
 StructureType PCO2_Struct
   Year As String
   Month As String
-  Day As String
+  DDay As String
   Hour As String
   Minute As String
   Second As String
@@ -44,7 +44,7 @@ StructureType PCO2_Struct
   Units Gaz_Pressure = mbar
   Units Voltage = volts
   
-  ReadOnly Year, Month, Day, Hour, Minute, Second, Zero, Current, CO2, IRGA, Humidity, Temperature, Gaz_Pressure, Voltage
+  ReadOnly Year, Month, DDay, Hour, Minute, Second, Zero, Current, CO2, IRGA, Humidity, Temperature, Gaz_Pressure, Voltage
 EndStructureType
 
 Dim PCO2_Water As PCO2_Struct
@@ -54,7 +54,7 @@ Dim PCO2_Air As PCO2_Struct
 '### Tables ###
 DataTable(FilePCO2W,UpdatePCO2Tables,-1)
   DataInterval(0,0,Sec,10)
-  Sample (1,PCO2_Water.Year &"-"& PCO2_Water.Month &"-"& PCO2_Water.Day, String) : FieldNames("Date")
+  Sample (1,PCO2_Water.Year &"-"& PCO2_Water.Month &"-"& PCO2_Water.DDay, String) : FieldNames("Date")
   Sample (1,PCO2_Water.Hour &":"& PCO2_Water.Minute &":"& PCO2_Water.Second, String) : FieldNames("Time")
   Sample (1,PCO2_Water.Zero,IEEE4)
   Sample (1,PCO2_Water.Current,IEEE4)
@@ -70,7 +70,7 @@ EndTable
 
 DataTable(FilePCO2A,UpdatePCO2Tables,-1)
   DataInterval(0,0,Sec,10)
-  Sample (1,PCO2_Air.Year &"-"& PCO2_Air.Month &"-"& PCO2_Air.Day, String) : FieldNames("Date")
+  Sample (1,PCO2_Air.Year &"-"& PCO2_Air.Month &"-"& PCO2_Air.DDay, String) : FieldNames("Date")
   Sample (1,PCO2_Air.Hour &":"& PCO2_Air.Minute &":"& PCO2_Air.Second, String) : FieldNames("Time")
   Sample (1,PCO2_Air.Zero,IEEE4)
   Sample (1,PCO2_Air.Current,IEEE4)
@@ -116,9 +116,8 @@ Sub StartPCO2
     RawPCO2_Water = "" ' Also set to "" at the end of the Scan if PCO2 Tables were updated
     RawPCO2_Air = ""   ' Also set to "" at the end of the Scan if PCO2 Tables were updated
 
-    PCO2_Water() = "" 
-    PCO2_Air() = ""
-
+    SplitStr(PCO2_Water,"",",",0,0) 
+    SplitStr(PCO2_Air,"",",",0,0) 
 
     SerialOpen(SerialPCO2,19200,3,20,500)
     Delay(1,1,Sec)

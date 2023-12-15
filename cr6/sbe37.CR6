@@ -22,7 +22,7 @@ StructureType SBE37_Struct
   ReadOnly Temperature, Conductivity, Salinity, Density
 EndStructureType
 
-SBE37 As SBE37_Struct As Float = {"", "", "", ""} 
+SBE37 As SBE37_Struct
 
 Dim UpdateSBE37Table As Boolean = false
 
@@ -119,7 +119,7 @@ EndSub
 
 
 Sub SampleSBE37
-  SBE37() = "" ' Always reset since it is used in calculation
+  SplitStr(SBE37,"",",",0,0) ' Always reset since it is used in calculation
   
   If With_SBE37 Then
     WhereAmI = "Sampling SBE37"
