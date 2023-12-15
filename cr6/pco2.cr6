@@ -45,32 +45,32 @@ Units PCO2A_Voltage = volts
 '### Tables ###
 DataTable(FilePCO2W,UpdatePCO2Tables,-1)
   DataInterval(0,0,Sec,10)
-  Sample (1,PCO2_W_Year &"-"& PCO2_W_Month &"-"& PCO2_W_DDay, String) : FieldNames("Date")
-  Sample (1,PCO2_W_Hour &":"& PCO2_W_Minute &":"& PCO2_W_Second, String) : FieldNames("Time")
-  Sample (1,PCO2_W_Zero,IEEE4)
-  Sample (1,PCO2_W_Current,IEEE4)
-  Sample (1,PCO2_W_CO2,String)
-  Sample (1,PCO2_W_IRGA,IEEE4)
-  Sample (1,PCO2_W_Humidity,IEEE4)
-  Sample (1,PCO2_W_Temperature,IEEE4)
-  Sample (1,PCO2_W_Gaz_Pressure,IEEE4)
-  Sample (1,PCO2_W_Voltage,IEEE4)
+  Sample (1,PCO2W_Year &"-"& PCO2W_Month &"-"& PCO2W_DDay, String) : FieldNames("Date")
+  Sample (1,PCO2W_Hour &":"& PCO2W_Minute &":"& PCO2W_Second, String) : FieldNames("Time")
+  Sample (1,PCO2W_Zero,IEEE4)
+  Sample (1,PCO2W_Current,IEEE4)
+  Sample (1,PCO2W_CO2,String)
+  Sample (1,PCO2W_IRGA,IEEE4)
+  Sample (1,PCO2W_Humidity,IEEE4)
+  Sample (1,PCO2W_Temperature,IEEE4)
+  Sample (1,PCO2W_Gaz_Pressure,IEEE4)
+  Sample (1,PCO2W_Voltage,IEEE4)
   Sample (1,RawPCO2,String)
   Sample (1,RawPCO2_Water,String)
 EndTable
 
 DataTable(FilePCO2A,UpdatePCO2Tables,-1)
   DataInterval(0,0,Sec,10)
-  Sample (1,PCO2_A_Year &"-"& PCO2_A_Month &"-"& PCO2_A_DDay, String) : FieldNames("Date")
-  Sample (1,PCO2_A_Hour &":"& PCO2_A_Minute &":"& PCO2_A_Second, String) : FieldNames("Time")
-  Sample (1,PCO2_A_Zero,IEEE4)
-  Sample (1,PCO2_A_Current,IEEE4)
-  Sample (1,PCO2_A_CO2,String)
-  Sample (1,PCO2_A_IRGA,IEEE4)
-  Sample (1,PCO2_A_Humidity,IEEE4)
-  Sample (1,PCO2_A_Temperature,IEEE4)
-  Sample (1,PCO2_A_Gaz_Pressure,IEEE4)
-  Sample (1,PCO2_A_Voltage,IEEE4)
+  Sample (1,PCO2A_Year &"-"& PCO2A_Month &"-"& PCO2A_DDay, String) : FieldNames("Date")
+  Sample (1,PCO2A_Hour &":"& PCO2A_Minute &":"& PCO2A_Second, String) : FieldNames("Time")
+  Sample (1,PCO2A_Zero,IEEE4)
+  Sample (1,PCO2A_Current,IEEE4)
+  Sample (1,PCO2A_CO2,String)
+  Sample (1,PCO2A_IRGA,IEEE4)
+  Sample (1,PCO2A_Humidity,IEEE4)
+  Sample (1,PCO2A_Temperature,IEEE4)
+  Sample (1,PCO2A_Gaz_Pressure,IEEE4)
+  Sample (1,PCO2A_Voltage,IEEE4)
   Sample (1,RawPCO2,String)
   Sample (1,RawPCO2_Air,String)
 EndTable
@@ -84,15 +84,15 @@ Function PCO2TagString As String
   CO2_Water = "#.#"
   CO2_Air = "#.#"
   
-  If PCO2_W_CO2 <> "" Then
-    CO2_Air = PCO2_W_CO2
+  If PCO2W_CO2 <> "" Then
+    CO2_Air = PCO2W_CO2
   EndIf
 
-  If PCO2_A_CO2 <> "" Then 
-    CO2_Water = PCO2_A_CO2
+  If PCO2A_CO2 <> "" Then 
+    CO2_Water = PCO2A_CO2
   Endif
     
-  PCO2TagString = "[PCO2]" & PCO2_A_CO2 & "," & PCO2_W_CO2 & "," & PCO2_W_Gaz_Pressure & "," & PCO2_A_Gaz_Pressure & "," & PCO2_A_Humidity
+  PCO2TagString = "[PCO2]" & PCO2A_CO2 & "," & PCO2W_CO2 & "," & PCO2W_Gaz_Pressure & "," & PCO2A_Gaz_Pressure & "," & PCO2A_Humidity
 EndFunction
 
 
