@@ -66,6 +66,7 @@ Sub ResetWXT536
       SerialOut(SerialTower,CHR(13)&CHR(10)&"2XZRU"&CHR(13)&CHR(10),"",1,0)
       SerialOut(SerialTower,CHR(13)&CHR(10)&"2XZRI"&CHR(13)&CHR(10),"",1,0)
       Timer(Rain_Timer,Hr,2) 'Timer #6 Reset&Start
+      Call logging("WXT536 Rain Reset")
     EndIf	
         
     'Reset wind & weather measurements    
@@ -78,6 +79,7 @@ Sub CollectWXT536
   Dim X
   
   If With_WXT536 Then
+    Call logging("Collecting WXT536")
     WhereAmI = "Collect WXT536"
 
     WXT536_Wind () = ""
@@ -89,8 +91,9 @@ Sub CollectWXT536
       If RawWXT536_Wind = "" Then
         SerialOut(SerialTower,"2R1!",0,1,10)
         SerialIn(RawWXT536_Wind,SerialTower,20,13,80)
+        Call logging("Raw WXT536 Wind: " & RawWXT536_Wind) 
         RawWXT536_Wind = Mid(RawWXT536_Wind,5,80)
-        SplitStr(WXT536_Wind(),RawWXT536_Wind,",",6,0)
+        SplitStr(WXT536_Wind(),RawWXT536_Wind,",",6,10)
         If WXT536_Wind(6) = "" Then
           RawWXT536_Wind = ""
         EndIf
@@ -99,8 +102,9 @@ Sub CollectWXT536
       If RawWXT536_Weather = "" Then
         SerialOut(SerialTower,"2R2!",0,1,10)
         SerialIn(RawWXT536_Weather,SerialTower,20,13,30)
+        Call logging("Raw WXT536 Weather: " & RawWXT536_Weather) 
         RawWXT536_Weather = Mid(RawWXT536_Weather,5,30)
-        SplitStr(WXT536_Weather(),RawWXT536_Weather,",",3,0)
+        SplitStr(WXT536_Weather(),RawWXT536_Weather,",",3,10)
         If WXT536_Weather(3) = "" Then
           RawWXT536_Weather = ""
         EndIf
@@ -109,8 +113,9 @@ Sub CollectWXT536
       If RawWXT536_Rain = "" Then
         SerialOut(SerialTower,"2R3!",0,1,10)
         SerialIn(RawWXT536_Rain,SerialTower,20,13,80)
+        Call logging("Raw WXT536 Rain: " & RawWXT536_Rain) 
         RawWXT536_Rain = Mid(RawWXT536_Rain,5,80)
-        SplitStr(WXT536_Rain(),RawWXT536_Rain,",",6,0)
+        SplitStr(WXT536_Rain(),RawWXT536_Rain,",",6,10)
         If WXT536_Rain(6) = "" Then
           RawWXT536_Rain = ""
         EndIf
@@ -120,6 +125,7 @@ Sub CollectWXT536
 
     UpdateWXT536Table = true
 
+    Call logging("WXT536 Done")
     WhereAmI = "Finish WXT536"
   EndIf
 EndSub

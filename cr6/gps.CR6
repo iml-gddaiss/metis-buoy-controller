@@ -19,7 +19,7 @@ Public Magnetic_Variation As Float = ""
 '### Units ###
 Units SOG = Kn
 Units COG = °
-Units GPS_Mag_Var = °
+Units Magnetic_Variation = °
 
 Dim UpdateGPSTable As Boolean = false
 
@@ -37,7 +37,6 @@ EndTable
 
 Sub StartGPS
     SerialOpen(SerialGPS,19200,3,20,1000)
-    SerialFlush(SerialGPS)
 EndSub
 
 
@@ -52,20 +51,26 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
     Longitude = ""
     SOG = ""
     COG = ""
+    Magnetic_Variation = ""
+
 
     If single_sample Then
         number_of_sample = 1
     Else
         number_of_sample = GPS_Sample_Size
     EndIf
+    
+    SerialFlush(SerialGPS) ' To clear buffer (continuous feed)
+    SerialIn(RawGPS,SerialGPS,150,10,80) '(to make sure it didn<t cut mid transmission.)
 
     ' Averaging SOG and COG over time. 
-    ' FIXME test if the For Loop stops when X = number_of_sample or when X > number_of_sample
     For X = 1 To number_of_sample Step 1 ' GPS should be setup to 1 sec interval to get GPS_Sample_Size to correspond to seconds.
         SerialIn(RawGPS,SerialGPS,150,10,80)
+        Call logging("Last Raw GPS(" &X& "): " & RawGPS)
         SplitStr(GPS_HVS,RawGPS,",",13,5)
         
         If GPS_SOG = "" Then
+            Call logging("No Speed Overground returned. Skipping remaining gps sampling.")
             UV() = ""
             ExitFor
         Else
@@ -73,13 +78,12 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
             V += CTYPE(GPS_SOG, float) * SIN(CTYPE(GPS_COG, float))
         EndIf
     Next
-    
+
     If RawGPS <> "" Then
         'COG and SOG time averaging.
         SOG = Round( SQR(U^2 + V^2) / number_of_sample, 2)
         COG = Round( ATN2(V, U), 1) MOD 360
-
-        ' The last reiceved data are used to set the remainings variables. ' FIXME what if GPS_Date and GPS_TIME are bad. (Missing)
+        
         'Formatting Date & Time String
         GPS_Date = "20"&Mid(GPS_Date,5,2) &"-"& Mid(GPS_Date,3,2) &"-"& Mid(GPS_Date,1,2)
         GPS_Time = Mid(GPS_Time,1,2) &":"& Mid(GPS_Time,3,2) &":"& Mid(GPS_Time,5,2)
@@ -117,6 +121,7 @@ Sub SampleGPS
         
         UpdateGPSTable = true
         
+        Call logging("GPS Done")
         WhereAmI = "EndGPS"
     EndIf
 EndSub

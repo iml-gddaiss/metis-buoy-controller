@@ -2,18 +2,6 @@
 '### Serial Port ###
 ' Const SerialPCO2 = 40 'RS232
 
-
-'### Data Variables ###
-Dim RawPCO2 As String * 1000
-Dim RawPCO2_Air As String * 100
-Dim RawPCO2_Water As String * 100
-
-Const PCO2_Water_Tag = "W M"
-Const PCO2_Air_Tag = "A M"
-
-Dim PCO2_Water(14) As String : Alias PCO2_Water = PCO2_W_Year, PCO2_W_Month, PCO2_W_Day, PCO2_W_Hour, PCO2_W_Minute, PCO2_W_Second, PCO2_W_Zero, PCO2_W_AD, PCO2_W_CO2, Ave_W_IRGA, PCO2_W_Humidity, PCO2_W_Temp, PCO2_W_Gaz_Pressure, PCO2_W_Voltage
-Dim PCO2_Air(14) As String : Alias PCO2_Air = PCO2_A_Year, PCO2_A_Month, PCO2_A_Day, PCO2_A_Hour, PCO2_A_Minute, PCO2_A_Second, PCO2_A_Zero, PCO2_A_AD, PCO2_A_CO2, Ave_A_IRGA, PCO2_A_Humidity, PCO2_A_Temp, PCO2_A_Gaz_Pressure, PCO2_A_Voltage
-
 Public PCO2_Last_Sampling As Long
 Public PCO2IsSampling As Boolean
 
@@ -23,50 +11,71 @@ Public PCO2WaterIsCollected As Boolean = false
 Dim UpdatePCO2Tables As Boolean = false
 
 
-'### Units ###
-Units PCO2_W_CO2 = ppm
-Units PCO2_A_CO2 = ppm
-Units PCO2_W_Gaz_Pressure = mbar
-Units PCO2_A_Gaz_Pressure = mbar
-Units PCO2_W_Humidity = % ' <------------------- Why ? FIXME
-Units PCO2_A_Humidity = % 'added  FIXME
+'### Data Variables ###
+Dim RawPCO2 As String * 1000
+Dim RawPCO2_Air As String * 100
+Dim RawPCO2_Water As String * 100
+
+Const PCO2_Water_Tag = "W M"
+Const PCO2_Air_Tag = "A M"
+
+Dim PCO2_Water (14) As String : Alias PCO2_Water = PCO2W_Year, PCO2W_Month, PCO2W_DDay, PCO2W_Hour, PCO2W_Minute, PCO2W_Second, PCO2W_Zero, PCO2W_Current, PCO2W_CO2, PCO2W_IRGA, PCO2W_Humidity, PCO2W_Temperature, PCO2W_Gaz_Pressure, PCO2W_Voltage
+Units PCO2W_Zero = counts
+Units PCO2W_Current = counts
+Units PCO2W_CO2 = ppm
+Units PCO2W_IRGA = °C
+Units PCO2W_Humidity = %
+Units PCO2W_Temperature = °C
+Units PCO2W_Gaz_Pressure = mbar
+Units PCO2W_Voltage = volts
+
+Dim PCO2_Air(14) As String : Alias PCO2_Air = PCO2A_Year, PCO2A_Month, PCO2A_DDay, PCO2A_Hour, PCO2A_Minute, PCO2A_Second, PCO2A_Zero, PCO2A_Current, PCO2A_CO2, PCO2A_IRGA, PCO2A_Humidity, PCO2A_Temperature, PCO2A_Gaz_Pressure, PCO2A_Voltage
+Units PCO2A_Zero = counts
+Units PCO2A_Current = counts
+Units PCO2A_CO2 = ppm
+Units PCO2A_IRGA = °C
+Units PCO2A_Humidity = %
+Units PCO2A_Temperature = °C
+Units PCO2A_Gaz_Pressure = mbar
+Units PCO2A_Voltage = volts
+
+
 
 
 '### Tables ###
 DataTable(FilePCO2W,UpdatePCO2Tables,-1)
   DataInterval(0,0,Sec,10)
-  Sample (1,PCO2_Water_Tag,String) ' Is it nescessary ? FIXME
-  Sample (1,PCO2_W_Year &"-"& PCO2_W_Month &"-"& PCO2_W_Day,String) : FieldNames("PCO2_W_Date")
-  Sample (1,PCO2_W_Hour &":"& PCO2_W_Minute &":"& PCO2_W_Second,String) : FieldNames("PCO2_W_Time")
-  Sample (1,PCO2_W_Zero,IEEE4)
-  Sample (1,PCO2_W_AD,IEEE4)
-  Sample (1,PCO2_W_CO2,String)
-  Sample (1,Ave_W_IRGA,IEEE4)
-  Sample (1,PCO2_W_Humidity,IEEE4)
-  Sample (1,PCO2_W_Temp,IEEE4)
-  Sample (1,PCO2_W_Gaz_Pressure,IEEE4)
-  Sample (1,PCO2_W_Voltage,IEEE4)
+  Sample (1,PCO2W_Year &"-"& PCO2W_Month &"-"& PCO2W_DDay, String) : FieldNames("Date")
+  Sample (1,PCO2W_Hour &":"& PCO2W_Minute &":"& PCO2W_Second, String) : FieldNames("Time")
+  Sample (1,PCO2W_Zero,IEEE4)
+  Sample (1,PCO2W_Current,IEEE4)
+  Sample (1,PCO2W_CO2,IEEE4)
+  Sample (1,PCO2W_IRGA,IEEE4)
+  Sample (1,PCO2W_Humidity,IEEE4)
+  Sample (1,PCO2W_Temperature,IEEE4)
+  Sample (1,PCO2W_Gaz_Pressure,IEEE4)
+  Sample (1,PCO2W_Voltage,IEEE4)
   Sample (1,RawPCO2,String)
   Sample (1,RawPCO2_Water,String)
 EndTable
 
 DataTable(FilePCO2A,UpdatePCO2Tables,-1)
   DataInterval(0,0,Sec,10)
-  Sample (1,PCO2_Air_Tag,String) ' Is it nescessary ? FIXME
-  Sample (1,PCO2_A_Year &"-"& PCO2_A_Month &"-"& PCO2_A_Day,String) : FieldNames("PCO2_A_Date")
-  Sample (1,PCO2_A_Hour &":"& PCO2_A_Minute &":"& PCO2_A_Second,String) : FieldNames("PCO2_A_Time")
-  Sample (1,PCO2_A_Zero,IEEE4)
-  Sample (1,PCO2_A_AD,IEEE4)
-  Sample (1,PCO2_A_CO2,String)
-  Sample (1,Ave_A_IRGA,IEEE4)
-  Sample (1,PCO2_A_Humidity,IEEE4)
-  Sample (1,PCO2_A_Temp,IEEE4)
-  Sample (1,PCO2_A_Gaz_Pressure,IEEE4)
-  Sample (1,PCO2_A_Voltage,IEEE4)
+  Sample (1,PCO2A_Year &"-"& PCO2A_Month &"-"& PCO2A_DDay, String) : FieldNames("Date")
+  Sample (1,PCO2A_Hour &":"& PCO2A_Minute &":"& PCO2A_Second, String) : FieldNames("Time")
+  Sample (1,PCO2A_Zero,IEEE4)
+  Sample (1,PCO2A_Current,IEEE4)
+  Sample (1,PCO2A_CO2,IEEE4)
+  Sample (1,PCO2A_IRGA,IEEE4)
+  Sample (1,PCO2A_Humidity,IEEE4)
+  Sample (1,PCO2A_Temperature,IEEE4)
+  Sample (1,PCO2A_Gaz_Pressure,IEEE4)
+  Sample (1,PCO2A_Voltage,IEEE4)
   Sample (1,RawPCO2,String)
   Sample (1,RawPCO2_Air,String)
 EndTable
-  
+
+
 
 Function PCO2TagString As String
   Dim CO2_Air As String 
@@ -75,15 +84,15 @@ Function PCO2TagString As String
   CO2_Water = "#.#"
   CO2_Air = "#.#"
   
-  If PCO2_W_CO2 <> "" Then
-    CO2_Air = PCO2_W_CO2
+  If PCO2W_CO2 <> "" Then
+    CO2_Air = PCO2W_CO2
   EndIf
 
-  If PCO2_A_CO2 <> "" Then 
-    CO2_Water = PCO2_A_CO2
+  If PCO2A_CO2 <> "" Then 
+    CO2_Water = PCO2A_CO2
   Endif
     
-  PCO2TagString = "[PCO2]" & CO2_Air & "," & CO2_Water & "," & PCO2_W_Gaz_Pressure & "," & PCO2_A_Gaz_Pressure & "," & PCO2_A_Humidity
+  PCO2TagString = "[PCO2]" & PCO2A_CO2 & "," & PCO2W_CO2 & "," & PCO2W_Gaz_Pressure & "," & PCO2A_Gaz_Pressure & "," & PCO2A_Humidity
 EndFunction
 
 
@@ -98,9 +107,8 @@ Sub StartPCO2
     RawPCO2_Water = "" ' Also set to "" at the end of the Scan if PCO2 Tables were updated
     RawPCO2_Air = ""   ' Also set to "" at the end of the Scan if PCO2 Tables were updated
 
-    PCO2_Water() = "" 
+    PCO2_Water() = ""
     PCO2_Air() = ""
-
 
     SerialOpen(SerialPCO2,19200,3,20,500)
     Delay(1,1,Sec)
@@ -131,7 +139,7 @@ Sub ClosePC02
 EndSub
 
 
-Function Collect_PCO2_Data(PCO2_Tag) As String
+Function Collect_PCO2_Data(PCO2_Tag As String) As String * 100
   'PCO2_Tag = "A M" or "W M"
   Dim Start_Pos  As Long
   Dim End_Pos As Long
@@ -156,6 +164,7 @@ Sub CollectPCO2
   If NOT PCO2WaterIsCollected Then
     RawPCO2_Water = Collect_PCO2_Data(PCO2_Water_Tag)
     If RawPCO2_Water <> "" Then
+      SplitStr(PCO2_Water,RawPCO2_Water,",",14,5)
       PCO2WaterIsCollected = true
     EndIf
   EndIf
@@ -163,16 +172,17 @@ Sub CollectPCO2
   If NOT PCO2AirIsCollected Then
     RawPCO2_Air = Collect_PCO2_Data(PCO2_Air_Tag)
     If RawPCO2_Air <> "" Then
+      SplitStr(PCO2_Air,RawPCO2_Air,",",14,5)
       PCO2AirIsCollected = true
     EndIf
   EndIf
 EndSub
 
 
-Sub WritePCO2Tables  ' FInd better name TODO
-  SplitStr(PCO2_Water,RawPCO2_Water,",",14,0)
-  SplitStr(PCO2_Air,RawPCO2_Air,",",14,0)
-EndSub
+' Sub WritePCO2Tables  ' Find better name TODO
+'   SplitStr(PCO2_Water,RawPCO2_Water,",",14,0)
+'   SplitStr(PCO2_Air,RawPCO2_Air,",",14,0)
+' EndSub
 
 
 Sub PCO2WatchDog
@@ -180,7 +190,7 @@ Sub PCO2WatchDog
   If (PCO2_Last_Sampling + 3600) < Public.TimeStamp(1) Then
     Call logging("PCO2 Watchdog Triggered")
     If PCO2WaterIsCollected OR PCO2AirIsCollected Then
-      Call WritePCO2Tables
+      ' Call WritePCO2Tables
       UpdatePCO2Tables = true
     EndIf  
       
@@ -199,7 +209,7 @@ Sub PCO2Sampling
       Call CollectPCO2
       
       If PCO2WaterIsCollected AND PCO2AirIsCollected Then
-        Call WritePCO2Tables
+        ' Call WritePCO2Tables
         Call ClosePC02
         UpdatePCO2Tables = true
     
@@ -213,7 +223,9 @@ Sub PCO2Sampling
     
     ElseIf (PCO2_Last_Sampling + (PCO2_Interval_Hr*3600) - 60 <= Public.TimeStamp(1)) Then 'minus 60sec to not skip a scan planned at PCO2_Interval hour (got 3599s and didn't sampled)
       Call logging("PCO2 Ready to start.")
-      Call StartPCO2  
+      Call StartPCO2
+    Else  
+      Call logging("Second until next PCO2: " & Public.TimeStamp(1) - PCO2_Last_Sampling + (PCO2_Interval_Hr*3600)) ' TODO test
     EndIf
 
   EndIf

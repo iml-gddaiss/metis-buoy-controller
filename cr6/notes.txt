@@ -30,8 +30,6 @@
 .. Winch on Demand
 .... Skip if its too close to the next scan. to prevent unexpected threading problem.
 
-.. Compass
-.. Pourquoi un délais de 400ms
 
 .. To Test
 .. Test Timer (set / resets)

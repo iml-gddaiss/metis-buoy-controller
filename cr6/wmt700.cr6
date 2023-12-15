@@ -39,6 +39,7 @@ Sub CollectWMT700
   '&H0DA -> WM | &H0DA0 -> \r\n  (CR)(CF)
   '&H0D0A is the hexadecimal representation for carriage return/line feed
   If With_WMT700 Then
+    Call logging("Collect WMT700")
     WhereAmI = "Collect WMT700"
 
     WMT700() = ""
@@ -48,15 +49,18 @@ Sub CollectWMT700
     SerialOut(SerialTower,"$Asleep"&CHR(13)&CHR(10),"",1,0)
 
     RawWMT700 = Mid(RawWMT700,7,80)    ' Removing the 6 first digit to pass the numerical value for the type of SplitStr
+
+    Call logging("Raw WMT700: " & RawWMT700) 
     
     If RawWMT700 = "AN" Then
       RawWMT700 = "NAN"
     Else
-      SplitStr(WMT700(),RawWMT700,",",6,0)
+      SplitStr(WMT700(),RawWMT700,",",6,10)
     EndIf
-    
+
     UpdateWMT700Table = true
 
+    Call logging("WMT700 Done")
     WhereAmI = "Finish WMT700"
   EndIf
 EndSub

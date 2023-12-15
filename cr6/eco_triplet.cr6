@@ -18,12 +18,12 @@ Dim UpdateTripleTable As Boolean = false
 
 DataTable(FileTriplet,UpdateTripleTable,-1)
   DataInterval(0,0,Sec,10)
-  Sample (1,Scattering_Raw,String) ' Fixme set to float ??
-  Sample (1,Scattering_Value,String) ' Fixme set to float ??
-  Sample (1,Chlorophyll_Raw,String)' Fixme set to float ??
-  Sample (1,Chlorophyll_Value,String)' Fixme set to float ??
-  Sample (1,FDOM_Raw,String)' Fixme set to float ??
-  Sample (1,FDOM_Value,String)' Fixme set to float ??
+  Sample (1,Scattering_Raw,IEEE4)
+  Sample (1,Scattering_Value,IEEE4)
+  Sample (1,Chlorophyll_Raw,IEEE4)
+  Sample (1,Chlorophyll_Value,IEEE4)
+  Sample (1,FDOM_Raw,IEEE4)
+  Sample (1,FDOM_Value,IEEE4)
 EndTable
 
 '### Sampling ###
@@ -47,7 +47,7 @@ Sub StartTriplet
   If With_Triplet Then
     WhereAmI = "Start Triplet"
     Call logging("Start Triplet")
-    SerialFlush(SerialTriplet) 'Fixme Why a we Flushing here
+    SerialFlush(SerialTriplet)
     SerialOpen(SerialTriplet,19200,3,20,500) 'Triplet string is around 100 char.
     SerialOut(SerialTriplet,CHR(13)&CHR(10),0,2,100)
     SerialOut(SerialTriplet,"!!!!!!!!","Mem",1,600)
@@ -63,7 +63,8 @@ Sub CollectTriplet
   ' Eco-Triplet takes at least 17s to sample. Thus we need to wait at least 18 seconds before collecting the data.
   Dim NBR ' Number of Bytes Returned  
   If With_Triplet Then
-    WhereAmI = "Collect triplet"
+    Call logging("Collecting Triplet")
+    WhereAmI = "Collect Triplet"
     
     Triplet() = ""
     
@@ -73,11 +74,13 @@ Sub CollectTriplet
     SerialClose(SerialTriplet)
     
     RawTriplet = "BB"+RawTriplet
-    SplitStr(Triplet(),RawTriplet,CHR(09),11,4)
+    SplitStr(Triplet(),RawTriplet,CHR(09),11,4) ' Ignoring serial number (Option 4: strings after the first split sep)
     
     UpdateTripleTable = true
     
     TAGString &= "\n" & TripletTagString()
     ' Call WriteTagString
+
+    Call logging("Triplet Done")
   EndIf
 EndSub

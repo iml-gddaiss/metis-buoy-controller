@@ -61,17 +61,25 @@ EndSub
 
 
 Sub SelectWindInstrument
-  If WMT700(5) = CHR(00) OR WMT700(5) = 0 Then  ' If there's data from WMT700, taking them as Wind
+  'If WMT700(5) = CHR(00) OR WMT700(5) = 0 Then  ' If there's data from WMT700, taking them as Wind
+
+  If With_WMT700 AND WMT700(6) <> "NAN" Then ' Check the six value (so at least 6 values)
+    Wind() = WMT700()   
+    WindTAG = "[W700]"
+    Call logging("Wind Instrument -> WMT700")
+  ElseIf With_WXT536 Then
     Wind() = WXT536_Wind()
-    WindTAG = "[W536]"                    ' Otherwise take the WXT536
-  Else                                    '
-    Wind() = WMT700()                     ' FIXME what if With_WMT700 is False
-    WindTAG = "[W700]"                    '
-  EndIf         
+    WindTAG = "[W536]"
+    Call logging("Wind Instrument -> WXT536")
+  Else
+    Wind() = ""
+    WindTag = ""
+    Call logging("Wind Instrument -> NA")
+  EndIf
 EndSub
 
 
-Sub WindHeadingCorrection(Heading)
+Sub WindHeadingCorrection(Heading As Float)
   Dim X
   'Heading correction
   For X = 1 To 3                                   ' with the heading (which is already corrected with magnetic
@@ -84,17 +92,11 @@ Sub ProcessWeather(Heading)
   If With_Weather Then
     WhereAmI = "Processing Weather"
 
-    Wind() = ""
+    Call SelectWindInstrument   
 
-    If With_Wind Then
-      Call SelectWindInstrument   
-      
-      IF Heading <> "NAN" Then 
-        Call WindHeadingCorrection(Heading)
-      EndIf
-
+    If WindTag <> "" Then
+      WindHeadingCorrection(Heading) ' Carry correction only if Wind values were loaded.
       TAGString &= "\n" & WindTagString()
-      ' Call WriteTagString
     EndIf
     
     TAGString &= "\n" & ATMSTagString()

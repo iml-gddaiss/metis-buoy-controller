@@ -15,7 +15,7 @@ Dim UpdateADCPTable As Boolean = false
 '### Tables ###
 DataTable(FileADCP,UpdateADCPTable,-1)
   DataInterval(0,0,Sec,10)
-  Sample(ADCP_Num_Bin + 4, ADCP,String) ' Test Fixme
+  Sample(ADCP_Num_Bin + 4, ADCP,String)
 EndTable
 
 
@@ -52,7 +52,7 @@ Sub CollectADCP
         ADCP(X) = LTrim(ADCP(X)) 
         ADCP(X) = Replace(ADCP(X)," ",",")
       EndIf
-      ADCP(X) = Replace(ADCP(X),CHR(13),"") ' Fixme Check if its ok.
+      ADCP(X) = Replace(ADCP(X),CHR(13),"")
       Call logging("Row " & X & ": " & ADCP(X))
     Next X
 

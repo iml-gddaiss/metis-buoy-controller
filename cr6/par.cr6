@@ -28,6 +28,7 @@ EndSub
 
 Sub CollectPAR
   If With_PAR Then
+    Call logging("Collecting PAR")
     WhereAmI = "Collect PAR"
 
     PAR() = ""
@@ -39,6 +40,7 @@ Sub CollectPAR
     Call logging("RawPAR: `" & RawPAR & "`")
 
     UpdatePARTable = true
-  
+
+    Call logging("PAR Done")
   EndIf
 EndSub

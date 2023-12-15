@@ -61,7 +61,7 @@ Include "CPU:wxt536.cr6"
 Include "CPU:compass.cr6"                   
 Include "CPU:gps.cr6"                       
 Include "CPU:par.cr6"                       
-Include "CPU:sbe37.cr6"                     
+Include "CPU:SBE37.cr6"                     
 Include "CPU:eco_triplet.cr6"               
 Include "CPU:seafet.cr6"                    
 Include "CPU:suna.cr6"                      
@@ -109,7 +109,7 @@ DataTable (FileTAGS,1,-1) ' fixme change name
   Sample (1, TAGString, String)
 EndTable
 
-Function InitTagString as String * 300 ' may be too much, but maybe not FIXME
+Function InitTagString as String * 120 ' may be too much, but maybe not FIXME
   InitTagString = "[INIT]" & Buoy_Name & "," & ScanDate & "," & ScanTime & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
 EndFunction
 
@@ -184,10 +184,7 @@ BeginProg
   
   Call logging(">>>>>>>>>>>> Scan Start")
 
-  Call logging("SlowSequenceLock Set (Well, Tower, Winch)")
-  SlowSequenceLocked = True
-
-  ' Call SetMetaInstrumentFlags ' Probably not needed, the programmed shoud be recompiled when apply/restart is set to true. FIXME TEST
+  SlowSequenceLocked = True ' Lockling Slow Sequence
   
   Call GetScanDateTime
     
@@ -215,7 +212,7 @@ BeginProg
   
   Call StartTriplet         ' Starts Triplet_Timer
   
-  Call SampleCompass        ' Requires GPS Magnetic Declination (If Magnetic Declination is sampled, last collected value is used ?) --- FIXME ---
+  Call SampleCompass        ' Requires GPS Magnetic Declination
   
   Call CheckWaterDectectionMain
 
@@ -230,7 +227,7 @@ BeginProg
   Call StartSUNA         ' why don't isn't SUNA started in THE begining --- FIXME ---
   Call SampleOCRs
   Call SampleSBE37
-  Call SampleSeafet(Water_Temp, Salinity)
+  Call SampleSeafet(SBE37_Temperature, SBE37_Salinity)
   Call CollectSUNA
   Call StopWellPump 
   
@@ -287,8 +284,7 @@ BeginProg
 
   Call CollectWinch
 
-  Call logging("SlowSequenceLock Unset (Well, Tower, Winch)")
-  SlowSequenceLocked = false
+  TriggerSequence (1,0) ' Unlocking Slow Sequence
   
   WhereAmI = "Scan end"
   Call logging("Scan finished. <<<<<<<<<<<<" & CHR(13) & CHR(10))
@@ -296,24 +292,23 @@ BeginProg
   NextScan
 	
   SlowSequence
-    Scan(1,Sec,0,0)
-      If NOT SlowSequenceLocked Then
-        Call TowerSwitchSequence
-
-        Call WellSwitchSequence
-
-        Call WinchStartSequence
+    Do
+      If SlowSequenceLocked Then
+        Call logging("Slow Sequence Locked")
+        WaitTriggerSequence
+        SlowSequenceLocked = false
+        Call logging("Slow Sequence Unlocked")
       EndIf
-
+        
+      Call TowerSwitchSequence
+      Call WellSwitchSequence
+      Call WinchStartSequence
       Call ADCPBreakSequence
-
       ' Call ADCPUpdateSequence
-
       Call ADCPDeploySequence
-
       Call ADCPShutdownSequence
-
-    NextScan
+      Delay(1,1,Sec)
+    Loop
 EndProg
 
 

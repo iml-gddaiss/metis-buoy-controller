@@ -13,5 +13,6 @@ Sub CheckWaterDectectionMain
     Water_Detection_Main = 0
     VoltSe(Water_Detection_Main,1,AutoRange,Water_Detection_Channel,0,0,15000,1,0)
     PortSet(C4,0)
+    Call logging("Water Detection Main Check: " & Water_Detection_Main)
   EndIf
 EndSub
