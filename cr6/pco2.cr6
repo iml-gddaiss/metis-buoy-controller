@@ -200,7 +200,8 @@ Sub PCO2WatchDog
 EndSub
 
 
-Sub PCO2Sampling  
+Sub PCO2Sampling
+  Dim TimeUntilNextSampling_Min as Float
   If With_PCO2 Then
     WhereAmI = "Entering PCO2 Loop"
     Call logging("Entering PCO2 Sequence")
@@ -224,8 +225,9 @@ Sub PCO2Sampling
     ElseIf (PCO2_Last_Sampling + (PCO2_Interval_Hr*3600) - 60 <= Public.TimeStamp(1)) Then 'minus 60sec to not skip a scan planned at PCO2_Interval hour (got 3599s and didn't sampled)
       Call logging("PCO2 Ready to start.")
       Call StartPCO2
-    Else  
-      Call logging("Second until next PCO2: " & Public.TimeStamp(1) - PCO2_Last_Sampling + (PCO2_Interval_Hr*3600)) ' TODO test
+    Else
+      TimeUntilNextSampling_Min = (Public.TimeStamp(1) - PCO2_Last_Sampling + (PCO2_Interval_Hr*3600)) / 60 ' TODO Test
+      Call logging("Second until next PCO2: " & TimeUntilNextSampling_Min)
     EndIf
 
   EndIf

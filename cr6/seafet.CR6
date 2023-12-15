@@ -57,9 +57,9 @@ Sub CollectSeafet
     SerialOut(SerialSeafet,CHR(13),"S>",2,50)
     
     If X = 1 Then
-      SerialOut(SerialSeafet,"tss"&CHR(13),CHR(13),1,50)
+      SerialOut(SerialSeafet,"tss"&CHR(13),CHR(10),1,50) 'FIXME CONFIRM THAT IT WORKS
     Else
-      SerialOut(SerialSeafet,"sl"&CHR(13),CHR(13),1,50)
+      SerialOut(SerialSeafet,"sl"&CHR(13),CHR(10),1,50) 'FIXME CONFIRM THAT IT WORKS
     EndIf
     
     SerialIn(RawSeafet,SerialSeafet,800,CHR(13),125) 'Seafet string is around 100
