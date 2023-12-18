@@ -10,6 +10,7 @@ Public Send_Break_to_ADCP As Boolean = false
 Public Deploy_ADCP_Switch As Boolean = false
 Public Shutdown_ADCP_Switch As Boolean = false
 
+Public Send_test_email As Boolean = false
 
 Sub TowerSwitchSequence
     If Manual_Tower_Switch AND NOT Tower_IsPowered Then
@@ -71,4 +72,16 @@ Sub WinchStartSequence
 
         Start_Winch_Override = false
     EndIf
+EndSub
+
+
+Sub TestEmailSequence
+    If Send_test_email Then
+        Call Email_Init("Test")
+
+        Call Email_add_line("Le roi Loth a loupé son essai.")
+        Call SendEmail
+        Send_test_email = false
+    EndIf
+
 EndSub

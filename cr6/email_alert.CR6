@@ -1,0 +1,51 @@
+Dim _newline_ As String = CHR(13)*CHR(10)
+
+Public email_to_address As String * 50 = "anthony.ouellet@dfo-mpo.gc.ca"
+
+Dim email_subject As String * 100
+
+Dim email_message As String * 300
+Dim email_attachment = "" ' a file maybe
+Dim email_relay_server_response As String * 100
+Dim email_relay_results_human_readable As String * 100
+Dim email_trigger As Boolean
+Dim email_tx_success
+
+
+Sub Email_Init(_alert_ As String * 100)
+    ' Alert: String to mention the specific Error in the email Subject
+    email_subject = "BUOY-ALERT "& Config_Config.Buoy_Name & "-" & ScanDate &"T"& ScanTime & _alert_
+    email_message = ""
+EndSub
+
+
+Sub Email_add_line(_line_)
+    email_message &= _line_ + _newline_
+EndSub
+
+Sub SendEmail
+    logging("Sending Email: " & email_subject)
+    email_tx_success = EmailRelay(email_attachment, email_subject, email_message, email_relay_server_response, email_attachment)
+    
+    'If EmailRelay was not successful, lets try one more time.
+    If email_tx_success <> -1 Then
+        '2nd attempt
+        email_tx_success = EmailRelay(email_attachment, email_subject, email_message, email_relay_server_response, email_attachment)
+    EndIf
+
+    'Human readable error messages
+    Select Case email_tx_success
+        Case -1
+            email_relay_results_human_readable = "EmailRelay server received the message from the datalogger successfully!"
+        Case 0
+            email_relay_results_human_readable = "The connection to the EmailRelay server failed."
+        Case -2
+            email_relay_results_human_readable = "Execution of the EmailRelay function did not occur due to lack of records or not enough time."
+        Case -3
+            email_relay_results_human_readable = "A connection to the EmailRelay server was made but there was an error in communication."
+    EndSelect
+
+    logging("email relay result: " & email_relay_results_human_readable)
+EndIf
+
+EndSub

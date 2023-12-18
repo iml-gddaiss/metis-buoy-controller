@@ -81,6 +81,7 @@ Include "CPU:weather.cr6"    ' Build Wind-Atms tables and Wind-Atms-PAR Tag Stri
 
 '####### Slow Sequence | User Command Interface
 Include "CPU:slow_sequences.cr6"             ' ?
+Include "CPU:email_alert.cr6"
 
 
 ' FileRaw data from the instruments. Needs to be decalred after the Imports
