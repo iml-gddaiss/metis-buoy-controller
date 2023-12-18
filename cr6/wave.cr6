@@ -41,7 +41,7 @@ Sub CollectWave
     SerialOut(SerialWave,CHR(13)&CHR(10),"CMD >>",2,200)
     SerialOut(SerialWave,"slt "&Buoy_Name&CHR(13)&CHR(10),",",1,100)
     SerialIn(RawWave,SerialWave,50,13,60)
-    Call logging("Raw Wave: " & RawWave)
+    Call logging("Raw Wave (attempt "&X&"): " & RawWave)
     SplitStr(Wave(),RawWave,",",6,5)
     If Len(RawWave) > 38 AND Wave(6) <> "" Then
       ExitFor

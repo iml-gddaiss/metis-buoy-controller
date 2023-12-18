@@ -57,8 +57,7 @@ Sub SBE37SalinityCheck
       SerialIn(RawSBE37_Test,SerialSBE37,400,13,120) 
       SplitStr(SBE37_Test, RawSBE37_Test,",",4,0) ' With option 0: filter string ignored
       
-      Call logging("SBE attempt: " & X)
-      Call logging("RawSBE37: " & RawSBE37_Test)
+      Call logging("RawSBE37 (attempt "&X&"): " & RawSBE37_Test)
       
       If Len(RawSBE37_Test) = SBE37_RawSample_Length Then ' Check String length a
         If SBE37_Test(3) > Required_Salinity Then ' Check Salinity
@@ -95,8 +94,7 @@ Sub CollectSBE37
     SerialIn(RawSBE37,SerialSBE37,400,13,60)
     SplitStr(SBE37,RawSBE37,",",4,0)
 
-    Call logging("SBE attempt: " & X)
-    Call logging("RawSBE37: " & RawSBE37)
+    Call logging("RawSBE37 (attempt "&X&"): " & RawSBE37)
     
     If Len(RawSBE37) = SBE37_RawSample_Length AND SBE37(4) <> "" Then ' Check String length and that at least values were sent.
       ExitFor

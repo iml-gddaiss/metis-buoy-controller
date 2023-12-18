@@ -91,7 +91,7 @@ Sub CollectWXT536
       If RawWXT536_Wind = "" Then
         SerialOut(SerialTower,"2R1!",0,1,10)
         SerialIn(RawWXT536_Wind,SerialTower,20,13,80)
-        Call logging("Raw WXT536 Wind: " & RawWXT536_Wind) 
+        Call logging("Raw WXT536 Wind (attempt "&X&"): " & RawWXT536_Wind) 
         RawWXT536_Wind = Mid(RawWXT536_Wind,5,80)
         SplitStr(WXT536_Wind(),RawWXT536_Wind,",",6,10)
         If WXT536_Wind(6) = "" Then
@@ -102,7 +102,7 @@ Sub CollectWXT536
       If RawWXT536_Weather = "" Then
         SerialOut(SerialTower,"2R2!",0,1,10)
         SerialIn(RawWXT536_Weather,SerialTower,20,13,30)
-        Call logging("Raw WXT536 Weather: " & RawWXT536_Weather) 
+        Call logging("Raw WXT536 Weather (attempt "&X&"): " & RawWXT536_Weather) 
         RawWXT536_Weather = Mid(RawWXT536_Weather,5,30)
         SplitStr(WXT536_Weather(),RawWXT536_Weather,",",3,10)
         If WXT536_Weather(3) = "" Then
@@ -113,7 +113,7 @@ Sub CollectWXT536
       If RawWXT536_Rain = "" Then
         SerialOut(SerialTower,"2R3!",0,1,10)
         SerialIn(RawWXT536_Rain,SerialTower,20,13,80)
-        Call logging("Raw WXT536 Rain: " & RawWXT536_Rain) 
+        Call logging("Raw WXT536 Rain (attempt "&X&"): " & RawWXT536_Rain) 
         RawWXT536_Rain = Mid(RawWXT536_Rain,5,80)
         SplitStr(WXT536_Rain(),RawWXT536_Rain,",",6,10)
         If WXT536_Rain(6) = "" Then

@@ -46,7 +46,7 @@ Sub CollectPowerController
       ExitFor
     EndIf
   Next X
-  Call logging("Raw Power Controller: " & RawPower)
+  Call logging("Raw Power Controller (attempt "&X&"): " & RawPower)
 EndSub
 
 
