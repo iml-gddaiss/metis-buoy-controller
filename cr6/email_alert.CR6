@@ -1,6 +1,7 @@
 Dim _newline_ As String = CHR(13)&CHR(10)
 
 Public email_to_address As String * 50 = "anthony.ouellet@dfo-mpo.gc.ca"
+Public sms_phone_number As String * 11 = "14187321649"
 
 Dim email_subject As String * 100
 Dim EmailTimeStamp(2) As String : Alias EmailTimeStamp = EmailDate, EmailTime 
@@ -11,6 +12,7 @@ Dim email_relay_server_response As String * 100
 Dim email_relay_results_human_readable As String * 100
 Dim email_tx_success
 
+Dim sms_tx_success
 
 Sub Email_Init(_alert_ As String * 100)
     ' Alert: String to mention the specific Error in the email Subject
@@ -25,6 +27,9 @@ Sub Email_add_line(_line_ As String * 1000)
 EndSub
 
 
+
+
+
 Sub SendEmail
     logging("Sending Email: " & email_subject)
     email_tx_success = EmailRelay(email_to_address, email_subject, email_message, email_relay_server_response, email_attachment)
@@ -34,6 +39,8 @@ Sub SendEmail
         '2nd attempt
         email_tx_success = EmailRelay(email_to_address, email_subject, email_message, email_relay_server_response, email_attachment)
     EndIf
+
+    SMSSend(sms_tx_succes, 1, sms_phone_number, email_subject)
 
     'Human readable error messages
     Select Case email_tx_success
@@ -59,7 +66,8 @@ Sub SendEmail
             email_relay_results_human_readable = "Array out of bounds"
     EndSelect
     
-    logging("email relay result: " & email_relay_results_human_readable)
+    logging("email send result: ("& email_tx_success &") "& email_relay_results_human_readable)
+    logging("email send result: " & sms_tx_success)
 EndIf
 
 EndSub
