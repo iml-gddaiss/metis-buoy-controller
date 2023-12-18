@@ -75,7 +75,7 @@ Sub WinchStartSequence
 EndSub
 
 
-Sub TestEmailSequence
+Sub EmailTestSequence
     If Send_test_email Then
         Call Email_Init("Test")
 

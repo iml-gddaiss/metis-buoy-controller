@@ -308,6 +308,8 @@ BeginProg
       ' Call ADCPUpdateSequence
       Call ADCPDeploySequence
       Call ADCPShutdownSequence
+      
+      Call EmailTestSequence
       Delay(1,1,Sec)
     Loop
 EndProg

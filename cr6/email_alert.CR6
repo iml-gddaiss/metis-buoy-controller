@@ -1,50 +1,64 @@
-Dim _newline_ As String = CHR(13)*CHR(10)
+Dim _newline_ As String = CHR(13)&CHR(10)
 
 Public email_to_address As String * 50 = "anthony.ouellet@dfo-mpo.gc.ca"
 
 Dim email_subject As String * 100
+Dim EmailTimeStamp(2) As String : Alias EmailTimeStamp = EmailDate, EmailTime 
 
 Dim email_message As String * 300
 Dim email_attachment = "" ' a file maybe
 Dim email_relay_server_response As String * 100
 Dim email_relay_results_human_readable As String * 100
-Dim email_trigger As Boolean
 Dim email_tx_success
 
 
 Sub Email_Init(_alert_ As String * 100)
     ' Alert: String to mention the specific Error in the email Subject
-    email_subject = "BUOY-ALERT "& Config_Config.Buoy_Name & "-" & ScanDate &"T"& ScanTime & _alert_
+    SplitStr(EmailTimeStamp, Public.TimeStamp(4,0), " ", 2, 5)
+    email_subject = "BUOY-ALERT "& Buoy_Config.Buoy_Name & " - " & EmailDate &"T"& EmailTime & " - " & _alert_
     email_message = ""
 EndSub
 
 
-Sub Email_add_line(_line_)
+Sub Email_add_line(_line_ As String * 1000)
     email_message &= _line_ + _newline_
 EndSub
 
+
 Sub SendEmail
     logging("Sending Email: " & email_subject)
-    email_tx_success = EmailRelay(email_attachment, email_subject, email_message, email_relay_server_response, email_attachment)
+    email_tx_success = EmailRelay(email_to_address, email_subject, email_message, email_relay_server_response, email_attachment)
     
     'If EmailRelay was not successful, lets try one more time.
     If email_tx_success <> -1 Then
         '2nd attempt
-        email_tx_success = EmailRelay(email_attachment, email_subject, email_message, email_relay_server_response, email_attachment)
+        email_tx_success = EmailRelay(email_to_address, email_subject, email_message, email_relay_server_response, email_attachment)
     EndIf
 
     'Human readable error messages
     Select Case email_tx_success
+        Case 0	
+            email_relay_results_human_readable = "Timed out waiting for a response from the modem."
         Case -1
-            email_relay_results_human_readable = "EmailRelay server received the message from the datalogger successfully!"
-        Case 0
-            email_relay_results_human_readable = "The connection to the EmailRelay server failed."
-        Case -2
-            email_relay_results_human_readable = "Execution of the EmailRelay function did not occur due to lack of records or not enough time."
+            email_relay_results_human_readable = "Message successfully sent to the network."
         Case -3
-            email_relay_results_human_readable = "A connection to the EmailRelay server was made but there was an error in communication."
+        	email_relay_results_human_readable = "Error response from modem."
+        Case -5	
+            email_relay_results_human_readable = "PhoneNumber or Message parameter is an empty string."
+        Case -6	
+            email_relay_results_human_readable = "Message sent to the modem, no confirmation response received from the modem."
+        Case -7	
+            email_relay_results_human_readable = "Timed out waiting for response from the modem."
+        Case -8	
+            email_relay_results_human_readable = "No internal cellular modem installed or modem is off/disabled."
+        Case -9	
+            email_relay_results_human_readable = "Datalogger timed out waiting for modem to send the message. Message is in Cell2XX queue and may still be sent."
+        Case -11
+            email_relay_results_human_readable = "Send failure. External Cell2XX is powered down"
+        Case -12
+            email_relay_results_human_readable = "Array out of bounds"
     EndSelect
-
+    
     logging("email relay result: " & email_relay_results_human_readable)
 EndIf
 

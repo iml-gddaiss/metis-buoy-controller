@@ -18,11 +18,6 @@
 ... GPSOffPosition = ... (OnTheLoose, WeGotARunner)
 ... WaterInfiltration(x3) = ...
 
-.. Trouver une manière de demander un winch maintenant.
-..... Dans le slow sequence (New Variable: Start Winch Now)
-....... Ouvrir Sample GPS
-....... Partir la Winch
-
 
 .. DataTables
 ... Add units to every table. 
