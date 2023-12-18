@@ -1,7 +1,9 @@
 Dim _newline_ As String = CHR(13)&CHR(10)
 
-Public email_to_address As String * 50 = "anthony.ouellet@dfo-mpo.gc.ca"
-Public sms_phone_number As String * 11 = "14187321649"
+Public email_address As String * 50 = "anthony.ouellet@dfo-mpo.gc.ca"
+Public sms_address * 25 = "4187321649@msg.telus.com" ' number + email to sms Gateway
+
+Dim email_to_addresses As String * 100 = email_address & "," & sms_address
 
 Dim email_subject As String * 100
 Dim EmailTimeStamp(2) As String : Alias EmailTimeStamp = EmailDate, EmailTime 
@@ -12,7 +14,7 @@ Dim email_relay_server_response As String * 100
 Dim email_relay_results_human_readable As String * 100
 Dim email_tx_success
 
-Dim sms_tx_success
+
 
 Sub Email_Init(_alert_ As String * 100)
     ' Alert: String to mention the specific Error in the email Subject
@@ -29,15 +31,13 @@ EndSub
 
 Sub SendEmail
     logging("Sending Email: " & email_subject)
-    email_tx_success = EmailRelay(email_to_address, email_subject, email_message, email_relay_server_response, email_attachment)
+    email_tx_success = EmailRelay(email_to_addresses, email_subject, email_message, email_relay_server_response, email_attachment)
     
     'If EmailRelay was not successful, lets try one more time.
     If email_tx_success <> -1 Then
         '2nd attempt
-        email_tx_success = EmailRelay(email_to_address, email_subject, email_message, email_relay_server_response, email_attachment)
+        email_tx_success = EmailRelay(email_to_addresses, email_subject, email_message, email_relay_server_response, email_attachment)
     EndIf
-
-    SMSSend(sms_tx_success, 1, sms_phone_number, email_subject)
 
     'Human readable error messages
     Select Case email_tx_success
@@ -64,5 +64,4 @@ Sub SendEmail
     EndSelect
     
     logging("email send result: ("& email_tx_success &") "& email_relay_results_human_readable)
-    logging("email send result: " & sms_tx_success)
 EndSub
