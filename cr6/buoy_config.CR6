@@ -1,7 +1,7 @@
 StationName = "PMZA-RIKI" ' Stores Value in Status.StationName(1,1) FIXME
 
 ConstTable (Buoy_Config,0)
-    Const Buoy_Name = "PMZA-RIKI"  ' Ip address 96.1.46.78
+    Const Buoy_Name = "PMZA-RIKI"
     
     Const Buoy_Configuration = "As Follow" 
     ' ### Sampling Interval ####

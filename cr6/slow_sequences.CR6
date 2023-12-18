@@ -45,13 +45,6 @@ Sub ADCPBreakSequence 'Doest not work
     EndIf
 EndSub
 
-' Sub ADCPUpdateSequence
-'     If Update_ADCP_Config = true Then
-'         Call UpdateADCPConfiguration
-'     EndIf   
-'     Update_ADCP_Config = false
-' EndSub
-
 Sub ADCPDeploySequence
     If Deploy_ADCP_Switch = true Then
         Call DeployADCP
