@@ -27,9 +27,6 @@ Sub Email_add_line(_line_ As String * 1000)
 EndSub
 
 
-
-
-
 Sub SendEmail
     logging("Sending Email: " & email_subject)
     email_tx_success = EmailRelay(email_to_address, email_subject, email_message, email_relay_server_response, email_attachment)
@@ -40,7 +37,7 @@ Sub SendEmail
         email_tx_success = EmailRelay(email_to_address, email_subject, email_message, email_relay_server_response, email_attachment)
     EndIf
 
-    SMSSend(sms_tx_succes, 1, sms_phone_number, email_subject)
+    SMSSend(sms_tx_success, 1, sms_phone_number, email_subject)
 
     'Human readable error messages
     Select Case email_tx_success
@@ -68,6 +65,4 @@ Sub SendEmail
     
     logging("email send result: ("& email_tx_success &") "& email_relay_results_human_readable)
     logging("email send result: " & sms_tx_success)
-EndIf
-
 EndSub
