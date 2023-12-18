@@ -39,8 +39,8 @@ Sub CollectPowerController
     SerialOut(SerialPower,CHR(13),">",2,50)
     SerialOut(SerialPower,"d",0,1,50)
     SerialOut(SerialPower,"v",0,1,50)
-    SerialOut(SerialPower,CHR(13),CHR(10)&CHR(13)&CHR(10),1,50) 
-    SerialIn(RawPower,SerialPower,100,CHR(13),200)
+    SerialOut(SerialPower,CHR(13),CHR(10),1,50)  ' FIXME TEST
+    SerialIn(RawPower,SerialPower,100,13,200)
     SplitStr(Power,RawPower,0,11,0)
     If Len(Relay_State) > 5 Then 
       ExitFor

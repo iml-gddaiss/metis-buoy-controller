@@ -40,7 +40,7 @@ Sub CollectWave
   For X = 1 To 3 Step 1
     SerialOut(SerialWave,CHR(13)&CHR(10),"CMD >>",2,200)
     SerialOut(SerialWave,"slt "&Buoy_Name&CHR(13)&CHR(10),",",1,100)
-    SerialIn(RawWave,SerialWave,50,CHR(13),60)
+    SerialIn(RawWave,SerialWave,50,13,60)
     Call logging("Raw Wave: " & RawWave)
     SplitStr(Wave(),RawWave,",",6,5)
     If Len(RawWave) > 38 AND Wave(6) <> "" Then

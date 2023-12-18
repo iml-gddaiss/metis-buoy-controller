@@ -62,11 +62,11 @@ Sub CollectSeafet
       SerialOut(SerialSeafet,"sl"&CHR(13),CHR(10),1,50) 'FIXME CONFIRM THAT IT WORKS
     EndIf
     
-    SerialIn(RawSeafet,SerialSeafet,800,CHR(13),125) 'Seafet string is around 100
+    SerialIn(RawSeafet,SerialSeafet,800,13,125) 'Seafet string is around 100
     Call logging("Raw Seafet: " & RawSeafet)
     SplitStr(Seafet_Value,RawSeafet,",",11,15)
 
-    If Len(RawSeafet) > 97 AND Mid(RawSeafet,24,1) = "T" AND CTYPE(Int_pH,Float) < 12 AND CTYPE(Int_pH,Float) > 3 AND CTYPE(Ext_pH,Float) < 12 AND CTYPE(Ext_pH,Float) > 3 Then
+    If Len(RawSeafet) > 97 AND Mid(RawSeafet,1,6) = "SEAFET" AND CTYPE(Int_pH,Float) < 12 AND CTYPE(Int_pH,Float) > 3 AND CTYPE(Ext_pH,Float) < 12 AND CTYPE(Ext_pH,Float) > 3 Then
       ExitFor
     EndIf
   

@@ -65,7 +65,7 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
 
     ' Averaging SOG and COG over time. 
     For X = 1 To number_of_sample Step 1 ' GPS should be setup to 1 sec interval to get GPS_Sample_Size to correspond to seconds.
-        SerialIn(RawGPS,SerialGPS,150,10,80)
+        SerialIn(RawGPS,SerialGPS,150,13,80)
         Call logging("Last Raw GPS (" &X& "): " & RawGPS)
         SplitStr(GPS_HVS,RawGPS,",",13,5)
         

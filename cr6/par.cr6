@@ -33,7 +33,7 @@ Sub CollectPAR
 
     PAR() = ""
     
-    SerialIn(RawPAR,SerialPAR,10,CHR(13),60)
+    SerialIn(RawPAR,SerialPAR,10,13,60)
     SplitStr(PAR(),RawPAR,",",5,4)
     SerialClose(SerialPAR)
 
