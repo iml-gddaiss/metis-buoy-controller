@@ -1,8 +1,6 @@
 .TODO
-.. Test
-... Add more loggings (way more) to properly test the code with all the instruments.
-
 .. General
+... Check which unpacking variable to set Public or Dim
 ... Add better Docstring
 .... Add script depency (on other script variables) in the script doc strings
 ... Reset some variable on every scan mostly those used for for processing other data. (SBE37, GPS, Compass)
@@ -18,18 +16,10 @@
 ... GPSOffPosition = ... (OnTheLoose, WeGotARunner)
 ... WaterInfiltration(x3) = ...
 
-.. Trouver une manière de demander un winch maintenant.
-..... Dans le slow sequence (New Variable: Start Winch Now)
-....... Ouvrir Sample GPS
-....... Partir la Winch
-
 
 .. DataTables
 ... Add units to every table. 
-
-.. Winch on Demand
-.... Skip if its too close to the next scan. to prevent unexpected threading problem.
-
+... Set proper type ? maybe
 
 .. To Test
 .. Test Timer (set / resets)
