@@ -102,7 +102,9 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
         '    GPS_Mag_Var = "-"&Mid(GPS_Mag_Var,2,5)
         'Else
         '    GPS_Mag_Var = "+"&Mid(GPS_Mag_Var,2,5)
-        'EndIf 
+        'EndIf
+    Else
+        Call Send_Failled_Sampling_Email("GPS") 
     EndIf
 EndSub
 

@@ -1,0 +1,98 @@
+' Alerts
+' + Buoy lon/lat outside range -> Buoy off chain. Drifting | Persistent until snoozed. Send Position and SOG/COG
+' + Battery Low / Water Infiltration / Failled Winch -> Send once until the flag is reset. (Breaker tripped)
+' + Instrument failled sampling. Each time. 
+
+' Alert & Warnig Switch for the user to turn on/off
+Public Buoy_Adrift_Alert_Set As Boolean = False 
+' -> Once the alert is set, the buoy is considered adrift until resetted to false.
+'    That way, the email will continue to be sent even if the buoy return within the acceptable range.
+Public Buoy_Adrift_Alert_Snoozed As Boolean = False 
+' -> Snoozing will only stop the Emails, the buoy is still considere adrift.
+
+Public Battery_Low_Warning_Reset As Boolean = True
+Public Water_Infiltration_Warning_Reset As Boolean = True
+Public Failled_Winch_Warning_Reset As Boolean = True
+
+Const EarthRadius = 6371e3 '
+
+
+Function ComputePositionDeviation As Float ' FIXME test me
+    'Compute the distance of the current position to  Longitude_0, Latitude_0
+    Dim Latitde_1 As Float = ""
+    Dim Longitude_1 As Float = ""
+    Dim a As Float = ""
+    Dim c As Float = ""
+
+    Latitude_1 = Latitude ' TO DEG DECIMAL TODO
+    Longitude_1 = Longitude 'TO DEG DECIMAL TODO
+
+    a = SIN((Latitud_1 - Latitude_0)/2)^2 + COS(Latitude_1) * COS(Latitude_0) * SIN((Longitude_1 - Longitude_0 ))/2) * 2
+    c = 2*ATAN2(SQR(_a_), SQR(1-_a_))
+    ComputePositionDeviation =  EarthRadius * c
+EndFunction
+
+Sub Buoy_Adrift_Check ' FIXME test me
+    If Not Buoy_Adrift_Alert_Set Then
+        If ComputePositionDeviation() > Allowed_Position_Deviation Then 
+            Buoy_Adrift_Alert_Set = True
+        EndIf
+    EndIf
+
+    If Buoy_Adrift_Alert_Set Then
+        Call Buoy_Adrift_Email
+    EndIf
+EndSub
+
+Sub Buoy_Adrift_Email
+    If Not Buoy_Adrift_Alert_Snoozed Then
+        'FIXME TEST IF UNITS OF SOG AND COG Follow    
+        Call Email_Init(1, "BUOY ADRIFT")
+        Call Email_add_line("Lat: " & Latitude)
+        Call Email_add_line("Lon: " & Longitude)
+        Call Email_add_line("SOG: " & SOG)
+        Call Email_add_line("COG: " & COG)
+        Call EmailSend
+    EndIf
+EndSub
+
+Sub Failed_Winch_Email
+    If Failled_Winch_Warning_Reset Then
+        Call Email_Init(0, "")
+        Call Email_add_line("Winch Missing Conditions: " & WinchMissingCondition)
+        Call EmailSend
+
+        Failled_Winch_Warning_Reset = False
+    EndIf
+EndSub
+
+
+Sub Water_Infiltration_Email
+    If Water_Infiltration_Warning_Reset Then
+        Call Email_Init(0, "Water Infiltration")
+        Call Email_add_line("Water Detection: " &  Water_Detection_Main)
+        Call SendEmail
+
+        Water_Infiltration_Warning_Reset = False
+    EndIf
+EndSub
+
+
+Sub Send_Battery_Low_Email
+    If Battery_Low_Warning_Reset Then
+        Call Email_Init(0, "Battery Low")
+        Call Email_add_line("VBatt1: " & VBatt1)
+        Call Email_add_line("ABatt1: " & VBatt1)
+        Call Email_add_line("VBatt2: " & VBatt2)
+        Call Email_add_line("ABatt2: " & ABatt2)
+        Call SendEmail
+
+        Battery_Low_Warning_Reset = False
+    EndIf
+EndSub
+
+
+Sub Send_Failled_Sampling_Email(_instrument_ As String * 50)
+    Call Email_Init(0, _instrument_ & " sampling failed.")
+    Call SendEmail
+EndSub

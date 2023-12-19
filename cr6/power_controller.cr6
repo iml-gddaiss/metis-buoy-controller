@@ -42,11 +42,17 @@ Sub CollectPowerController
     SerialOut(SerialPower,CHR(13),CHR(10),1,50)  ' FIXME TEST
     SerialIn(RawPower,SerialPower,100,13,200)
     SplitStr(Power,RawPower,0,11,0)
+
+    Call logging("Raw Power Controller (attempt "&X&"): " & RawPower)
+    
     If Len(Relay_State) > 5 Then 
       ExitFor
     EndIf
   Next X
-  Call logging("Raw Power Controller (attempt "&X&"): " & RawPower)
+  
+  If RawPower = "" Then
+    Call Send_Failled_Sampling_Email("Power Controller")
+  EndIf
 EndSub
 
 
@@ -66,6 +72,19 @@ Sub SamplePowerController
 
     TAGString &= "\n" & PowerTagString()
 
+    Call Low_Battery_Check
+
     Call logging("Power Controller Done")
   EndIf
 EndSub
+
+
+Sub Low_Battery_Check
+  If VBatt1 < Battery_Low_Voltage_Threshold _ 
+     OR VBatt2 < Battery_Low_Voltage_Threshold _ 
+     OR ABatt1 < Battery_Low_Amperage_Threshold _ 
+     OR ABatt2 < Battery_Low_Amperage_Threshold Then ' Fixme Test the line continuation
+    Call Send_Battery_Low_Email
+  EndIf
+
+EndIf

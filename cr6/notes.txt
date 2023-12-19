@@ -1,5 +1,7 @@
 .TODO
 .. General
+... Should WXT536 have 3 sampling alerts (Wind, Weather, Rain) 
+... Check If Suna unpacking is right ?
 ... Check which unpacking variable to set Public or Dim
 ... Add better Docstring
 .... Add script depency (on other script variables) in the script doc strings
@@ -30,4 +32,4 @@
 .. New OCR
 .. Triplet String formatting
 .. TagString Table
-.. 
+.. Test PCO2 New Unpacking (on receive)

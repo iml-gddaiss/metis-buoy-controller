@@ -48,6 +48,7 @@ Sub CollectCompass
     If raw_compass = "NAN" Then
       Compass_Angles() = ""
       Call logging("Compass Returned: NAN.")
+      Call Send_Failled_Sampling_Email("Compass")
       ExitSub
     EndIf        
 

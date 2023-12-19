@@ -14,10 +14,18 @@ Dim email_relay_server_response As String * 100
 Dim email_relay_results_human_readable As String * 100
 Dim email_tx_success
 
-Sub Email_Init(_alert_ As String * 100)
+Sub Email_Init(_type_, _alert_ As String * 100)
+    Dim msg_type As String * 20
+    Select Case _type_
+        Case 0 
+            msg_type = "BUOY WARNING"
+        Case 1
+            msg_type = "BUOY ALERT"
+    EndSelect
+    
     ' Alert: String to mention the specific Error in the email Subject
     SplitStr(EmailTimeStamp, Public.TimeStamp(4,0), " ", 2, 5)
-    email_subject = "[BUOY ALERT] "& Buoy_Config.Buoy_Name & " - " & EmailDate &"T"& EmailTime & " - " & _alert_
+    email_subject = "["& msg_type &"] "& Buoy_Config.Buoy_Name & " - " & EmailDate &"T"& EmailTime & " - " & _alert_
     email_message = ""
 EndSub
 

@@ -101,6 +101,11 @@ Sub CollectSBE37
     EndIf
   
   Next X
+
+  If RawSBE37 = "" Then
+    Call Send_Failled_Sampling_Email("SBE37")
+  EndIf
+
   Call logging("SBE37 Collected")
 EndSub
 

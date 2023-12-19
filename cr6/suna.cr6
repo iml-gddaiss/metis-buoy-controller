@@ -60,7 +60,7 @@ Sub StartSUNA
 EndSub
 
 
-Sub CollectSUNA
+Sub CollectSUNA ' FIXME is this correct ?
   ' &4C43 -> LC &0D0A -> CR LF
   Dim NBR ' Number of Bytes Returned
   If With_SUNA Then
@@ -83,11 +83,15 @@ Sub CollectSUNA
     
     If RawSUNADark <> "NAN" Then
       SplitStr(SUNADark(),RawSUNADark,",",8,4) ' Ignoring serial number (Option 4: strings after the first split sep)
+    Else
+      Call Send_Failled_Sampling_Email("Suna Dark")
     EndIf
     
     If RawSUNALight <> "NAN" Then
       RawSUNALight = "SATSLC"&RawSUNALight
       SplitStr(SUNALight(),RawSUNALight,",",8,4) ' Ignoring serial number (Option 4: strings after the first split sep)
+    Else
+      Call Send_Failled_Sampling_Email("Suna Light")
     EndIf
 
     UpdateSUNATable = true

@@ -123,6 +123,16 @@ Sub CollectWXT536
 
     Next X
 
+    If RawWXT536_Wind = "" Then
+      Call Send_Failled_Sampling_Email("WXT536 Wind")
+    EndIf
+    If RawWXT536_Weather = "" Then
+      Call Send_Failled_Sampling_Email("WXT536 Weather")
+    EndIf
+    If RawWXT536_Rain = "" Then
+      Call Send_Failled_Sampling_Email("WXT536 Rain")
+    EndIf
+
     UpdateWXT536Table = true
 
     Call logging("WXT536 Done")

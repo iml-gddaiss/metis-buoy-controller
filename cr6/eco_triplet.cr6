@@ -73,9 +73,13 @@ Sub CollectTriplet
     SerialInRecord(SerialTriplet,RawTriplet,&H4242,0,&H0D0A,NBR,01) ' &4242 -> BB &0D0A -> CR LF
     SerialClose(SerialTriplet)
     
-    RawTriplet = "BB"+RawTriplet
-    SplitStr(Triplet(),RawTriplet,CHR(09),11,4) ' Ignoring serial number (Option 4: strings after the first split sep)
-    
+    If RawTriplet <> "" Then
+      RawTriplet = "BB"+RawTriplet
+      SplitStr(Triplet(),RawTriplet,CHR(09),11,4) ' Ignoring serial number (Option 4: strings after the first split sep)
+    Else
+      Call Send_Failled_Sampling_Email("ECO Triplet")
+    EndIf
+
     UpdateTripleTable = true
     
     TAGString &= "\n" & TripletTagString()

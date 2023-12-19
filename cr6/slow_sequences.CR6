@@ -70,9 +70,9 @@ EndSub
 
 Sub EmailTestSequence
     If Send_test_email Then
-        Call Email_Init("Test")
+        Call Email_Init(1, "Test")
 
-        Call Email_add_line("Email Relay Test")
+        Call Email_add_line("Warning Email & SMS Test")
         Call SendEmail
         Send_test_email = false
     EndIf

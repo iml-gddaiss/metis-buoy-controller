@@ -61,71 +61,6 @@ Function CollectOCR(OCR_Type As String) As String * 1000
 EndFunction
 
 
-'### Sampling ###
-' Sub CollectOCRR
-'   ' &5341 -> SA &0D0A -> CR LF
-'   Dim X, Y  
-  
-'   Dim RawHex As String * 500
-'   Dim NBR ' Number of Bytes Returned
-  
-'   Dim String_Buffer As String
-'   Dim OCR_String As String * 1000
-
-'   OCRR_String = ""
-        
-'   For Y = 1 To 3
-'     SerialInRecord(SerialOCRR,RawHex,&H5341,0,&H0D0A,NBR,101)
-'     String_Buffer = Hex(ASCII(RawHex(1,1,1)))
-    
-'     If String_Buffer = "54" Then
-'       For X = 1 To 393
-'         String_Buffer = Hex(ASCII(RawHex(1,1,X)))
-'         If Len(String_Buffer) = 1 Then
-'           String_Buffer = "0" + String_Buffer
-'         EndIf
-'         OCR_String = OCR_String + String_Buffer
-'       Next X      
-'       OCR_String = "5341" + OCR_String + "0D0A"      
-'       ExitFor
-'     EndIf
-'     Delay(1,2,Sec)
-'   Next Y
-  
-'   OCRR_String = OCR_String
-
-' EndSub
-
-
-' Sub CollectOCRI
-'   ' &5341 -> SA &0D0A -> CR LF
-'   Dim X, Y  
-
-'   Dim RawHex As String * 500
-'   Dim NBR ' Number of Bytes Returned
-'   Dim String_Buffer As String
-  
-'   OCRI_String = ""
-  
-'   For Y = 1 To 3
-'     SerialInRecord(SerialOCRI,RawHex,&H5341,0,&H0D0A,NBR,101)
-'     String_Buffer = Hex(ASCII(RawHex(1,1,1)))
-'     If String_Buffer = "54" Then
-'       For X = 1 To 393
-'         String_Buffer = Hex(ASCII(RawHex(1,1,X)))
-'         If Len(String_Buffer) = 1 Then
-'           String_Buffer = "0" + String_Buffer
-'         EndIf
-'         OCRI_String = OCRI_String + String_Buffer
-'       Next X
-'       OCRI_String = "5341" + OCRI_String + "0D0A"
-'       ExitFor
-'     EndIf
-'     Delay(1,2,Sec)
-'   Next Y
-' EndSub
-
-
 Sub SampleOCRs
   
   If With_OCR_R AND Well_IsPowered Then
@@ -136,6 +71,10 @@ Sub SampleOCRs
     SerialFlush(SerialOCRR)
   
     OCRR_String = CollectOCR("R")
+
+    If OCRR_String = "" Then
+      Call Send_Failled_Sampling_Email("OCR-R")
+    EndIf
     
     SerialClose(SerialOCRR)
     
@@ -152,6 +91,10 @@ Sub SampleOCRs
 
     OCRI_String = CollectOCR("I")
 
+    If OCRI_String = "" Then
+      Call Send_Failled_Sampling_Email("OCR-I")
+    EndIf
+    
     SerialClose(SerialOCRI)
     
     UpdateHyperOCRTable = true

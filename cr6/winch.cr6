@@ -12,7 +12,7 @@ Public Winch_Voltage As Float = ""
 
 Public WinchStatus as String * 10 'Standby / Sampling / Completed
 Public WinchMessage As String * 50
-Public WinchMissingCondition As Long
+Public WinchMissingCondition As String * 100 = ""
 
 Public WinchString As String * 50
 Public WinchFileName As String * 50
@@ -27,27 +27,27 @@ Public Winch_Longitude As String
 ' ####################### Start Conditions ############################## 
 Sub WinchAirCheck(Air_Temp)
     If Air_Temp < Min_Air_Temp_for_Winch Then
-        WinchMissingCondition += 1 ' 2^0
-        WinchMessage = "The air temperature is too cold"
+        WinchMessage = "The air temperature is too cold. "
+        WinchMissingCondition &= WinchMessage
     EndIf
 EndSub
 
 Sub WinchWaveCheck(Wave_H13, Wave_Period)
     If Wave_H13 > Max_Wave_H13_for_Winch Then
-        WinchMissingCondition += 2 ' 2^1
-        WinchMessage = "Average wave is too high"
+        WinchMessage = "Average wave is too high. "
+        WinchMissingCondition &= WinchMessage
     EndIf
         
     If Wave_H13 > 1 AND Wave_Period < Min_Wave_Period_for_Winch  AND Wave_Period <> 0 Then 
-        WinchMissingCondition += 4 ' 2^2
-        WinchMessage = "Wave period is too short"
+        WinchMessage = "Wave period is too short. "
+        WinchMissingCondition &= WinchMessage
     EndIf
 EndSub
 
 Sub WinchGPSCheck(SOG)
     If SOG > Max_Buoy_Speed_for_Winch Then
-        WinchMissingCondition += 8 ' 2^3
-        WinchMessage = "The buoy is moving too fast"
+        WinchMessage = "The buoy is moving too fast. "
+        WinchMissingCondition &= WinchMessage
     EndIf
 EndSub
 
@@ -60,13 +60,13 @@ Sub WinchPowerCheck(VBatt1, VBatt2)
     EndIf
     
     If Winch_Voltage < Min_Voltage_for_Winch Then
-        WinchMissingCondition += 16 ' 2^4
-        WinchMessage = "The Winch voltage is too low"
+        WinchMessage = "The Winch voltage is too low. "
+        WinchMissingCondition &= WinchMessage
     EndIf
 EndSub
 
 Sub WinchConditionsCheck
-    WinchMissingCondition = 0
+    WinchMissingCondition = ""
     
     If With_WXT536 Then
       Call WinchAirCheck(Air_Temp)
@@ -165,8 +165,10 @@ Sub WinchMission
 
             Call WinchConditionsCheck
 
-            If WinchMissingCondition = 0 Then
+            If WinchMissingCondition <> "" Then
                 Call StartWinchMission
+            Else
+                Call Failed_Winch_Email
             EndIf  
         EndIf
         
