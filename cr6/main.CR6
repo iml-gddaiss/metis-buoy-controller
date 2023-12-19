@@ -81,7 +81,8 @@ Include "CPU:weather.cr6"    ' Build Wind-Atms tables and Wind-Atms-PAR Tag Stri
 
 '####### Slow Sequence | User Command Interface
 Include "CPU:slow_sequences.cr6"             ' ?
-Include "CPU:email_alert.cr6"
+Include "CPU:emails.cr6"
+Include "CPU:alerts.cr6"
 
 
 ' FileRaw data from the instruments. Needs to be decalred after the Imports
@@ -190,6 +191,8 @@ BeginProg
   SlowSequenceLocked = True ' Lockling Slow Sequence
   
   Call GetScanDateTime
+
+  Call InitTmpLogFile
     
   Call PowerWaterDetectionMain
       
@@ -291,6 +294,11 @@ BeginProg
   
   WhereAmI = "Scan end"
   Call logging("Scan finished. <<<<<<<<<<<<" & CHR(13) & CHR(10))
+
+  If SaveLog Then
+    Call CopyTmpLogFile
+    SaveLog = False
+  EndIf
   
   NextScan
 	

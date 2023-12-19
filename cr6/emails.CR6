@@ -25,7 +25,7 @@ Sub Email_Init(_type_, _alert_ As String * 100)
     
     ' Alert: String to mention the specific Error in the email Subject
     SplitStr(EmailTimeStamp, Public.TimeStamp(4,0), " ", 2, 5)
-    email_subject = "["& msg_type &"] "& Buoy_Config.Buoy_Name & " - " & EmailDate &"T"& EmailTime & " - " & _alert_
+    email_subject = "["& msg_type &"] "& Buoy_Name & " - " & EmailDate &"T"& EmailTime & " - " & _alert_
     email_message = ""
 EndSub
 

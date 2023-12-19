@@ -1,7 +1,27 @@
+Const TmpLogFileName as String * 50 = "CRD_Tmp_Log_.log"
+Dim TmpLogFile As Long
+
+
 Sub logging(log_message As String * 2000)
-    if Enable_Logging Then
+    If Enable_Logging Then
         SerialOpen(SerialLogging, 115200,0,0,10000)
         SerialOut(SerialLogging, Public.Timestamp(4,1) & " - " & log_message & CHR(13) & CHR(10),"",0,1000)
         SerialClose(SerialLogging)
-    Endif
+    EndIf
+    
+    FileOpen("CRD:"&TmpLogFileName&".txt","a", -1)
+    FileWrite(TmpLogFile, log_message & CHR(13) & CHR(10), 0)
+    FileClose(TmpLogFile)
+EndSub
+
+Sub InitTmpLogFile
+    TmpLogFile = FileOpen("CRD:"&TmpLogFileName&".txt","w", 0) 'Open/Overwrite
+EndSub
+
+
+Sub CopyTmpLogFile
+    Dim LogFileName as String * 50
+    
+    LogFileName  = Buoy_Name &"_"& Replace(ScanDate, "-", "") &"_"& Replace(ScanTime, ":", "")
+    FileCopy(TmpLogFileName, "CRD:" & LogFileName & ".log")
 EndSub

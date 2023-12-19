@@ -3,6 +3,8 @@
 ' + Battery Low / Water Infiltration / Failled Winch -> Send once until the flag is reset. (Breaker tripped)
 ' + Instrument failled sampling. Each time. 
 
+Const EarthRadius = 6371e3 'For position computation
+
 ' Alert & Warnig Switch for the user to turn on/off
 Public Buoy_Adrift_Alert_Set As Boolean = False 
 ' -> Once the alert is set, the buoy is considered adrift until resetted to false.
@@ -14,7 +16,7 @@ Public Battery_Low_Warning_Reset As Boolean = True
 Public Water_Infiltration_Warning_Reset As Boolean = True
 Public Failled_Winch_Warning_Reset As Boolean = True
 
-Const EarthRadius = 6371e3 '
+Dim SaveLog as Boolean = False ' Save log on failled instrument sampling.
 
 
 Function ComputePositionDeviation As Float ' FIXME test me
@@ -95,4 +97,5 @@ EndSub
 Sub Send_Failled_Sampling_Email(_instrument_ As String * 50)
     Call Email_Init(0, _instrument_ & " sampling failed.")
     Call SendEmail
+    SaveLog = True
 EndSub
