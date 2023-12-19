@@ -172,6 +172,8 @@ EndSub
 
 BeginProg
   SetSetting("WIFIconfig",4) 'This is turning the Wifi Off 
+
+  logging("Scan time estimate (test): " & MeasureTime/1000000 & " seconds") 'fixme
   
   Call CloseSerialPorts
 

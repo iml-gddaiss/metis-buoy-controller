@@ -1,6 +1,6 @@
 Dim RawTriplet As String * 200
 
-Public Triplet(11) As String
+Dim Triplet(11) As String
 Alias Triplet(1) = Triplet_Date
 Alias Triplet(2) = Triplet_Hour
 Alias Triplet(3) = Scattering_Wavelenght

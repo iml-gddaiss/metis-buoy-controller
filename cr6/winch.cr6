@@ -86,8 +86,8 @@ Sub WinchConditionsCheck
 EndSub
 
 ' ####################### Winch Mission Start ############################## 
-Sub CheckWinchStatus 'Should it be started earlier ?? 'Should it be close afterward
-    SerialOpen(SerialWinch,19200,3,20,100) 'Should it be started earlier ??
+Sub CheckWinchStatus 
+    SerialOpen(SerialWinch,19200,3,20,100) 
     SerialFlush(SerialWinch)
     Delay(1,500,mSec)
     SerialIn(WinchString,SerialWinch,100,10,60)
@@ -105,7 +105,7 @@ Sub CheckWinchStatus 'Should it be started earlier ?? 'Should it be close afterw
 EndSub
 
 Sub StartWinchMission
-    SerialOpen(SerialWinch,19200,3,20,100) 'Should it be started earlier ?? 'Should it be close afterward
+    SerialOpen(SerialWinch,19200,3,20,100)
     SerialOut(SerialWinch,CHR(13),"",1,0)
     SerialOut(SerialWinch,"p1"&CHR(13)&CHR(10),.,2,300)
     Delay(1,2,Sec)

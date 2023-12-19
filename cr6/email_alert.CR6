@@ -1,7 +1,9 @@
 Dim _newline_ As String = CHR(13)&CHR(10)
 
-Public email_address As String * 50 = "anthony.ouellet@dfo-mpo.gc.ca"
-Public sms_address * 25 = "4187321649@msg.koodomobile.com" '@msg.telus.com" ' number + email to sms Gateway (of the receiver)
+' email_adress and sms_address could be list of addresses separated by comma. e,i address1@domain.com,address2@domain.com" 
+' Increase the Variables Byte size if needed. 
+Public email_address As String * 200 = "anthony.ouellet@dfo-mpo.gc.ca"
+Public sms_address * 200 = "4187321649@msg.koodomobile.com" '@msg.telus.com" ' number + email to sms Gateway (of the receiver)
 
 Dim email_subject As String * 100
 Dim EmailTimeStamp(2) As String : Alias EmailTimeStamp = EmailDate, EmailTime 
@@ -15,7 +17,7 @@ Dim email_tx_success
 Sub Email_Init(_alert_ As String * 100)
     ' Alert: String to mention the specific Error in the email Subject
     SplitStr(EmailTimeStamp, Public.TimeStamp(4,0), " ", 2, 5)
-    email_subject = "BUOY-ALERT "& Buoy_Config.Buoy_Name & " - " & EmailDate &"T"& EmailTime & " - " & _alert_
+    email_subject = "[BUOY ALERT] "& Buoy_Config.Buoy_Name & " - " & EmailDate &"T"& EmailTime & " - " & _alert_
     email_message = ""
 EndSub
 
@@ -59,5 +61,6 @@ Sub SendEmail
             email_relay_results_human_readable = "Array out of bounds"
     EndSelect
     
-    logging("email send result: ("& email_tx_success &") "& email_relay_results_human_readable)
+    logging("Email send result: ("& email_tx_success &") "& email_relay_results_human_readable)
+    logging("Email server respose: " &  email_relay_server_response)
 EndSub

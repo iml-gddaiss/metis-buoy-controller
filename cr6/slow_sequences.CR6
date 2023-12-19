@@ -1,4 +1,4 @@
-Public SlowSequenceLocked As Boolean = false
+Dim SlowSequenceLocked As Boolean = false
 
 Public Manual_Tower_Switch As Boolean = false
 Public Manual_Well_Switch As Boolean = false
@@ -6,7 +6,7 @@ Public Manual_Well_Switch As Boolean = false
 Public Start_Winch_Override As Boolean  = false
 
 Public Send_Break_to_ADCP As Boolean = false
-'Public Update_ADCP_Config As Boolean = false
+
 Public Deploy_ADCP_Switch As Boolean = false
 Public Shutdown_ADCP_Switch As Boolean = false
 
@@ -72,7 +72,7 @@ Sub EmailTestSequence
     If Send_test_email Then
         Call Email_Init("Test")
 
-        Call Email_add_line("Le roi Loth a loupé son essai.")
+        Call Email_add_line("Email Relay Test")
         Call SendEmail
         Send_test_email = false
     EndIf
