@@ -27,7 +27,7 @@ Function ComputePositionDeviation As Float ' FIXME test me
     Dim c As Float = ""
 
     a = SIN((Latitude_Decimal - Latitude_0)/2)^2 + COS(Latitude_Decimal * COS(Latitude_0) * SIN((Longitude_Decimal - Longitude_0 ))/2) * 2
-    c = 2*ATAN2(SQR(a), SQR(1-a))
+    c = 2*ATN2(SQR(a), SQR(1-a))
     ComputePositionDeviation =  EarthRadius * c
 EndFunction
 
