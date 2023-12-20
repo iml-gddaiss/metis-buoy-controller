@@ -11,6 +11,8 @@ Public Buoy_Adrift_Alert_Set As Boolean = False
 '    That way, the email will continue to be sent even if the buoy return within the acceptable range.
 Public Buoy_Adrift_Alert_Snoozed As Boolean = False 
 ' -> Snoozing will only stop the Emails, the buoy is still considere adrift.
+Public PositionDeviation As Long 
+
 
 Public Battery_Low_Warning_Reset As Boolean = True
 Public Water_Infiltration_Warning_Reset As Boolean = True
@@ -21,22 +23,19 @@ Dim SaveLog as Boolean = False ' Save log on failled instrument sampling.
 
 Function ComputePositionDeviation As Float ' FIXME test me
     'Compute the distance of the current position to  Longitude_0, Latitude_0
-    Dim Latitde_1 As Float = ""
-    Dim Longitude_1 As Float = ""
     Dim a As Float = ""
     Dim c As Float = ""
 
-    Latitude_1 = Latitude ' TO DEG DECIMAL TODO
-    Longitude_1 = Longitude 'TO DEG DECIMAL TODO
-
-    a = SIN((Latitud_1 - Latitude_0)/2)^2 + COS(Latitude_1) * COS(Latitude_0) * SIN((Longitude_1 - Longitude_0 ))/2) * 2
-    c = 2*ATAN2(SQR(_a_), SQR(1-_a_))
+    a = SIN((Latitude_Decimal - Latitude_0)/2)^2 + COS(Latitude_Decimal * COS(Latitude_0) * SIN((Longitude_Decimal - Longitude_0 ))/2) * 2
+    c = 2*ATAN2(SQR(a), SQR(1-a))
     ComputePositionDeviation =  EarthRadius * c
 EndFunction
 
 Sub Buoy_Adrift_Check ' FIXME test me
+    PositionDeviation = ComputePositionDeviation()
+    Call logging("Position Deviation: " & PositionDeviation & " m.")
     If Not Buoy_Adrift_Alert_Set Then
-        If ComputePositionDeviation() > Allowed_Position_Deviation Then 
+        If PositionDeviation > Allowed_Position_Deviation Then 
             Buoy_Adrift_Alert_Set = True
         EndIf
     EndIf
@@ -54,7 +53,7 @@ Sub Buoy_Adrift_Email
         Call Email_add_line("Lon: " & Longitude)
         Call Email_add_line("SOG: " & SOG)
         Call Email_add_line("COG: " & COG)
-        Call EmailSend
+        Call SendEmail
     EndIf
 EndSub
 
@@ -62,7 +61,7 @@ Sub Failed_Winch_Email
     If Failled_Winch_Warning_Reset Then
         Call Email_Init(0, "")
         Call Email_add_line("Winch Missing Conditions: " & WinchMissingCondition)
-        Call EmailSend
+        Call SendEmail
 
         Failled_Winch_Warning_Reset = False
     EndIf
@@ -80,7 +79,7 @@ Sub Water_Infiltration_Email
 EndSub
 
 
-Sub Send_Battery_Low_Email
+Sub Battery_Low_Email
     If Battery_Low_Warning_Reset Then
         Call Email_Init(0, "Battery Low")
         Call Email_add_line("VBatt1: " & VBatt1)
@@ -94,7 +93,7 @@ Sub Send_Battery_Low_Email
 EndSub
 
 
-Sub Send_Failled_Sampling_Email(_instrument_ As String * 50)
+Sub Failled_Sampling_Email(_instrument_ As String * 50)
     Call Email_Init(0, _instrument_ & " sampling failed.")
     Call SendEmail
     SaveLog = True

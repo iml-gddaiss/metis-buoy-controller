@@ -184,7 +184,7 @@ Sub PCO2WatchDog
   If (PCO2_Last_Sampling + 3600) < Public.TimeStamp(1) Then
     Call logging("PCO2 Watchdog Triggered")
     
-    Call Send_Failled_Sampling_Email("PCO2 WatchDog Triggered")
+    Call Failled_Sampling_Email("PCO2 WatchDog Triggered")
     
     If PCO2WaterIsCollected OR PCO2AirIsCollected Then
       UpdatePCO2Tables = true

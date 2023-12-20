@@ -1,4 +1,4 @@
-Const TmpLogFileName as String * 50 = "CRD_Tmp_Log_.log"
+Const TmpLogFileName as String = "CRD_Tmp_Log_.log"
 Dim TmpLogFile As Long
 
 

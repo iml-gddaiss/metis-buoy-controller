@@ -77,7 +77,7 @@ Sub CollectTriplet
       RawTriplet = "BB"+RawTriplet
       SplitStr(Triplet(),RawTriplet,CHR(09),11,4) ' Ignoring serial number (Option 4: strings after the first split sep)
     Else
-      Call Send_Failled_Sampling_Email("ECO Triplet")
+      Call Failled_Sampling_Email("ECO Triplet")
     EndIf
 
     UpdateTripleTable = true

@@ -15,6 +15,9 @@ Public SOG As Float = ""
 Public COG As Float = ""
 Public Magnetic_Variation As Float = ""
 
+Dim Latitude_Decimal As Float
+Dim Longitude_Decimal As Float
+
 
 '### Units ###
 Units SOG = Kn
@@ -52,6 +55,9 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
     SOG = ""
     COG = ""
     Magnetic_Variation = ""
+
+    Latitude_Decimal = ""
+    Longitude_Decimal = ""
 
 
     If single_sample Then
@@ -92,10 +98,21 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
         Latitude = Mid(GPS_Lat,1,2) &"°"& Mid(GPS_Lat,3,6) &"'"& GPS_Lat_Hem
         Longitude = Mid(GPS_Lon,1,3) &"°"& Mid(GPS_Lon,4,6) &"'"& GPS_Lon_Hem
 
+        Latitude_Decimal = Mid(GPS_Lat,1,2) &"."& CTYPE(Mid(GPS_Lat,3,6), float) / 60
+        Longitude_Decimal = Mid(GPS_Lon,1,3) &"."& CTYPE(Mid(GPS_Lon,4,6), float) / 60
+
+        If GPS_Lat_Hem = "S" Then
+            Latitude_Decimal *= -1
+        EndIf
+        
+        If GPS_Lon_Hem = "W" Then
+            Longitude_Decimal *= -1
+        EndIf
+
         ' Converting Magnetic Variation to decimal
         Magnetic_Variation  = CTYPE(GPS_Mag_Var, float) ' Test if it works
         If GPS_Mag_Var_Dir = "W" Then
-            Magnetic_Variation  += -1
+            Magnetic_Variation  *= -1
         EndIf
 
         'If Mid(GPS_Mag_Var_Dir,1,1) = "W" Then 
@@ -104,7 +121,7 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
         '    GPS_Mag_Var = "+"&Mid(GPS_Mag_Var,2,5)
         'EndIf
     Else
-        Call Send_Failled_Sampling_Email("GPS") 
+        Call Failled_Sampling_Email("GPS") 
     EndIf
 EndSub
 

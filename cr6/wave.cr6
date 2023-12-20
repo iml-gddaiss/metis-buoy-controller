@@ -49,7 +49,7 @@ Sub CollectWave
   Next X
 
   If RawWave = "" Then
-    Call Send_Failled_Sampling_Email("Wave")
+    Call Failled_Sampling_Email("Wave")
   EndIf
 EndSub
 
