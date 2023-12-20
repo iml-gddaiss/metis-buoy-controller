@@ -1,4 +1,4 @@
-Const TmpLogFileName as String = "CRD:_Tmp_Log_.log"
+Const TmpLogFileName as String = "Tmp_Log"
 Dim TmpLogFile As Long
 
 
@@ -9,13 +9,13 @@ Sub logging(log_message As String * 2000)
         SerialClose(SerialLogging)
     EndIf
     
-    TmpLogFile = FileOpen("CRD:"&TmpLogFileName&".txt","a", -1)
+    TmpLogFile = FileOpen("CRD:"&TmpLogFileName&".log","a", -1)
     FileWrite(TmpLogFile, log_message & CHR(13) & CHR(10), 0)
     FileClose(TmpLogFile)
 EndSub
 
 Sub InitTmpLogFile
-    TmpLogFile = FileOpen("CRD:"&TmpLogFileName&".txt","w", 0) 'Open/Overwrite
+    TmpLogFile = FileOpen("CRD:"&TmpLogFileName&".log","w", 0) 'Open/Overwrite
     FileClose(TmpLogFile)
 EndSub
 
