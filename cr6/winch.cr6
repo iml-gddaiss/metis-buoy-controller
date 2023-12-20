@@ -168,7 +168,7 @@ Sub WinchMission
             If WinchMissingCondition <> "" Then
                 Call StartWinchMission
             Else
-                Call Failed_Winch_Email
+                Call Failed_Winch_Email 'FIXME REMOVE
             EndIf  
         EndIf
         
@@ -204,6 +204,8 @@ Sub DownloadWinchData
         FileWrite(WinchFile,WinchString,0)
     Loop While WinchString <> ""
     
+    ' FIXME Open file and check last line
+        
     SerialClose(SerialWinch)
     WinchString = ""
 EndSub

@@ -26,7 +26,7 @@ ConstTable (Buoy_Config,0)
     ' ### Instruments Enable/Disable Switches ###
     Const Instrument_Installed = "As Follow" 
     Const With_GPS As Boolean = true
-    Const With_WMT700 As Boolean = false
+    Const With_WMT700 As Boolean = true
     Const With_WXT536 As Boolean = false
     Const With_Compass As Boolean = false
     Const With_PAR As Boolean = false
@@ -81,7 +81,6 @@ Const OCR_I_Delay_Sec As Long = 8       '(Tower_Timer)
 
 ' ### Alerts Parameters ###
 Const Battery_Low_Voltage_Threshold As Float = 10 'volt ? FIXME  (value < threshold)
-Const Battery_Low_Amperage_Threshold As Float = 0.1 'amp ? FIXME (value < threshold)
 Const Water_Detection_Main_Threshold As Float = 0 ' TODO FIXME   (value > threshold)
 
 ' ### Misc Parameters ###

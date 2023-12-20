@@ -29,6 +29,8 @@ Function ComputePositionDeviation As Float ' FIXME test me
     a = (SIN((Latitude_Decimal - Latitude_0)/2))^2 + COS(Latitude_Decimal) * COS(Latitude_0) * (SIN((Longitude_Decimal - Longitude_0)/2))^2
     c = 2*ATN2(SQR(a), SQR(1-a))
     ComputePositionDeviation =  EarthRadius * c
+
+    Call logging("Position Deviantion (Lat, Lon, Lat0, Lon0, c, a): " & Latitude_Decimal&", "&Longitude_Decimal&", "&Latitude_0&", "&Longitude_0&", "&c&", "&a)
 EndFunction
 
 Sub Buoy_Adrift_Check ' FIXME test me
@@ -84,9 +86,7 @@ Sub Battery_Low_Email
     If Battery_Low_Warning_Reset Then
         Call Email_Init(0, "Battery Low")
         Call Email_add_line("VBatt1: " & VBatt1)
-        Call Email_add_line("ABatt1: " & VBatt1)
         Call Email_add_line("VBatt2: " & VBatt2)
-        Call Email_add_line("ABatt2: " & ABatt2)
         Call SendEmail
 
         Battery_Low_Warning_Reset = False

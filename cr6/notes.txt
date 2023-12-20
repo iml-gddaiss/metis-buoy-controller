@@ -33,3 +33,5 @@
 .. Triplet String formatting
 .. TagString Table
 .. Test PCO2 New Unpacking (on receive)
+
+.. PAR HANGS IF MISSING

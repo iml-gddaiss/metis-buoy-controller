@@ -98,8 +98,8 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
         Latitude = Mid(GPS_Lat,1,2) &"°"& Mid(GPS_Lat,3,6) &"'"& GPS_Lat_Hem
         Longitude = Mid(GPS_Lon,1,3) &"°"& Mid(GPS_Lon,4,6) &"'"& GPS_Lon_Hem
 
-        Latitude_Decimal = Mid(GPS_Lat,1,2) &"."& CTYPE(Mid(GPS_Lat,3,6), float) / 60
-        Longitude_Decimal = Mid(GPS_Lon,1,3) &"."& CTYPE(Mid(GPS_Lon,4,6), float) / 60
+        Latitude_Decimal = CTYPE(Mid(GPS_Lat,1,2),float) + CTYPE(Mid(GPS_Lat,3,6), float) / 60
+        Longitude_Decimal = CTYPE(Mid(GPS_Lon,1,3), float) + CTYPE(Mid(GPS_Lon,4,6), float) / 60
 
         If GPS_Lat_Hem = "S" Then
             Latitude_Decimal *= -1

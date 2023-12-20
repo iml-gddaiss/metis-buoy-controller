@@ -21,7 +21,9 @@ EndSub
 
 
 Sub CopyTmpLogFile
+    Dim copy_result as Boolean
     Dim LogFileName as String * 50
     LogFileName  = Buoy_Name &"_"& Replace(ScanDate, "-", "") &"_"& Replace(ScanTime, ":", "")
-    FileCopy("CRD:" & TmpLogFileName & ".log", "CRD:" & LogFileName & ".log")
+    copy_result = FileCopy("CRD:"&TmpLogFileName&".log", "CRD:" & LogFileName & ".log")
+    Call logging("Copy Result: " & copy_result) ' Fixme Remove
 EndSub
