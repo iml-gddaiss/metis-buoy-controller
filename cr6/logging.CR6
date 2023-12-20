@@ -10,7 +10,7 @@ Sub logging(log_message As String * 2000)
     EndIf
     
     TmpLogFile = FileOpen("CRD:"&TmpLogFileName&".log","a", -1)
-    FileWrite(TmpLogFile, log_message & CHR(13) & CHR(10), 0)
+    FileWrite(TmpLogFile, log_message, 0)
     FileClose(TmpLogFile)
 EndSub
 
@@ -22,7 +22,6 @@ EndSub
 
 Sub CopyTmpLogFile
     Dim LogFileName as String * 50
-    
     LogFileName  = Buoy_Name &"_"& Replace(ScanDate, "-", "") &"_"& Replace(ScanTime, ":", "")
-    FileCopy(TmpLogFileName, "CRD:" & LogFileName & ".log")
+    FileCopy("CRD:" & TmpLogFileName & ".log", "CRD:" & LogFileName & ".log")
 EndSub
