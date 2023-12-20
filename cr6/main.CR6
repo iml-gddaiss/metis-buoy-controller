@@ -33,8 +33,6 @@
 '                 #M4 ADCP
 '                 #M5 Winch
 '--------------------------------------------
-'############################### Naming Conventions ####################################
-
 '#######################################################################################
 
 SequentialMode
@@ -174,8 +172,6 @@ EndSub
 BeginProg
   SetSetting("WIFIconfig",4) 'This is turning the Wifi Off 
 
-  logging("Scan time estimate (test): " & Status.MeasureTime/1000000 & " seconds") 'fixme
-  
   Call CloseSerialPorts
 
   Call StartADCP

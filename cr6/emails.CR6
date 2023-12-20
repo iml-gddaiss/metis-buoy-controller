@@ -38,6 +38,8 @@ EndSub
 
 Sub SendEmail
     If Disable_Email Then
+        Call logging("Email is Disabled, Alert not sent.")
+    Else
         Call logging("Sending Email: " & email_subject)
         email_tx_success = EmailRelay(email_address&","&sms_address, email_subject, email_message, email_relay_server_response, email_attachment)
         
@@ -73,7 +75,5 @@ Sub SendEmail
         
         Call logging("Email send result: ("& email_tx_success &") "& email_relay_results_human_readable)
         Call logging("Email server response: " &  email_relay_server_response)
-    Else
-        Call logging("Email is Disabled, Alert not sent.")
     EndIf
 EndSub
