@@ -1,7 +1,7 @@
 ' Alerts
 ' + Buoy lon/lat outside range -> Buoy off chain. Drifting | Persistent until snoozed. Send Position and SOG/COG
-' + Battery Low / Water Infiltration / Failled Winch -> Send once until the flag is reset. (Breaker tripped)
-' + Instrument failled sampling. Each time. 
+' + Battery Low / Water Infiltration / Failed Winch -> Send once until the flag is reset. (Breaker tripped)
+' + Instrument Failed sampling. Each time. 
 
 Const EarthRadius = 6371e3 'For position computation
 
@@ -16,9 +16,9 @@ Public PositionDeviation As Long
 
 Public Battery_Low_Warning_Reset As Boolean = True
 Public Water_Infiltration_Warning_Reset As Boolean = True
-Public Failled_Winch_Warning_Reset As Boolean = True
+Public Failed_Winch_Warning_Reset As Boolean = True
 
-Dim SaveLog as Boolean = False ' Save log on failled instrument sampling.
+Dim SaveLog as Boolean = False ' Save log on Failed instrument sampling.
 
 
 Function ComputePositionDeviation As Float ' FIXME test me
@@ -41,13 +41,14 @@ Sub Buoy_Adrift_Check ' FIXME test me
     EndIf
 
     If Buoy_Adrift_Alert_Set Then
+        Call logging("ALERT Buoy Adrift")    
         Call Buoy_Adrift_Email
     EndIf
 EndSub
 
 Sub Buoy_Adrift_Email
     If Not Buoy_Adrift_Alert_Snoozed Then
-        'FIXME TEST IF UNITS OF SOG AND COG Follow    
+        'FIXME TEST IF UNITS OF SOG AND COG Follow
         Call Email_Init(1, "BUOY ADRIFT")
         Call Email_add_line("Lat: " & Latitude)
         Call Email_add_line("Lon: " & Longitude)
@@ -58,12 +59,12 @@ Sub Buoy_Adrift_Email
 EndSub
 
 Sub Failed_Winch_Email
-    If Failled_Winch_Warning_Reset Then
-        Call Email_Init(0, "")
+    If Failed_Winch_Warning_Reset Then
+        Call Email_Init(0, "Winch Failed")
         Call Email_add_line("Winch Missing Conditions: " & WinchMissingCondition)
         Call SendEmail
 
-        Failled_Winch_Warning_Reset = False
+        Failed_Winch_Warning_Reset = False
     EndIf
 EndSub
 
@@ -93,7 +94,7 @@ Sub Battery_Low_Email
 EndSub
 
 
-Sub Failled_Sampling_Email(_instrument_ As String * 50)
+Sub Failed_Sampling_Email(_instrument_ As String * 50)
     Call Email_Init(0, _instrument_ & " sampling failed.")
     Call SendEmail
     SaveLog = True

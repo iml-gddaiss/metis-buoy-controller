@@ -103,7 +103,7 @@ Sub CollectSBE37
   Next X
 
   If RawSBE37 = "" Then
-    Call Failled_Sampling_Email("SBE37")
+    Call Failed_Sampling_Email("SBE37")
   EndIf
 
   Call logging("SBE37 Collected")

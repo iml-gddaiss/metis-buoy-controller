@@ -84,14 +84,14 @@ Sub CollectSUNA ' FIXME is this correct ?
     If RawSUNADark <> "NAN" Then
       SplitStr(SUNADark(),RawSUNADark,",",8,4) ' Ignoring serial number (Option 4: strings after the first split sep)
     Else
-      Call Failled_Sampling_Email("Suna Dark")
+      Call Failed_Sampling_Email("Suna Dark")
     EndIf
     
     If RawSUNALight <> "NAN" Then
       RawSUNALight = "SATSLC"&RawSUNALight
       SplitStr(SUNALight(),RawSUNALight,",",8,4) ' Ignoring serial number (Option 4: strings after the first split sep)
     Else
-      Call Failled_Sampling_Email("Suna Light")
+      Call Failed_Sampling_Email("Suna Light")
     EndIf
 
     UpdateSUNATable = true

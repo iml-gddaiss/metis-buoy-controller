@@ -2,8 +2,9 @@ Dim _newline_ As String = CHR(13)&CHR(10)
 
 ' email_adress and sms_address could be list of addresses separated by comma. e,i address1@domain.com,address2@domain.com" 
 ' Increase the Variables Byte size if needed. 
-Public email_address As String * 200 = "anthony.ouellet@dfo-mpo.gc.ca"
-Public sms_address * 200 = "4187321649@msg.koodomobile.com" '@msg.telus.com" ' number + email to sms Gateway (of the receiver)
+Public email_address As String * 200 = "jerome.guay@dfo-mpo.gc.ca"' "anthony.ouellet@dfo-mpo.gc.ca"
+Public sms_address As String * 200 = "5819999001@msg.telus.com"' "4187321649@msg.koodomobile.com" '@msg.telus.com" ' number + email to sms Gateway (of the receiver)
+Public Disable_Email As Boolean = False
 
 Dim email_subject As String * 100
 Dim EmailTimeStamp(2) As String : Alias EmailTimeStamp = EmailDate, EmailTime 
@@ -36,39 +37,43 @@ EndSub
 
 
 Sub SendEmail
-    logging("Sending Email: " & email_subject)
-    email_tx_success = EmailRelay(email_address&","&sms_address, email_subject, email_message, email_relay_server_response, email_attachment)
-    
-    'If EmailRelay was not successful, lets try one more time.
-    If email_tx_success <> -1 Then
-        '2nd attempt
+    If Disable_Email Then
+        Call logging("Sending Email: " & email_subject)
         email_tx_success = EmailRelay(email_address&","&sms_address, email_subject, email_message, email_relay_server_response, email_attachment)
-    EndIf
+        
+        'If EmailRelay was not successful, lets try one more time.
+        If email_tx_success <> -1 Then
+            '2nd attempt
+            email_tx_success = EmailRelay(email_address&","&sms_address, email_subject, email_message, email_relay_server_response, email_attachment)
+        EndIf
 
-    'Human readable error messages
-    Select Case email_tx_success
-        Case 0	
-            email_relay_results_human_readable = "Timed out waiting for a response from the modem."
-        Case -1
-            email_relay_results_human_readable = "Message successfully sent to the network."
-        Case -3
-        	email_relay_results_human_readable = "Error response from modem."
-        Case -5	
-            email_relay_results_human_readable = "PhoneNumber or Message parameter is an empty string."
-        Case -6	
-            email_relay_results_human_readable = "Message sent to the modem, no confirmation response received from the modem."
-        Case -7	
-            email_relay_results_human_readable = "Timed out waiting for response from the modem."
-        Case -8	
-            email_relay_results_human_readable = "No internal cellular modem installed or modem is off/disabled."
-        Case -9	
-            email_relay_results_human_readable = "Datalogger timed out waiting for modem to send the message. Message is in Cell2XX queue and may still be sent."
-        Case -11
-            email_relay_results_human_readable = "Send failure. External Cell2XX is powered down"
-        Case -12
-            email_relay_results_human_readable = "Array out of bounds"
-    EndSelect
-    
-    logging("Email send result: ("& email_tx_success &") "& email_relay_results_human_readable)
-    logging("Email server respose: " &  email_relay_server_response)
+        'Human readable error messages
+        Select Case email_tx_success
+            Case 0	
+                email_relay_results_human_readable = "Timed out waiting for a response from the modem."
+            Case -1
+                email_relay_results_human_readable = "Message successfully sent to the network."
+            Case -3
+                email_relay_results_human_readable = "Error response from modem."
+            Case -5	
+                email_relay_results_human_readable = "PhoneNumber or Message parameter is an empty string."
+            Case -6	
+                email_relay_results_human_readable = "Message sent to the modem, no confirmation response received from the modem."
+            Case -7	
+                email_relay_results_human_readable = "Timed out waiting for response from the modem."
+            Case -8	
+                email_relay_results_human_readable = "No internal cellular modem installed or modem is off/disabled."
+            Case -9	
+                email_relay_results_human_readable = "Datalogger timed out waiting for modem to send the message. Message is in Cell2XX queue and may still be sent."
+            Case -11
+                email_relay_results_human_readable = "Send failure. External Cell2XX is powered down"
+            Case -12
+                email_relay_results_human_readable = "Array out of bounds"
+        EndSelect
+        
+        Call logging("Email send result: ("& email_tx_success &") "& email_relay_results_human_readable)
+        Call logging("Email server response: " &  email_relay_server_response)
+    Else
+        Call logging("Email is Disabled, Alert not sent.")
+    EndIf
 EndSub

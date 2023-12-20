@@ -73,7 +73,7 @@ Sub SampleOCRs
     OCRR_String = CollectOCR("R")
 
     If OCRR_String = "" Then
-      Call Failled_Sampling_Email("OCR-R")
+      Call Failed_Sampling_Email("OCR-R")
     EndIf
     
     SerialClose(SerialOCRR)
@@ -92,7 +92,7 @@ Sub SampleOCRs
     OCRI_String = CollectOCR("I")
 
     If OCRI_String = "" Then
-      Call Failled_Sampling_Email("OCR-I")
+      Call Failed_Sampling_Email("OCR-I")
     EndIf
     
     SerialClose(SerialOCRI)

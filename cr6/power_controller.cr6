@@ -51,7 +51,7 @@ Sub CollectPowerController
   Next X
   
   If RawPower = "" Then
-    Call Failled_Sampling_Email("Power Controller")
+    Call Failed_Sampling_Email("Power Controller")
   EndIf
 EndSub
 
@@ -84,6 +84,7 @@ Sub Low_Battery_Check
      OR VBatt2 < Battery_Low_Voltage_Threshold _ 
      OR ABatt1 < Battery_Low_Amperage_Threshold _ 
      OR ABatt2 < Battery_Low_Amperage_Threshold Then ' Fixme Test the line continuation
+    Call logging("[Warning] Battery Low")
     Call Battery_Low_Email
   EndIf
 

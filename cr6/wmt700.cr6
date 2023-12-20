@@ -54,7 +54,7 @@ Sub CollectWMT700
     
     If RawWMT700 = "AN" Then
       RawWMT700 = "NAN"
-      Call Failled_Sampling_Email("WMT700")
+      Call Failed_Sampling_Email("WMT700")
     Else
       SplitStr(WMT700(),RawWMT700,",",6,10)
     EndIf
