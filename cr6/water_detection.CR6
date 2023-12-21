@@ -17,7 +17,7 @@ Sub CheckWaterDectectionMain
 
     If Water_Detection_Main > Water_Detection_Main_Threshold Then 'FIXME is > right ?
       Call logging("[Warning] Water Infiltration")
-      Call Water_Infiltration_Email
+      Call Set_Water_Infiltration_Alarm
     EndIf
   EndIf
 EndSub

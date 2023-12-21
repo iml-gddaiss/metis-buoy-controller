@@ -83,7 +83,7 @@ Sub Low_Battery_Check
   If VBatt1 < Battery_Low_Voltage_Threshold _ 
      OR VBatt2 < Battery_Low_Voltage_Threshold Then
     Call logging("[Warning] Battery Low")
-    Call Battery_Low_Email
+    Call Set_Battery_Low_Alarm
   EndIf
 
 EndSub

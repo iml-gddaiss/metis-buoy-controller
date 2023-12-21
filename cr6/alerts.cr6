@@ -15,9 +15,9 @@ Public Buoy_Adrift_Alert_Snoozed As Boolean = False
 Public PositionDeviation As Long 
 
 
-Public Battery_Low_Warning_Reset As Boolean = True
-Public Water_Infiltration_Warning_Reset As Boolean = True
-Public Failed_Winch_Warning_Reset As Boolean = True
+Public Battery_Low_Warning_Alarm As Boolean = False
+Public Water_Infiltration_Warning_Alarm As Boolean = False
+Public Failed_Winch_Warning_Alarm As Boolean = False
 
 Dim SaveLog as Boolean = False ' Save log on Failed instrument sampling.
 
@@ -63,36 +63,35 @@ Sub Buoy_Adrift_Email
     EndIf
 EndSub
 
-Sub Failed_Winch_Email
-    If Failed_Winch_Warning_Reset Then
+Sub Set_Failed_Winch_Alarm
+    If Not Failed_Winch_Warning_Alarm Then
         Call Email_Init(0, "Winch Failed")
-        Call Email_add_line("Winch Missing Conditions: " & WinchMissingCondition)
         Call SendEmail
 
-        Failed_Winch_Warning_Reset = False
+        Failed_Winch_Warning_Alarm = True
     EndIf
 EndSub
 
 
-Sub Water_Infiltration_Email
-    If Water_Infiltration_Warning_Reset Then
+Sub Set_Water_Infiltration_Alarm
+    If Not Water_Infiltration_Warning_Alarm Then
         Call Email_Init(0, "Water Infiltration")
         Call Email_add_line("Water Detection: " &  Water_Detection_Main)
         Call SendEmail
 
-        Water_Infiltration_Warning_Reset = False
+        Water_Infiltration_Warning_Alarm = True
     EndIf
 EndSub
 
 
-Sub Battery_Low_Email
-    If Battery_Low_Warning_Reset Then
+Sub Set_Battery_Low_Alarm
+    If Not Battery_Low_Warning_Alarm Then
         Call Email_Init(0, "Battery Low")
         Call Email_add_line("VBatt1: " & VBatt1)
         Call Email_add_line("VBatt2: " & VBatt2)
         Call SendEmail
 
-        Battery_Low_Warning_Reset = False
+        Battery_Low_Warning_Alarm = True
     EndIf
 EndSub
 

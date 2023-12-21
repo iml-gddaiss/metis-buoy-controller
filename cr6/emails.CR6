@@ -4,7 +4,7 @@ Dim _newline_ As String = CHR(13)&CHR(10)
 ' Increase the Variables Byte size if needed. 
 Public email_address As String * 200 = "jerome.guay@dfo-mpo.gc.ca"' "anthony.ouellet@dfo-mpo.gc.ca"
 Public sms_address As String * 200 = "5819999001@msg.telus.com"' "4187321649@msg.koodomobile.com" '@msg.telus.com" ' number + email to sms Gateway (of the receiver)
-Public Disable_Email As Boolean = True
+Public Disable_Email As Boolean = True ' MAYBE REMOVE FOR SAFETY REASON e.g its on an the buoy cable breaks
 
 Dim email_subject As String * 100
 Dim EmailTimeStamp(2) As String : Alias EmailTimeStamp = EmailDate, EmailTime 
