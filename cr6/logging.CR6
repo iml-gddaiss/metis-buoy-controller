@@ -10,7 +10,7 @@ Sub logging(log_message As String * 2000)
     EndIf
     
     TmpLogFile = FileOpen("CRD:"&TmpLogFileName&".log","a", -1)
-    FileWrite(TmpLogFile, log_message, 0)
+    FileWrite(TmpLogFile, log_message & CHR(10), 0)
     FileClose(TmpLogFile)
 EndSub
 

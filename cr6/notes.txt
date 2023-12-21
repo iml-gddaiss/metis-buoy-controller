@@ -1,5 +1,6 @@
 .TODO
 .. General
+... RENAME ATMS TIMER TO WEATHER TIMER
 ... Should WXT536 have 3 sampling alerts (Wind, Weather, Rain) 
 ... Check If Suna unpacking is right ?
 ... Check which unpacking variable to set Public or Dim
@@ -33,5 +34,8 @@
 .. Triplet String formatting
 .. TagString Table
 .. Test PCO2 New Unpacking (on receive)
+
+.. FIXME haversine is wrong
+.. TEST TAG FILE \n
 
 .. PAR HANGS IF MISSING
