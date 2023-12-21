@@ -3,7 +3,8 @@
 ' + Battery Low / Water Infiltration / Failed Winch -> Send once until the flag is reset. (Breaker tripped)
 ' + Instrument Failed sampling. Each time. 
 
-Const EarthRadius = 6371e3 'For position computation
+Const EarthRadius = 6371e3
+Const _PI_ = 3.141592653589793
 
 ' Alert & Warnig Switch for the user to turn on/off
 Public Buoy_Adrift_Alert_Set As Boolean = False 
@@ -21,15 +22,15 @@ Public Failed_Winch_Warning_Reset As Boolean = True
 Dim SaveLog as Boolean = False ' Save log on Failed instrument sampling.
 
 
-Function ComputePositionDeviation As Float ' FIXME test me NOT WORKING AT THE MOMENT
-    ' 2023-12-20 20:08:01.862 - Position Deviantion (Lat, Lon, Lat0, Lon0, c, a): 48.64065, -68.15578, 48.6407, -68.15592, 0.0001034108, 8.143783e-13
-    ' 2023-12-20 20:08:01.916 - Position Deviation: 658 m.
-    'Compute the distance of the current position to  Longitude_0, Latitude_0
+
+Function ComputePositionDeviation As Float
+    ' Uses Haversine Equation
+    'Compute the distance of the current position (Latitude_Decimal, Longitude_Decimal) to  (Longitude_0, Latitude_0)
     Dim a As Float = ""
     Dim c As Float = ""
 
-    a = (SIN((Latitude_Decimal - Latitude_0)/2))^2 + COS(Latitude_Decimal) * COS(Latitude_0) * (SIN((Longitude_Decimal - Longitude_0)/2))^2
-    c = 2*ATN2(SQR(a), SQR(1-a))
+    a = (SIN((Latitude_Decimal - Latitude_0)/2))^2 + COS(Latitude_Decimal) * COS(Latitude_0) * (SIN((Longitude_Decimal - Longitude_0)/2))^2 ' the difference with python is probably due to numerical precision
+    c = 2*ATN2(SQR(a), SQR(1-a)) * ( _PI_ / 180) ' This should be fine
     ComputePositionDeviation =  EarthRadius * c
 
     Call logging("Position Deviantion (Lat, Lon, Lat0, Lon0, c, a): " & Latitude_Decimal&", "&Longitude_Decimal&", "&Latitude_0&", "&Longitude_0&", "&c&", "&a)

@@ -1,6 +1,7 @@
 .TODO
 .. General
 ... RENAME ATMS TIMER TO WEATHER TIMER
+... Review all Failed_Sampling_Error (especially WMT700 AN -> NAN)
 ... Should WXT536 have 3 sampling alerts (Wind, Weather, Rain) 
 ... Check If Suna unpacking is right ?
 ... Check which unpacking variable to set Public or Dim
@@ -35,7 +36,7 @@
 .. TagString Table
 .. Test PCO2 New Unpacking (on receive)
 
-.. FIXME haversine is wrong
-.. TEST TAG FILE \n
+.. Test New Haversine Function. (also floating precision)
+.. TEST if all TagString a long enough
 
 .. PAR HANGS IF MISSING
