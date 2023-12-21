@@ -41,7 +41,7 @@ DataTable(FileSUNA_Light,UpdateSUNATable,-1)
  EndTable
 
 
-Function SUNATagString
+Function SUNATagString As String * 200
   SunaTAGString = "[SUNA]" & Dark_Nitrate & "," & Light_Nitrate & "," & Dark_Nitrogen_in_Nitrate & "," & Light_Nitrogen_in_Nitrate & "," & Dark_Bromide & "," & Light_Bromide
 EndFunction
 
@@ -96,7 +96,7 @@ Sub CollectSUNA ' FIXME is this correct ?
 
     UpdateSUNATable = true
 
-    TAGString &= "\n" & SUNATagString()
+    TAGString &= SUNATagString()
     ' Call WriteTagString
 
     Call logging("SUNA Done")

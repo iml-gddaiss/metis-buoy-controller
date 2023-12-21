@@ -19,7 +19,7 @@ DataTable(FileADCP,UpdateADCPTable,-1)
 EndTable
 
 
-Function ADCPTagString As String
+Function ADCPTagString As String * 200
   ADCPTagString = "[RDI]" & ADCPDate & "," & ADCPTime & "," & ADCPDir & "," & ADCPMag
 EndFunction
 
@@ -67,7 +67,7 @@ Sub CollectADCP
 
     UpdateADCPTable = true
 
-    TAGString &= "\n" & ADCPTagString()
+    TAGString &= ADCPTagString()
     ' Call WriteTagString
 
   EndIf

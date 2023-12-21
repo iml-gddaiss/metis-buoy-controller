@@ -25,7 +25,7 @@ DataTable(FilePower,UpdatePowerTable,-1)
 
 '### Sampling ###
 
-Function PowerTagString as String
+Function PowerTagString as String * 200
   PowerTagString = "[POWR]" & VBatt1 & "," & ABatt1 & "," & VBatt2 & "," & ABatt2 & "," & VSolar & "," & ASolar & "," & AMain & "," & ATurbine & "," & AWinch & "," & PM_RH & "," & Relay_State
 EndFunction
 
@@ -70,7 +70,7 @@ Sub SamplePowerController
     
     UpdatePowerTable = true
 
-    TAGString &= "\n" & PowerTagString()
+    TAGString &= PowerTagString()
 
     Call Low_Battery_Check
 

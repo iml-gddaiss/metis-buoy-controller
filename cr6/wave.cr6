@@ -28,7 +28,7 @@ EndTable
 
 
 '### Sampling ###
-Function WaveTagString  As String
+Function WaveTagString As String * 200
   WaveTagString = "[WAVE]" & Wave_Date & "," & Wave_Time & "," & Wave_Period & "," & Wave_Hm0 & "," & Wave_H13 & "," & Wave_Hmax
 EndFunction
 
@@ -68,7 +68,7 @@ Sub SampleWave
 
     UpdateWaveTable = true
     
-    TAGString &= "\n" & WaveTagString()
+    TAGString &= WaveTagString()
     ' Call WriteTagString
 
     Call logging("Wave Done")

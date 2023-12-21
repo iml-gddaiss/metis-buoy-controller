@@ -152,7 +152,7 @@ Sub WinchMission
             ' Skipped if Start_Winch_Override is True.
             ' minus 60sec to not skip a scan planned at Winch_Interval hour (got 3599s and didn't sampled)
             WinchMessage = "Interval not reach"
-            TAGString &= "\n" & "[WNCH]" + WinchMessage
+            TAGString &= "[WNCH]" + WinchMessage
             ' Call WriteTagString
             ExitSub
         EndIf
@@ -174,7 +174,7 @@ Sub WinchMission
         
         If NOT Start_Winch_Override Then
             ' Skipped if Start_Winch_Override is True.
-            TAGString &= "\n" & "[WNCH]" + WinchMessage
+            TAGString &= "[WNCH]" + WinchMessage
             ' Call WriteTagString
         EndIf
     EndIf

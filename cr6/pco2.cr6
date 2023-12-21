@@ -77,7 +77,7 @@ EndTable
 
 
 
-Function PCO2TagString As String
+Function PCO2TagString As String * 200
   Dim CO2_Air As String 
   Dim CO2_Water As String 
 
@@ -209,7 +209,7 @@ Sub PCO2Sampling
         Call ClosePC02
         UpdatePCO2Tables = true
     
-        TAGString &= "\n" & PCO2TagString()
+        TAGString &= PCO2TagString()
 
         PCO2IsSampling = false
       Else
