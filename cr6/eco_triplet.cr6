@@ -39,6 +39,7 @@ EndFunction
 
 Sub StartTripletTimer
   Timer(Triplet_Timer, Sec, 2) 
+  Call logging("Starting Triplet Timer")
 EndSub
 
 

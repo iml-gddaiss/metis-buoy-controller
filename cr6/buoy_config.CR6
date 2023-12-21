@@ -71,7 +71,7 @@ Const Compass_Sample_Size As Long = 60 ' 2 per second for 30 seconds
 
 ' Timers Delay                  -Associated Timers-
 Const Well_Pump_Delay_Sec As Long = 30  '(Pump_Timer)
-Const Weather_Delay_Sec As Long = 61    '(Weather_Time): PAR takes at least 60 s
+Const Weather_Delay_Sec As Long = 61    '(Weather_Timer): PAR takes at least 60 s
 Const Suna_Delay_Sec As Long = 12       '(Suna_Timer)
 Const WMT700_Delay_Sec As Long = 8      '(Tower_Timer)
 Const Compass_Delay_Sec As Long = 4     '(Tower_Timer)

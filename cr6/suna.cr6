@@ -56,6 +56,7 @@ Sub StartSUNA
     SerialIn(RawSUNADark,SerialSUNA,150,CHR(13),80) 'The Dark sample is nearly auto, then at least 12sec for the Light one
       
     Timer(Suna_Timer,Sec,2) 'Timer #5 Start for at least 12 sec
+    Call logging("Starting Suna Timer")
   EndIf
 EndSub
 

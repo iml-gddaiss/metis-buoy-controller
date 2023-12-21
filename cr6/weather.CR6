@@ -45,10 +45,11 @@ Function ATMSTagString as String * 200
 EndFunction
 
 
-Sub StartATMSTimer 'Weather and PAR ' FIXME change to par
+Sub StartWeatherTimer 'Weather and PAR ' FIXME change to par
   'Start Timer#1 to collect data in 61sec
   If With_Weather Then
-    Timer(Weather_Time, Sec, 2)
+    Timer(Weather_Timer, Sec, 2)
+    Call logging("Starting Weather Timer")
   EndIf
 EndSub
 
@@ -56,7 +57,7 @@ EndSub
 Sub WaitForWeather 'Weather and PAR
   If With_Weather Then
     Call logging("Waiting for Weather")
-    Call TimerDelay_Sec(Weather_Time, Weather_Delay_Sec)
+    Call TimerDelay_Sec(Weather_Timer, Weather_Delay_Sec)
   EndIf 
 EndSub
 

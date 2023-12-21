@@ -10,6 +10,7 @@ Sub PowerWellPump
     
     Timer(Pump_Timer,Sec,2) 'Well pump need to be run at least 30 sec
                             'for SBE37, Seafet, SUNA, OCR_R (Sensor Conditionning).
+    Call logging("Starting Pump Timer")                            
   
   EndIf
 EndSub

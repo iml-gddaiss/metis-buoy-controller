@@ -210,7 +210,7 @@ BeginProg
 
   Call StartWMT700           ' Slow to start
   
-  Call StartATMSTimer
+  Call StartWeatherTimer
 
   Call SBE37SalinityCheck ' Skipped if BypassSalinity is true.
     
