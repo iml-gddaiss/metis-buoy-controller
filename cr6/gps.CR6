@@ -8,6 +8,10 @@ Dim RawGPS As String * 100
 'GPS is a builtin CR6 array 
 Dim GPS_HVS(13) As String : Alias GPS_HVS = GPS_Header, GPS_Time, GPS_Status, GPS_Lat, GPS_Lat_Hem, GPS_Lon, GPS_Lon_Hem, GPS_SOG, GPS_COG, GPS_Date, GPS_Mag_Var, GPS_Mag_Var_Dir, GPS_Check
 
+Dim UV_Buf(2) As Float = {0, 0}: Alias UV_Buf = U_Buf, V_Buf ' fixme remove if not used
+Dim SOG_Buff As Float = ""
+Dim COG_Buff As Float = ""
+
 ' Variable For GPS_HVS Tabe
 Public Latitude As String
 Public Longitude As String
@@ -36,6 +40,12 @@ DataTable(FileGPS,UpdateGPSTable,-1)
     Sample(1,SOG, IEEE4)
     Sample(1,COG, IEEE4)
     Sample(1,Magnetic_Variation , IEEE4)
+EndTable
+
+DataTable(GPSAverageTable,True,1) ' Fixme remove if not used
+    DataInterval(GPS_Sample_Rate_Sec,GPS_Sample_Size,Sec,1)
+    Average(1, U_Buf, Float)
+    Average(1, V_Buf, Float)
 EndTable
 
 Sub StartGPS
@@ -79,9 +89,14 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
             Call logging("No Speed Overground returned. Skipping remaining gps sampling.")
             UV() = ""
             ExitFor
-        Else
-            U += CTYPE(GPS_SOG, float) * COS(CTYPE(GPS_COG, float))
-            V += CTYPE(GPS_SOG, float) * SIN(CTYPE(GPS_COG, float))
+        Else    
+            'Fimxe fix a removed _Buf if not used.
+            U_Buf = CTYPE(GPS_SOG, float) * COS(CTYPE(GPS_COG, float))
+            V_Buf = CTYPE(GPS_SOG, float) * SIN(CTYPE(GPS_COG, float))
+            U += U_Buf
+            V += V_Buf
+                
+            CallTable GPSAverageTable ' FIxme remove if not used
         EndIf
     Next
 
@@ -89,6 +104,13 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
         'COG and SOG time averaging.
         SOG = Round( SQR(U^2 + V^2) / number_of_sample, 2)
         COG = Round( ATN2(V, U), 1) MOD 360
+        Call logging("GPS  Averaging: SOG="& SOG &", COG="& COG)
+
+        'Fixme remove and fix if not used
+        SOG_Buf = Round( SQR(U_Buf^2 + V_Buf^2), 2)
+        COG_Buf = Round( ATN2(V_Buf, U_Buf), 1) MOD 360
+        Call logging("GPS  Averaging: SOG_Buf="& SOG_Buf &", COG_Buf="& COG_Buf)
+        ResetTable(GPSAverageTable)
         
         'Formatting Date & Time String
         GPS_Date = "20"&Mid(GPS_Date,5,2) &"-"& Mid(GPS_Date,3,2) &"-"& Mid(GPS_Date,1,2)
@@ -114,15 +136,11 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
         If GPS_Mag_Var_Dir = "W" Then
             Magnetic_Variation  *= -1
         EndIf
-
-        'If Mid(GPS_Mag_Var_Dir,1,1) = "W" Then 
-        '    GPS_Mag_Var = "-"&Mid(GPS_Mag_Var,2,5)
-        'Else
-        '    GPS_Mag_Var = "+"&Mid(GPS_Mag_Var,2,5)
-        'EndIf
     Else
         Call Failed_Sampling_Email("GPS") 
     EndIf
+
+    
 EndSub
 
 

@@ -67,7 +67,9 @@ Const ADCP_Num_Bin As Long = 27
 
 ' Sample Sizes (For time average)
 Const GPS_Sample_Size As Long = 10     ' 1 per second for 10 seconds. ' GPS should be setup to 1 sec interval to get GPS_Sample_Size to correspond to seconds.
+Const GPS_Sample_Rate_Sec As Long = 1  
 Const Compass_Sample_Size As Long = 60 ' 2 per second for 30 seconds
+'Const Compass_Sample_Rate_mSec As Long = 500 ' twice per seconde Test Fixme Remove if not used
 
 ' Timers Delay                  -Associated Timers-
 Const Well_Pump_Delay_Sec As Long = 30  '(Pump_Timer)

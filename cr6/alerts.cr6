@@ -22,7 +22,6 @@ Public Failed_Winch_Warning_Alarm As Boolean = False
 Dim SaveLog as Boolean = False ' Save log on Failed instrument sampling.
 
 
-
 Function ComputePositionDeviation As Float
     ' Uses Haversine Equation
     'Compute the distance of the current position (Latitude_Decimal, Longitude_Decimal) to  (Longitude_0, Latitude_0)
@@ -47,11 +46,12 @@ Sub Buoy_Adrift_Check ' FIXME test me
 
     If Buoy_Adrift_Alert_Set Then
         Call logging("ALERT Buoy Adrift")    
-        Call Buoy_Adrift_Email
+        Call Set_Buoy_Adrift_Alarm
     EndIf
 EndSub
 
-Sub Buoy_Adrift_Email
+Sub Set_Buoy_Adrift_Alarm
+' Buoy Adrift Alarm will keep sending email until it is snoozed.
     If Not Buoy_Adrift_Alert_Snoozed Then
         'FIXME TEST IF UNITS OF SOG AND COG Follow
         Call Email_Init(1, "BUOY ADRIFT")
@@ -64,6 +64,8 @@ Sub Buoy_Adrift_Email
 EndSub
 
 Sub Set_Failed_Winch_Alarm
+' Failed Winch Alarm will only send one email when set. The alarm need
+' be turned off by the user and set again for a new email to be sent.
     If Not Failed_Winch_Warning_Alarm Then
         Call Email_Init(0, "Winch Failed")
         Call SendEmail
@@ -74,6 +76,8 @@ EndSub
 
 
 Sub Set_Water_Infiltration_Alarm
+' Water Infiltration Alarm will only send one email when set. The alarm
+' need be turned off by the user and set again for a new email to be sent.
     If Not Water_Infiltration_Warning_Alarm Then
         Call Email_Init(0, "Water Infiltration")
         Call Email_add_line("Water Detection: " &  Water_Detection_Main)
@@ -85,6 +89,8 @@ EndSub
 
 
 Sub Set_Battery_Low_Alarm
+' Battery Low Alarm will only send one email when set. The alarm need
+' be turned off by the user and set again for a new email to be sent.
     If Not Battery_Low_Warning_Alarm Then
         Call Email_Init(0, "Battery Low")
         Call Email_add_line("VBatt1: " & VBatt1)
@@ -97,6 +103,7 @@ EndSub
 
 
 Sub Failed_Sampling_Email(_instrument_ As String * 50)
+    'Once triggered during, a copy of the scan log is saved.
     Call Email_Init(0, _instrument_ & " sampling failed.")
     Call SendEmail
     SaveLog = True

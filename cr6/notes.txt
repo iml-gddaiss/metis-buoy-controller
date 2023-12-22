@@ -1,25 +1,18 @@
 .TODO
 .. General
-... RENAME ATMS TIMER TO WEATHER TIMER
 ... Review all Failed_Sampling_Error (especially WMT700 AN -> NAN)
 ... Should WXT536 have 3 sampling alerts (Wind, Weather, Rain) 
 ... Check If Suna unpacking is right ?
 ... Check which unpacking variable to set Public or Dim
 ... Add better Docstring
+.... The Main file should have description of the overall scan logic.
+.... For each instrument script, doc string should be added in the file header to 
+    describe: 
+        + What devices are compatible. (model/firmware)
+        + How the device sample.
+        + What are/do the different command.
+        + Any additionnal thing to know.
 .... Add script depency (on other script variables) in the script doc strings
-... Reset some variable on every scan mostly those used for for processing other data. (SBE37, GPS, Compass)
-... DIM in SUB are only init at compilation time. TODO reset them manually.
-
-.. Envoyer des alarmes/emails/texto:
-... Lorsque la bouée est hors position (dérive)
-... Lorsque les batteries sont basses
-... Lorsque qu'un instrument n'a pas échantionné correctement.
-
-.. PortFlags
-... BatteryLow = Voltage < BatteryLow_Thres
-... GPSOffPosition = ... (OnTheLoose, WeGotARunner)
-... WaterInfiltration(x3) = ...
-
 
 .. DataTables
 ... Add units to every table. 
@@ -37,6 +30,4 @@
 .. Test PCO2 New Unpacking (on receive)
 
 .. Test New Haversine Function. (also floating precision)
-.. TEST if all TagString a long enough
-
-.. PAR HANGS IF MISSING
+.. TEST if all TagString are long enough
