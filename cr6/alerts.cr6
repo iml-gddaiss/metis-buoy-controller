@@ -7,7 +7,7 @@ Const EarthRadius = 6371e3
 Const _PI_ = 3.141592653589793
 
 ' Alert & Warnig Switch for the user to turn on/off
-Public Buoy_Adrift_Alert_Set As Boolean = False 
+Public Buoy_Adrift_Alert_On As Boolean = False 
 ' -> Once the alert is set, the buoy is considered adrift until resetted to false.
 '    That way, the email will continue to be sent even if the buoy return within the acceptable range.
 Public Buoy_Adrift_Alert_Snoozed As Boolean = False 
@@ -36,13 +36,13 @@ EndFunction
 Sub Buoy_Adrift_Check ' FIXME test me
     PositionDeviation = ComputePositionDeviation()
     Call logging("Position Deviation: " & PositionDeviation & " m.")
-    If Not Buoy_Adrift_Alert_Set Then
+    If Not Buoy_Adrift_Alert_On Then
         If PositionDeviation > Allowed_Position_Deviation Then 
-            Buoy_Adrift_Alert_Set = True
+            Buoy_Adrift_Alert_On = True
         EndIf
     EndIf
 
-    If Buoy_Adrift_Alert_Set Then
+    If Buoy_Adrift_Alert_On Then
         Call logging("ALERT Buoy Adrift")    
         Call Set_Buoy_Adrift_Alarm
     EndIf
