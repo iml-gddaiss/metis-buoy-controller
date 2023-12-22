@@ -12,7 +12,7 @@ Public Buoy_Adrift_Alert_Set As Boolean = False
 '    That way, the email will continue to be sent even if the buoy return within the acceptable range.
 Public Buoy_Adrift_Alert_Snoozed As Boolean = False 
 ' -> Snoozing will only stop the Emails, the buoy is still considere adrift.
-Public PositionDeviation As Long 
+Public PositionDeviation As Long
 
 
 Public Battery_Low_Warning_Alarm As Boolean = False
@@ -31,8 +31,6 @@ Function ComputePositionDeviation As Float
     a = (SIN((Latitude_Decimal - Latitude_0)/2))^2 + COS(Latitude_Decimal) * COS(Latitude_0) * (SIN((Longitude_Decimal - Longitude_0)/2))^2 ' the difference with python is probably due to numerical precision
     c = 2*ATN2(SQR(a), SQR(1-a)) * ( _PI_ / 180) ' This should be fine
     ComputePositionDeviation =  EarthRadius * c
-
-    Call logging("Position Deviantion (Lat, Lon, Lat0, Lon0, c, a): " & Latitude_Decimal&", "&Longitude_Decimal&", "&Latitude_0&", "&Longitude_0&", "&c&", "&a)
 EndFunction
 
 Sub Buoy_Adrift_Check ' FIXME test me

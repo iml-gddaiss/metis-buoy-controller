@@ -1,16 +1,9 @@
 ' GPS_HVS related code
-'### Serial Port ###
-' Const SerialGPS = 16 'U11-U12 (trouble with GPS_HVS on SDM)
-
 
 '### Data Variables ###
 Dim RawGPS As String * 100
 'GPS is a builtin CR6 array 
 Dim GPS_HVS(13) As String : Alias GPS_HVS = GPS_Header, GPS_Time, GPS_Status, GPS_Lat, GPS_Lat_Hem, GPS_Lon, GPS_Lon_Hem, GPS_SOG, GPS_COG, GPS_Date, GPS_Mag_Var, GPS_Mag_Var_Dir, GPS_Check
-
-Dim UV_Buf(2) As Float = {0, 0}: Alias UV_Buf = U_Buf, V_Buf ' fixme remove if not used
-Dim SOG_Buff As Float = ""
-Dim COG_Buff As Float = ""
 
 ' Variable For GPS_HVS Tabe
 Public Latitude As String
@@ -19,8 +12,8 @@ Public SOG As Float = ""
 Public COG As Float = ""
 Public Magnetic_Variation As Float = ""
 
-Dim Latitude_Decimal As Float
-Dim Longitude_Decimal As Float
+Dim Latitude_Decimal As Float = ""
+Dim Longitude_Decimal As Float = ""
 
 
 '### Units ###
@@ -42,11 +35,6 @@ DataTable(FileGPS,UpdateGPSTable,-1)
     Sample(1,Magnetic_Variation , IEEE4)
 EndTable
 
-DataTable(GPSAverageTable,True,1) ' Fixme remove if not used
-    DataInterval(GPS_Sample_Rate_Sec,GPS_Sample_Size,Sec,1)
-    Average(1, U_Buf, Float)
-    Average(1, V_Buf, Float)
-EndTable
 
 Sub StartGPS
     SerialOpen(SerialGPS,19200,3,20,1000)
@@ -91,12 +79,8 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
             ExitFor
         Else    
             'Fimxe fix a removed _Buf if not used.
-            U_Buf = CTYPE(GPS_SOG, float) * COS(CTYPE(GPS_COG, float))
-            V_Buf = CTYPE(GPS_SOG, float) * SIN(CTYPE(GPS_COG, float))
-            U += U_Buf
-            V += V_Buf
-                
-            CallTable GPSAverageTable ' FIxme remove if not used
+            U += CTYPE(GPS_SOG, float) * COS(CTYPE(GPS_COG, float))
+            V += CTYPE(GPS_SOG, float) * SIN(CTYPE(GPS_COG, float))
         EndIf
     Next
 
@@ -106,11 +90,6 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
         COG = Round( ATN2(V, U), 1) MOD 360
         Call logging("GPS  Averaging: SOG="& SOG &", COG="& COG)
 
-        'Fixme remove and fix if not used
-        SOG_Buf = Round( SQR(U_Buf^2 + V_Buf^2), 2)
-        COG_Buf = Round( ATN2(V_Buf, U_Buf), 1) MOD 360
-        Call logging("GPS  Averaging: SOG_Buf="& SOG_Buf &", COG_Buf="& COG_Buf)
-        ResetTable(GPSAverageTable)
         
         'Formatting Date & Time String
         GPS_Date = "20"&Mid(GPS_Date,5,2) &"-"& Mid(GPS_Date,3,2) &"-"& Mid(GPS_Date,1,2)
@@ -132,7 +111,7 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
         EndIf
 
         ' Converting Magnetic Variation to decimal
-        Magnetic_Variation  = CTYPE(GPS_Mag_Var, float) ' Test if it works
+        Magnetic_Variation  = CTYPE(GPS_Mag_Var, float)
         If GPS_Mag_Var_Dir = "W" Then
             Magnetic_Variation  *= -1
         EndIf

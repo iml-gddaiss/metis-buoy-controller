@@ -3,11 +3,12 @@ Dim TmpLogFile As Long
 
 
 Sub logging(log_message As String * 2000)
-    If Enable_Logging Then
+    'Logging use Serial Logging only if Enable_Serial_logging is True on Compiling
+    #If Enable_Serial_Logging Then
         SerialOpen(SerialLogging, 115200,0,0,10000)
         SerialOut(SerialLogging, Public.Timestamp(4,1) & " - " & log_message & CHR(13) & CHR(10),"",0,1000)
         SerialClose(SerialLogging)
-    EndIf
+    #EndIf
     
     TmpLogFile = FileOpen("CRD:"&TmpLogFileName&".log","a", -1)
     FileWrite(TmpLogFile, log_message & CHR(10), 0)
