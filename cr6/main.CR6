@@ -290,6 +290,8 @@ BeginProg
 
   Call CollectWinch
 
+  Call CheckWinchSampleSuccess_test  'FIXME TO REMOVE AFTER TEST
+
   TriggerSequence (1,0) ' Unlocking Slow Sequence
   
   WhereAmI = "Scan end"

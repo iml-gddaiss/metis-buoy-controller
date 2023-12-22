@@ -12,11 +12,11 @@ Public Winch_Voltage As Float = ""
 
 Public WinchStatus as String * 10 'Standby / Sampling / Completed
 Public WinchMessage As String * 50
-Public WinchMissingCondition As String * 100 = ""
+Public WinchMissingCondition As Long = 0
 
 Public WinchString As String * 50
 Public WinchFileName As String * 50
-Dim WinchFile As Long
+Dim WinchFileHandle As Long
 
 
 Public Winch_Last_Sample AS Long = ""
@@ -28,26 +28,26 @@ Public Winch_Longitude As String
 Sub WinchAirCheck(Air_Temp)
     If Air_Temp < Min_Air_Temp_for_Winch Then
         WinchMessage = "The air temperature is too cold. "
-        WinchMissingCondition &= WinchMessage
+        WinchMissingCondition += 1
     EndIf
 EndSub
 
 Sub WinchWaveCheck(Wave_H13, Wave_Period)
     If Wave_H13 > Max_Wave_H13_for_Winch Then
         WinchMessage = "Average wave is too high. "
-        WinchMissingCondition &= WinchMessage
+        WinchMissingCondition += 1
     EndIf
         
     If Wave_H13 > 1 AND Wave_Period < Min_Wave_Period_for_Winch  AND Wave_Period <> 0 Then 
         WinchMessage = "Wave period is too short. "
-        WinchMissingCondition &= WinchMessage
+        WinchMissingCondition += 1
     EndIf
 EndSub
 
 Sub WinchGPSCheck(SOG)
     If SOG > Max_Buoy_Speed_for_Winch Then
         WinchMessage = "The buoy is moving too fast. "
-        WinchMissingCondition &= WinchMessage
+        WinchMissingCondition += 1
     EndIf
 EndSub
 
@@ -61,12 +61,12 @@ Sub WinchPowerCheck(VBatt1, VBatt2)
     
     If Winch_Voltage < Min_Voltage_for_Winch Then
         WinchMessage = "The Winch voltage is too low. "
-        WinchMissingCondition &= WinchMessage
+        WinchMissingCondition += 1
     EndIf
 EndSub
 
 Sub WinchConditionsCheck
-    WinchMissingCondition = ""
+    WinchMissingCondition = 0
     
     If With_WXT536 Then
       Call WinchAirCheck(Air_Temp)
@@ -165,10 +165,10 @@ Sub WinchMission
 
             Call WinchConditionsCheck
 
-            If WinchMissingCondition <> "" Then
+            If WinchMissingCondition <> 0 Then
                 Call StartWinchMission
             Else
-                Call logging("Winch Missing Condition: " & WinchMissingCondition)
+                Call logging("Winch Number of Missing Conditions: " & WinchMissingCondition)
             EndIf  
         EndIf
         
@@ -184,12 +184,14 @@ EndSub
 
 Sub InitWinchFile
     WinchFileName = Buoy_Name &"_"& Replace(Winch_Date, "-", "") &"_"& Replace(Winch_Time, ":", "")
-    WinchFile = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
+    WinchFileHandle = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
 
-    FileWrite(WinchFile,Winch_Time&" "&Winch_Date&CHR(10),0)
-    FileWrite(WinchFile,Buoy_Name&CHR(10),0)     
-    FileWrite(WinchFile,Winch_Latitude&","&Winch_Longitude&CHR(10),0)    
-    FileWrite(WinchFile,"D"&CHR(10),0)
+    FileWrite(WinchFileHandle,Winch_Time&" "&Winch_Date&CHR(10),0)
+    FileWrite(WinchFileHandle,Buoy_Name&CHR(10),0)     
+    FileWrite(WinchFileHandle,Winch_Latitude&","&Winch_Longitude&CHR(10),0)    
+    FileWrite(WinchFileHandle,"D"&CHR(10),0)
+
+    FileClose(WinchFileHandle)
 EndSub
 
 
@@ -198,17 +200,46 @@ Sub DownloadWinchData
     SerialFlush(SerialWinch)
     SerialOut(SerialWinch,"D"&CHR(13)&CHR(10),0,1,0)
     
-    Do 
+    WinchFileHandle = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
+    Do While true ' FIXME add another condition. Maybe a maximum unmber of iteration possible to not get stuck here.
         WinchString = ""
         SerialIn(WinchString,SerialWinch,300,10,60)
-        FileWrite(WinchFile,WinchString,0)
-    Loop While WinchString <> ""
+        If WinchString = "" Then
+            ExitDo
+        EndIf
+        FileWrite(WinchFileHandle,WinchString,0)
+    Loop
     
-    ' FIXME Open file and check last line TODO FAILED WINCH ALERT
-        
     SerialClose(SerialWinch)
-    WinchString = ""
+    FileClose(WinchFileHandle)
+    'WinchString = "" ' Seems redundant. The Loop will only exit if WinchString = ""
 EndSub
+
+
+Sub CheckWinchSampleSuccess ' Fixme find better name
+    Dim success_msg As String * 100 = ""
+    WinchFileHandle = FileOpen("CRD:WDATA_"&WinchFileName&".txt","r",-2) ' Test: -2 should be the last line ?
+    FileReadLine(WinchFileHandle, success_msg, 100)
+    FileClose(WinchFileHandle)
+
+    If success_msg = "Error" Then ' FIXME TEST AND REPLACE
+        Call Set_Failed_Winch_Alarm
+    EndIf
+EndSub
+
+Sub CheckWinchSampleSuccess_test 'FIXME TO REMOVE AFTER TEST
+    Dim success_msg As String * 100 = ""
+    WinchFileHandle = FileOpen("CPU:winch_test.txt","r",-2) ' Test: -2 should be the last line ?
+    FileReadLine(WinchFileHandle, success_msg, 100)
+    FileClose(WinchFileHandle)
+    
+    Call logging("Winch Sample Succes test: " & success_msg)
+
+    If success_msg = "last line of file" Then
+        logging("Winch test error msg found")
+    EndIf
+EndSub
+
 
 
 Sub CollectWinch
@@ -223,8 +254,8 @@ Sub CollectWinch
         
         Call DownloadWinchData
 
-        FileClose(WinchFile)
-        
+        Call CheckWinchSampleSuccess    
+
         WhereAmI = "Out of Do.. While Loop after winch"        
     EndIf
 EndSub

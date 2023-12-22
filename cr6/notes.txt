@@ -1,5 +1,6 @@
 .TODO
 .. General
+... Winch: Add another break condition in data download. Maybe a maximum unmber of iteration possible to not get stuck here.
 ... Review all Failed_Sampling_Error (especially WMT700 AN -> NAN)
 ... Should WXT536 have 3 sampling alerts (Wind, Weather, Rain) 
 ... Check If Suna unpacking is right ?
