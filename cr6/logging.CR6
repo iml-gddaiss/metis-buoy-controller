@@ -10,7 +10,8 @@ Sub logging(_message_ As String * 2000)
         SerialOut(SerialLogging, Public.Timestamp(4,1) & " - " & _message_ & CHR(13) & CHR(10),"",0,1000)
         SerialClose(SerialLogging)
     #EndIf
-    
+
+    LogMessage = _message_    
 
     TmpLogFile = FileOpen("CRD:"&TmpLogFileName&".log","a", -1)
     FileWrite(TmpLogFile, _message_ & CHR(10), 0)
