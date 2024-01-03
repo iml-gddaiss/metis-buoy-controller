@@ -1,4 +1,10 @@
 'Winch related code
+Const SuccesfulWinchMessage = "Winch was sampled succesfully" ' TODO CHANGE TO THE CORRECT VALUE
+Const WinchMaxFileLength = 100000 ' Maximum number of lines of a file (Safety)  TODO CHANGE TO THE CORRECT VALUE
+Public WinchString As String * 50
+' The actual maximum size of the file in bytes would be WinchMaxFileLength * Length(WinchString) of the winch file in bytes.
+' At the moment the max file size is 500 Kbs (1 000 000 * 50).
+
 
 Const Min_Air_Temp_for_Winch = 1
 Const Max_Wave_H13_for_Winch = 2
@@ -14,7 +20,7 @@ Public WinchStatus as String * 10 'Standby / Sampling / Completed
 Public WinchMessage As String * 50
 Public WinchMissingCondition As Long = 0
 
-Public WinchString As String * 50
+
 Public WinchFileName As String * 50
 Dim WinchFileHandle As Long
 
@@ -196,50 +202,40 @@ EndSub
 
 
 Sub DownloadWinchData
+    Dim X
+    Dim Winch_Failed As Boolean = True
+
+    Winch_Failed = True
+
     SerialOpen(SerialWinch,19200,3,20,100) 'Should it be started earlier ??
     SerialFlush(SerialWinch)
     SerialOut(SerialWinch,"D"&CHR(13)&CHR(10),0,1,0)
     
     WinchFileHandle = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
-    Do While true ' FIXME add another condition. Maybe a maximum unmber of iteration possible to not get stuck here.
+        
+    For X = 1 To WinchMaxFileLength Step 1
         WinchString = ""
         SerialIn(WinchString,SerialWinch,300,10,60)
         If WinchString = "" Then
             ExitDo
+        ElseIf WinchString = SuccesfulWinchMessage Then
+            Winch_Failed = False
         EndIf
         FileWrite(WinchFileHandle,WinchString,0)
-    Loop
-    
+    Next
+
+    If Winch_failed Then
+        Call Set_Winch_Failed_Warning
+    EndIf
+
+    If WinchString <> "" Then
+        Call Set_Winch_Download_TimedOut_Warning
+        WinchString = ""
+    EndIf
+
     SerialClose(SerialWinch)
     FileClose(WinchFileHandle)
-    'WinchString = "" ' Seems redundant. The Loop will only exit if WinchString = ""
 EndSub
-
-
-Sub CheckWinchSampleSuccess ' Fixme find better name
-    Dim success_msg As String * 100 = ""
-    WinchFileHandle = FileOpen("CRD:WDATA_"&WinchFileName&".txt","r",-2) ' Test: -2 should be the last line ?
-    FileReadLine(WinchFileHandle, success_msg, 100)
-    FileClose(WinchFileHandle)
-
-    If success_msg = "Error" Then ' FIXME TEST AND REPLACE
-        Call Set_Failed_Winch_Alarm
-    EndIf
-EndSub
-
-Sub CheckWinchSampleSuccess_test 'FIXME TO REMOVE AFTER TEST
-    Dim success_msg As String * 100 = ""
-    WinchFileHandle = FileOpen("CPU:winch_test.txt","r",-2) ' Test: -2 should be the last line ?
-    FileReadLine(WinchFileHandle, success_msg, 100)
-    FileClose(WinchFileHandle)
-    
-    Call logging("Winch Sample Succes test: " & success_msg)
-
-    If success_msg = "last line of file" Then
-        logging("Winch test error msg found")
-    EndIf
-EndSub
-
 
 
 Sub CollectWinch

@@ -22,7 +22,7 @@ DataTable(FileHyperOCR,UpdateHyperOCRTable,-1)
 EndTable
 
 Function CollectOCR(OCR_Type As String) As String * 1000
-  Dim X, Y  
+  Dim Y, X
   
   Dim RawHex As String * 500
   Dim NBR ' Number of Bytes Returned
@@ -50,7 +50,7 @@ Function CollectOCR(OCR_Type As String) As String * 1000
         EndIf
         OCR_String = OCR_String + String_Buffer
       Next X      
-      OCR_String = "5341" + OCR_String + "0D0A"      
+      OCR_String = "5341" + OCR_String + "0D0A"
       ExitFor
     EndIf
     Delay(1,2,Sec)
@@ -63,7 +63,8 @@ EndFunction
 
 Sub SampleOCRs
   
-  If With_OCR_R AND Well_IsPowered Then
+  If With_OCR_R AND WellPump_IsPowered Then
+    Call logging("Sampling OCR R")
     WhereAmI = "Sample OCR R"
     
     SerialOpen(SerialOCRR,19200,3,0,800)
@@ -73,16 +74,21 @@ Sub SampleOCRs
     OCRR_String = CollectOCR("R")
 
     If OCRR_String = "" Then
+      Call logging("OCR R string was NOT received.")
       Call Failed_Sampling_Email("OCR-R")
+    Else 
+      Call logging("OCR R string was received.")
     EndIf
     
     SerialClose(SerialOCRR)
     
     UpdateHyperOCRTable = true
     WhereAmI = "End OCRR"
+    Call logging("OCR R Sampling Done")
   EndIf
   
-  If With_OCR_I Then ' Tower is Powered ?
+  If With_OCR_I AND Tower_IsPowered Then
+    Call logging("Sampling OCR I")
     WhereAmI = "Sample OCR I"
 
     SerialOpen(SerialOCRI,19200,51,0,800)
@@ -92,13 +98,17 @@ Sub SampleOCRs
     OCRI_String = CollectOCR("I")
 
     If OCRI_String = "" Then
+      Call logging("OCR I string was NOT received.")
       Call Failed_Sampling_Email("OCR-I")
+    Else 
+      Call logging("OCR I string was received.")
     EndIf
     
     SerialClose(SerialOCRI)
     
     UpdateHyperOCRTable = true
     WhereAmI = "End OCRI"
+    Call logging("Sampling OCR I")
   EndIf
   
 EndSub

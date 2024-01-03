@@ -1,6 +1,6 @@
 ' Alerts
 ' + Buoy lon/lat outside range -> Buoy off chain. Drifting | Persistent until snoozed. Send Position and SOG/COG
-' + Battery Low / Water Infiltration / Failed Winch -> Send once until the flag is reset. (Breaker tripped)
+' + Battery Low, Water Infiltration, Winch Failed/TimedOut  -> Send once until the flag is reset. (Breaker tripped)
 ' + Instrument Failed sampling. Each time. 
 
 Const EarthRadius = 6371e3
@@ -15,9 +15,10 @@ Public Buoy_Adrift_Alert_Snoozed As Boolean = False
 Public PositionDeviation As Long
 
 
-Public Battery_Low_Warning_Alarm As Boolean = False
-Public Water_Infiltration_Warning_Alarm As Boolean = False
-Public Failed_Winch_Warning_Alarm As Boolean = False
+Public Battery_Low_Warning As Boolean = False
+Public Water_Infiltration_Warning As Boolean = False
+Public Winch_Failed_Warning As Boolean = False
+Public Winch_Download_TimedOut_Warning As Boolean = False
 
 Dim SaveLog as Boolean = False ' Save log on Failed instrument sampling.
 
@@ -33,7 +34,7 @@ Function ComputePositionDeviation As Float
     ComputePositionDeviation =  EarthRadius * c
 EndFunction
 
-Sub Buoy_Adrift_Check ' FIXME test me
+Sub Buoy_Adrift_Check ' Seems to work. Proper test needed
     PositionDeviation = ComputePositionDeviation()
     Call logging("Position Deviation: " & PositionDeviation & " m.")
     If Not Buoy_Adrift_Alert_On Then
@@ -61,41 +62,54 @@ Sub Set_Buoy_Adrift_Alarm
     EndIf
 EndSub
 
-Sub Set_Failed_Winch_Alarm
-' Failed Winch Alarm will only send one email when set. The alarm need
+
+Sub Set_Winch_Failed_Warning
+' Failed Winch Warning will only send one email when set. The alarm need
 ' be turned off by the user and set again for a new email to be sent.
-    If Not Failed_Winch_Warning_Alarm Then
+    If Not Winch_Failed_Warning Then
         Call Email_Init(0, "Winch Failed")
         Call SendEmail
 
-        Failed_Winch_Warning_Alarm = True
+        Set_Failed_Winch_Warning = True
+    EndIf
+EndSub
+
+Sub Set_Winch_Download_TimedOut_Warning
+' Failed Winch Warning will only send one email when set. The alarm need
+' be turned off by the user and set again for a new email to be sent.
+    If Not Winch_Download_TimedOut_Warning Then
+        Call Email_Init(0, "Winch Download Timed Out")
+        Call SendEmail
+
+        Set_Failed_Winch_Warning = True
     EndIf
 EndSub
 
 
-Sub Set_Water_Infiltration_Alarm
-' Water Infiltration Alarm will only send one email when set. The alarm
+
+Sub Set_Water_Infiltration_Warning
+' Water Infiltration Warning will only send one email when set. The alarm
 ' need be turned off by the user and set again for a new email to be sent.
-    If Not Water_Infiltration_Warning_Alarm Then
+    If Not Water_Infiltration_Warning Then
         Call Email_Init(0, "Water Infiltration")
         Call Email_add_line("Water Detection: " &  Water_Detection_Main)
         Call SendEmail
 
-        Water_Infiltration_Warning_Alarm = True
+        Water_Infiltration_Warning = True
     EndIf
 EndSub
 
 
-Sub Set_Battery_Low_Alarm
-' Battery Low Alarm will only send one email when set. The alarm need
+Sub Set_Battery_Low_Warning
+' Battery Low Warning will only send one email when set. The alarm need
 ' be turned off by the user and set again for a new email to be sent.
-    If Not Battery_Low_Warning_Alarm Then
+    If Not Battery_Low_Warning Then
         Call Email_Init(0, "Battery Low")
         Call Email_add_line("VBatt1: " & VBatt1)
         Call Email_add_line("VBatt2: " & VBatt2)
         Call SendEmail
 
-        Battery_Low_Warning_Alarm = True
+        Battery_Low_Warning = True
     EndIf
 EndSub
 

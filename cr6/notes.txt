@@ -1,10 +1,14 @@
 .TODO
-.. General
-... Winch: Add another break condition in data download. Maybe a maximum unmber of iteration possible to not get stuck here.
+
+.. Remove WhereAmI and add a public log_message variable to take the place.
+
+.. Winch
+... Set SuccesfulWinchMessage
+... Set WinchMaxFileLength
+
 ... Review all Failed_Sampling_Error (especially WMT700 AN -> NAN)
-... Should WXT536 have 3 sampling alerts (Wind, Weather, Rain) 
-... Check If Suna unpacking is right ?
-... Check which unpacking variable to set Public or Dim
+.... Should WXT536 have 3 sampling alerts (Wind, Weather, Rain) 
+
 ... Add better Docstring
 .... The Main file should have description of the overall scan logic.
 .... For each instrument script, doc string should be added in the file header to 
@@ -19,16 +23,9 @@
 ... Add units to every table. 
 ... Set proper type ? maybe
 
-.. To Test
-.. Test Timer (set / resets)
-.. Winch code
-... Getting the Timestamp from the index of the winch start.
-... Winch on Demande.
-.. GPS: test new GPS optional single_sample for Winch.
-.. New OCR
-.. Triplet String formatting
-.. TagString Table
+. TO TESTS
+.. Winch on demande.
+... GPS: test new GPS optional single_sample for Winch.
 .. Test PCO2 New Unpacking (on receive)
-
-.. Test New Haversine Function. (also floating precision)
-.. TEST if all TagString are long enough
+.. Test if all TagString are long enough
+.. Suna Unpacking

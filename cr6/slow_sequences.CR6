@@ -1,7 +1,5 @@
-Dim SlowSequenceLocked As Boolean = false
-
 Public Manual_Tower_Switch As Boolean = false
-Public Manual_Well_Switch As Boolean = false
+Public Manual_WellPump_Switch As Boolean = false
 
 Public Start_Winch_Override As Boolean  = false
 
@@ -25,14 +23,14 @@ Sub TowerSwitchSequence
 EndSub
 
 Sub WellSwitchSequence
-    If Manual_Well_Switch AND NOT Well_IsPowered Then
+    If Manual_WellPump_Switch AND NOT WellPump_IsPowered Then
         SW12(SW12_2,1)
-        Well_IsPowered = true
+        WellPump_IsPowered = true
     EndIf
         
-    If NOT Manual_Well_Switch AND Well_IsPowered Then 
+    If NOT Manual_WellPump_Switch AND WellPump_IsPowered Then 
         SW12(SW12_2,0)
-        Well_IsPowered = false
+        WellPump_IsPowered = false
     EndIf
 EndSub
 
