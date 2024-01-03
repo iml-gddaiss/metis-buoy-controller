@@ -217,7 +217,7 @@ Sub DownloadWinchData
         WinchString = ""
         SerialIn(WinchString,SerialWinch,300,10,60)
         If WinchString = "" Then
-            ExitDo
+            ExitFor
         ElseIf WinchString = SuccesfulWinchMessage Then
             Winch_Failed = False
         EndIf
@@ -249,8 +249,6 @@ Sub CollectWinch
         Call InitWinchFile
         
         Call DownloadWinchData
-
-        Call CheckWinchSampleSuccess    
 
         WhereAmI = "Out of Do.. While Loop after winch"        
     EndIf

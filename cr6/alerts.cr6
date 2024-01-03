@@ -70,7 +70,7 @@ Sub Set_Winch_Failed_Warning
         Call Email_Init(0, "Winch Failed")
         Call SendEmail
 
-        Set_Failed_Winch_Warning = True
+        Winch_Failed_Warning = True
     EndIf
 EndSub
 
@@ -81,7 +81,7 @@ Sub Set_Winch_Download_TimedOut_Warning
         Call Email_Init(0, "Winch Download Timed Out")
         Call SendEmail
 
-        Set_Failed_Winch_Warning = True
+        Winch_Download_TimedOut_Warning = True
     EndIf
 EndSub
 
