@@ -77,7 +77,7 @@ EndTable
 
 
 
-Function PCO2TagString As String
+Function PCO2TagString As String * 200
   Dim CO2_Air As String 
   Dim CO2_Water As String 
 
@@ -101,7 +101,6 @@ EndFunction
 Sub StartPCO2
   If (SBE37_In_Saltwater OR Bypass_Salinity) Then
     Call logging("Starting PCO2")
-    WhereAmI = "Start PCO2"  
 
     RawPCO2 = ""
     RawPCO2_Water = "" ' Also set to "" at the end of the Scan if PCO2 Tables were updated
@@ -179,18 +178,14 @@ Sub CollectPCO2
 EndSub
 
 
-' Sub WritePCO2Tables  ' Find better name TODO
-'   SplitStr(PCO2_Water,RawPCO2_Water,",",14,0)
-'   SplitStr(PCO2_Air,RawPCO2_Air,",",14,0)
-' EndSub
-
-
 Sub PCO2WatchDog
  'Watchdog if there's no data in 1Hour (if power disconnected during sampling)
   If (PCO2_Last_Sampling + 3600) < Public.TimeStamp(1) Then
     Call logging("PCO2 Watchdog Triggered")
+    
+    Call Failed_Sampling_Email("PCO2 WatchDog Triggered")
+    
     If PCO2WaterIsCollected OR PCO2AirIsCollected Then
-      ' Call WritePCO2Tables
       UpdatePCO2Tables = true
     EndIf  
       
@@ -200,22 +195,20 @@ Sub PCO2WatchDog
 EndSub
 
 
-Sub PCO2Sampling
+Sub PCO2Routine
   Dim TimeUntilNextSampling_Min as Float
+  
   If With_PCO2 Then
-    WhereAmI = "Entering PCO2 Loop"
     Call logging("Entering PCO2 Sequence")
     
     If PCO2IsSampling Then
       Call CollectPCO2
       
       If PCO2WaterIsCollected AND PCO2AirIsCollected Then
-        ' Call WritePCO2Tables
         Call ClosePC02
         UpdatePCO2Tables = true
     
-        TAGString &= "\n" & PCO2TagString()
-        ' Call WriteTagString
+        TAGString &= PCO2TagString()
 
         PCO2IsSampling = false
       Else

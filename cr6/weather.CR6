@@ -35,27 +35,29 @@ DataTable (FileWeather,UpdateWeatherTable,-1)
 EndTable
 
 
-Function WindTagString as String
+Function WindTagString as String * 200
   WindTagString = WindTAG & Wind_Dir_Min & "," & Wind_Dir_Ave & "," & Wind_Dir_Max & "," & Wind_Spd_Min & "," & Wind_Spd_Ave & "," & Wind_Spd_Max ' (had flag for motion correction)
 EndFunction
 
 
-Function ATMSTagString as String
+Function ATMSTagString as String * 200
   ATMSTagString = "[ATMS]" & Air_Temp & "," & Air_Humidity & "," & Air_Pressure & "," & PAR & "," & Rain_Total & "," & Rain_Duration & "," & Rain_Intensity
 EndFunction
 
 
-Sub StartATMSTimer 'Weather and PAR
+Sub StartWeatherTimer 'Weather and PAR ' FIXME change to par
   'Start Timer#1 to collect data in 61sec
   If With_Weather Then
-    Timer(Weather_Time, Sec, 2)
+    Timer(Weather_Timer, Sec, 2)
+    Call logging("Starting Weather Timer")
   EndIf
 EndSub
 
 
 Sub WaitForWeather 'Weather and PAR
   If With_Weather Then
-    Call TimerDelay_Sec(Weather_Time, Weather_Delay_Sec)
+    Call logging("Waiting for Weather")
+    Call TimerDelay_Sec(Weather_Timer, Weather_Delay_Sec)
   EndIf 
 EndSub
 
@@ -90,20 +92,19 @@ EndSub
 
 Sub ProcessWeather(Heading)
   If With_Weather Then
-    WhereAmI = "Processing Weather"
+    Call logging("Processig Weather")
 
     Call SelectWindInstrument   
 
     If WindTag <> "" Then
       WindHeadingCorrection(Heading) ' Carry correction only if Wind values were loaded.
-      TAGString &= "\n" & WindTagString()
+      TAGString &= WindTagString()
     EndIf
     
-    TAGString &= "\n" & ATMSTagString()
-    ' Call WriteTagString
+    TAGString &= ATMSTagString()
 
     UpdateWeatherTable = true
     
-    WhereAmI = "Finish Weather"
+    Call logging("Weather Processig Done")
   EndIf
 EndSub

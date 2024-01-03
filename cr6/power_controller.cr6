@@ -25,7 +25,7 @@ DataTable(FilePower,UpdatePowerTable,-1)
 
 '### Sampling ###
 
-Function PowerTagString as String
+Function PowerTagString as String * 200
   PowerTagString = "[POWR]" & VBatt1 & "," & ABatt1 & "," & VBatt2 & "," & ABatt2 & "," & VSolar & "," & ASolar & "," & AMain & "," & ATurbine & "," & AWinch & "," & PM_RH & "," & Relay_State
 EndFunction
 
@@ -42,11 +42,17 @@ Sub CollectPowerController
     SerialOut(SerialPower,CHR(13),CHR(10),1,50)  ' FIXME TEST
     SerialIn(RawPower,SerialPower,100,13,200)
     SplitStr(Power,RawPower,0,11,0)
+
+    Call logging("Raw Power Controller (attempt "&X&"): " & RawPower)
+    
     If Len(Relay_State) > 5 Then 
       ExitFor
     EndIf
   Next X
-  Call logging("Raw Power Controller (attempt "&X&"): " & RawPower)
+  
+  If RawPower = "" Then
+    Call Failed_Sampling_Email("Power Controller")
+  EndIf
 EndSub
 
 
@@ -54,7 +60,6 @@ Sub SamplePowerController
   
   If With_Power Then
     Call logging("Sampling Power Controller")
-    WhereAmI = "Sample Power Controller"
       
     SerialOpen(SerialPower,19200,51,600,200) 'No Flush FIXME 
       
@@ -64,8 +69,20 @@ Sub SamplePowerController
     
     UpdatePowerTable = true
 
-    TAGString &= "\n" & PowerTagString()
+    TAGString &= PowerTagString()
+
+    Call Low_Battery_Check
 
     Call logging("Power Controller Done")
   EndIf
+EndSub
+
+
+Sub Low_Battery_Check
+  If VBatt1 < Battery_Low_Voltage_Threshold _ 
+     OR VBatt2 < Battery_Low_Voltage_Threshold Then
+    Call logging("[Warning] Battery Low")
+    Call Set_Battery_Low_Warning
+  EndIf
+
 EndSub

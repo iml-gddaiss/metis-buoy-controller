@@ -9,10 +9,14 @@ EndSub
 
 Sub CheckWaterDectectionMain
   If With_Water_Detection_Main Then
-    WhereAmI = "Check Water Detection"
     Water_Detection_Main = 0
     VoltSe(Water_Detection_Main,1,AutoRange,Water_Detection_Channel,0,0,15000,1,0)
     PortSet(C4,0)
     Call logging("Water Detection Main Check: " & Water_Detection_Main)
+
+    If Water_Detection_Main > Water_Detection_Main_Threshold Then 'FIXME is > right ?
+      Call logging("[Warning] Water Infiltration")
+      Call Set_Water_Infiltration_Warning
+    EndIf
   EndIf
 EndSub

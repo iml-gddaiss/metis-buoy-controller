@@ -3,9 +3,13 @@ StationName = "PMZA-RIKI" ' Stores Value in Status.StationName(1,1) FIXME
 ConstTable (Buoy_Config,0)
     Const Buoy_Name = "PMZA-RIKI"
     
+    Const Latitude_0 As Float =   48.64050 ' (IML Pos) Degree-Decimal North 
+    Const Longitude_0 As Float = -68.15576 ' (IML Pos) Degree-Decimal East
+    Const Allowed_Position_Deviation As Float = 500 ' Meters. Distance from Latitude_0,Longitude_0
+    
     Const Buoy_Configuration = "As Follow" 
     ' ### Sampling Interval ####
-    Const Buoy_Interval_Min = 5
+    Const Buoy_Interval_Min = 10
     Const PCO2_Interval_Hr = 12
     Const Winch_Interval_Hr = 5
    
@@ -17,7 +21,7 @@ ConstTable (Buoy_Config,0)
     Const Disable_Well_Pump As Boolean = false
     Const Seafet_Auto_Calculation As Boolean = true
 
-    Const Enable_Logging As Boolean = true
+    Const Enable_Serial_Logging As Boolean = true
     
     ' ### Instruments Enable/Disable Switches ###
     Const Instrument_Installed = "As Follow" 
@@ -67,13 +71,17 @@ Const Compass_Sample_Size As Long = 60 ' 2 per second for 30 seconds
 
 ' Timers Delay                  -Associated Timers-
 Const Well_Pump_Delay_Sec As Long = 30  '(Pump_Timer)
-Const Weather_Delay_Sec As Long = 61    '(Weather_Time): PAR takes at least 60 s
+Const Weather_Delay_Sec As Long = 61    '(Weather_Timer): PAR takes at least 60 s
 Const Suna_Delay_Sec As Long = 12       '(Suna_Timer)
 Const WMT700_Delay_Sec As Long = 8      '(Tower_Timer)
 Const Compass_Delay_Sec As Long = 4     '(Tower_Timer)
 Const Triplet_Delay_Sec As Long = 20    '(Triplet_Timer): Triplet takes at least 17 seconds to sample.
 Const OCR_R_Delay_Sec As Long = 8       '(Pump_Timer)
 Const OCR_I_Delay_Sec As Long = 8       '(Tower_Timer)   
+
+' ### Alerts Parameters ###
+Const Battery_Low_Voltage_Threshold As Float = 10 'volt ? FIXME  (value < threshold)
+Const Water_Detection_Main_Threshold As Float = 0 ' TODO FIXME   (value > threshold)
 
 ' ### Misc Parameters ###
 Const Required_Salinity As Long = 10 ' (PSU) Threshold for the Salinity Check

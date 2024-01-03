@@ -1,12 +1,10 @@
-Public SlowSequenceLocked As Boolean = false
-
 Public Manual_Tower_Switch As Boolean = false
-Public Manual_Well_Switch As Boolean = false
+Public Manual_WellPump_Switch As Boolean = false
 
 Public Start_Winch_Override As Boolean  = false
 
 Public Send_Break_to_ADCP As Boolean = false
-'Public Update_ADCP_Config As Boolean = false
+
 Public Deploy_ADCP_Switch As Boolean = false
 Public Shutdown_ADCP_Switch As Boolean = false
 
@@ -25,14 +23,14 @@ Sub TowerSwitchSequence
 EndSub
 
 Sub WellSwitchSequence
-    If Manual_Well_Switch AND NOT Well_IsPowered Then
+    If Manual_WellPump_Switch AND NOT WellPump_IsPowered Then
         SW12(SW12_2,1)
-        Well_IsPowered = true
+        WellPump_IsPowered = true
     EndIf
         
-    If NOT Manual_Well_Switch AND Well_IsPowered Then 
+    If NOT Manual_WellPump_Switch AND WellPump_IsPowered Then 
         SW12(SW12_2,0)
-        Well_IsPowered = false
+        WellPump_IsPowered = false
     EndIf
 EndSub
 
@@ -61,7 +59,7 @@ EndSub
 
 Sub WinchStartSequence
     If Start_Winch_Override Then
-        Call WinchMission
+        Call WinchRoutine
 
         Start_Winch_Override = false
     EndIf
@@ -70,9 +68,9 @@ EndSub
 
 Sub EmailTestSequence
     If Send_test_email Then
-        Call Email_Init("Test")
+        Call Email_Init(1, "Test")
 
-        Call Email_add_line("Le roi Loth a loupé son essai.")
+        Call Email_add_line("Warning Email & SMS Test")
         Call SendEmail
         Send_test_email = false
     EndIf

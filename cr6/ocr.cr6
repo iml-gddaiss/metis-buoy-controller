@@ -22,7 +22,7 @@ DataTable(FileHyperOCR,UpdateHyperOCRTable,-1)
 EndTable
 
 Function CollectOCR(OCR_Type As String) As String * 1000
-  Dim X, Y  
+  Dim Y, X
   
   Dim RawHex As String * 500
   Dim NBR ' Number of Bytes Returned
@@ -50,7 +50,7 @@ Function CollectOCR(OCR_Type As String) As String * 1000
         EndIf
         OCR_String = OCR_String + String_Buffer
       Next X      
-      OCR_String = "5341" + OCR_String + "0D0A"      
+      OCR_String = "5341" + OCR_String + "0D0A"
       ExitFor
     EndIf
     Delay(1,2,Sec)
@@ -61,90 +61,33 @@ Function CollectOCR(OCR_Type As String) As String * 1000
 EndFunction
 
 
-'### Sampling ###
-' Sub CollectOCRR
-'   ' &5341 -> SA &0D0A -> CR LF
-'   Dim X, Y  
-  
-'   Dim RawHex As String * 500
-'   Dim NBR ' Number of Bytes Returned
-  
-'   Dim String_Buffer As String
-'   Dim OCR_String As String * 1000
-
-'   OCRR_String = ""
-        
-'   For Y = 1 To 3
-'     SerialInRecord(SerialOCRR,RawHex,&H5341,0,&H0D0A,NBR,101)
-'     String_Buffer = Hex(ASCII(RawHex(1,1,1)))
-    
-'     If String_Buffer = "54" Then
-'       For X = 1 To 393
-'         String_Buffer = Hex(ASCII(RawHex(1,1,X)))
-'         If Len(String_Buffer) = 1 Then
-'           String_Buffer = "0" + String_Buffer
-'         EndIf
-'         OCR_String = OCR_String + String_Buffer
-'       Next X      
-'       OCR_String = "5341" + OCR_String + "0D0A"      
-'       ExitFor
-'     EndIf
-'     Delay(1,2,Sec)
-'   Next Y
-  
-'   OCRR_String = OCR_String
-
-' EndSub
-
-
-' Sub CollectOCRI
-'   ' &5341 -> SA &0D0A -> CR LF
-'   Dim X, Y  
-
-'   Dim RawHex As String * 500
-'   Dim NBR ' Number of Bytes Returned
-'   Dim String_Buffer As String
-  
-'   OCRI_String = ""
-  
-'   For Y = 1 To 3
-'     SerialInRecord(SerialOCRI,RawHex,&H5341,0,&H0D0A,NBR,101)
-'     String_Buffer = Hex(ASCII(RawHex(1,1,1)))
-'     If String_Buffer = "54" Then
-'       For X = 1 To 393
-'         String_Buffer = Hex(ASCII(RawHex(1,1,X)))
-'         If Len(String_Buffer) = 1 Then
-'           String_Buffer = "0" + String_Buffer
-'         EndIf
-'         OCRI_String = OCRI_String + String_Buffer
-'       Next X
-'       OCRI_String = "5341" + OCRI_String + "0D0A"
-'       ExitFor
-'     EndIf
-'     Delay(1,2,Sec)
-'   Next Y
-' EndSub
-
-
 Sub SampleOCRs
   
-  If With_OCR_R AND Well_IsPowered Then
-    WhereAmI = "Sample OCR R"
+  If With_OCR_R AND WellPump_IsPowered Then
+    Call logging("Sampling OCR R")
     
     SerialOpen(SerialOCRR,19200,3,0,800)
     Call TimerDelay_Sec(Pump_Timer, OCR_R_Delay_Sec)
     SerialFlush(SerialOCRR)
   
     OCRR_String = CollectOCR("R")
+
+    If OCRR_String = "" Then
+      Call logging("OCR R string was NOT received.")
+      Call Failed_Sampling_Email("OCR-R")
+    Else 
+      Call logging("OCR R string was received.")
+    EndIf
     
     SerialClose(SerialOCRR)
     
     UpdateHyperOCRTable = true
-    WhereAmI = "End OCRR"
+
+    Call logging("OCR R Sampling Done")
   EndIf
   
-  If With_OCR_I Then ' Tower is Powered ?
-    WhereAmI = "Sample OCR I"
+  If With_OCR_I AND Tower_IsPowered Then
+    Call logging("Sampling OCR I")
 
     SerialOpen(SerialOCRI,19200,51,0,800)
     Call TimerDelay_Sec(Tower_Timer, OCR_I_Delay_Sec)
@@ -152,10 +95,18 @@ Sub SampleOCRs
 
     OCRI_String = CollectOCR("I")
 
+    If OCRI_String = "" Then
+      Call logging("OCR I string was NOT received.")
+      Call Failed_Sampling_Email("OCR-I")
+    Else 
+      Call logging("OCR I string was received.")
+    EndIf
+    
     SerialClose(SerialOCRI)
     
     UpdateHyperOCRTable = true
-    WhereAmI = "End OCRI"
+
+    Call logging("Sampling OCR I")
   EndIf
   
 EndSub

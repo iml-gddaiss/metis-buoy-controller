@@ -48,6 +48,7 @@ Sub CollectCompass
     If raw_compass = "NAN" Then
       Compass_Angles() = ""
       Call logging("Compass Returned: NAN.")
+      Call Failed_Sampling_Email("Compass")
       ExitSub
     EndIf        
 
@@ -91,7 +92,6 @@ Sub SampleCompass
   
   If With_Compass Then
     Call logging("Sampling Compass")
-    WhereAmI = "Sample Compass"   
     
     Call TimerDelay_Sec(Tower_Timer, Compass_Delay_Sec)
         
@@ -101,7 +101,6 @@ Sub SampleCompass
 
     UpdateCompassTable = true
     
-    WhereAmI = "End Compass"
     Call logging("Compass Done")
   EndIf
 EndSub

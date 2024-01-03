@@ -25,7 +25,7 @@ DataTable (FileSBE37,UpdateSBE37Table,-1)
 EndTable
 
 
-Function SBE37TagString as String
+Function SBE37TagString as String * 200
   SBE37TagString = "[CTD]" & SBE37_Temperature & "," & SBE37_Conductivity & "," & SBE37_Salinity & "," & SBE37_Density
 EndFunction
 
@@ -46,7 +46,6 @@ Sub SBE37SalinityCheck
   SBE37_In_Saltwater = false
   
   If With_SBE37 AND Not Bypass_Salinity Then ' NOT IF BYPASS SALINITY IS TRUE ?? FIMXE
-    WhereAmI = "SBE37 Salinity Check"
     Call logging("SBE37 Salinity Check")
     
     Call StartSBE37
@@ -101,6 +100,11 @@ Sub CollectSBE37
     EndIf
   
   Next X
+
+  If RawSBE37 = "" Then
+    Call Failed_Sampling_Email("SBE37")
+  EndIf
+
   Call logging("SBE37 Collected")
 EndSub
 
@@ -109,7 +113,6 @@ Sub SampleSBE37
   SBE37() = "" ' Always reset since it is used in calculation
   
   If With_SBE37 Then
-    WhereAmI = "Sampling SBE37"
     Call logging("Sampling SBE37")
     
     Call StartSBE37
@@ -121,10 +124,9 @@ Sub SampleSBE37
 
     UpdateSBE37Table = true
   
-    TAGString &= "\n" & SBE37TagString()
-    ' Call WriteTagString
-    WhereAmI = "SBE37 Sampling finished"
-    Call logging("SBE37 Sampled")
+    TAGString &= SBE37TagString()
+    
+    Call logging("SBE37 Sampling Done")
   EndIf
   
 EndSub

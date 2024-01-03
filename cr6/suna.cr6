@@ -41,7 +41,7 @@ DataTable(FileSUNA_Light,UpdateSUNATable,-1)
  EndTable
 
 
-Function SUNATagString
+Function SUNATagString As String * 200
   SunaTAGString = "[SUNA]" & Dark_Nitrate & "," & Light_Nitrate & "," & Dark_Nitrogen_in_Nitrate & "," & Light_Nitrogen_in_Nitrate & "," & Dark_Bromide & "," & Light_Bromide
 EndFunction
 
@@ -49,18 +49,19 @@ EndFunction
 Sub StartSUNA
   If With_SUNA Then
     Call logging("Starting SUNA")
-    WhereAmI = "Starting SUNA"
+
     SerialOpen(SerialSUNA,19200,3,20,250)
     SerialOut(SerialSUNA,"$","CMD?",1,400)
     SerialOut(SerialSUNA,"measure 1"&CHR(13),CHR(10),1,50)
     SerialIn(RawSUNADark,SerialSUNA,150,CHR(13),80) 'The Dark sample is nearly auto, then at least 12sec for the Light one
       
     Timer(Suna_Timer,Sec,2) 'Timer #5 Start for at least 12 sec
+    Call logging("Starting Suna Timer")
   EndIf
 EndSub
 
 
-Sub CollectSUNA
+Sub CollectSUNA ' FIXME is this correct ?
   ' &4C43 -> LC &0D0A -> CR LF
   Dim NBR ' Number of Bytes Returned
   If With_SUNA Then
@@ -72,7 +73,6 @@ Sub CollectSUNA
 
     Call TimerDelay_Sec(Suna_Timer, Suna_Delay_Sec)
     
-    WhereAmI = "Collect SUNA"  
     SerialInRecord(SerialSUNA,RawSUNALight,&H4C43,0,&H0D0A,NBR,101)
     SerialOut(SerialSUNA,"sleep"&CHR(13),0,1,0)
     SerialClose(SerialSUNA)
@@ -83,19 +83,21 @@ Sub CollectSUNA
     
     If RawSUNADark <> "NAN" Then
       SplitStr(SUNADark(),RawSUNADark,",",8,4) ' Ignoring serial number (Option 4: strings after the first split sep)
+    Else
+      Call Failed_Sampling_Email("Suna Dark")
     EndIf
     
     If RawSUNALight <> "NAN" Then
       RawSUNALight = "SATSLC"&RawSUNALight
       SplitStr(SUNALight(),RawSUNALight,",",8,4) ' Ignoring serial number (Option 4: strings after the first split sep)
+    Else
+      Call Failed_Sampling_Email("Suna Light")
     EndIf
 
     UpdateSUNATable = true
 
-    TAGString &= "\n" & SUNATagString()
-    ' Call WriteTagString
+    TAGString &= SUNATagString()
 
     Call logging("SUNA Done")
-    WhereAmI = "End SUNA"
   EndIf
 EndSub

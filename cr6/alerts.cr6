@@ -1,0 +1,122 @@
+' Alerts
+' + Buoy lon/lat outside range -> Buoy off chain. Drifting | Persistent until snoozed. Send Position and SOG/COG
+' + Battery Low, Water Infiltration, Winch Failed/TimedOut  -> Send once until the flag is reset. (Breaker tripped)
+' + Instrument Failed sampling. Each time. 
+
+Const EarthRadius = 6371e3
+Const _PI_ = 3.141592653589793
+
+' Alert & Warnig Switch for the user to turn on/off
+Public Buoy_Adrift_Alert_On As Boolean = False 
+' -> Once the alert is set, the buoy is considered adrift until resetted to false.
+'    That way, the email will continue to be sent even if the buoy return within the acceptable range.
+Public Buoy_Adrift_Alert_Snoozed As Boolean = False 
+' -> Snoozing will only stop the Emails, the buoy is still considere adrift.
+Public PositionDeviation As Long
+
+
+Public Battery_Low_Warning As Boolean = False
+Public Water_Infiltration_Warning As Boolean = False
+Public Winch_Failed_Warning As Boolean = False
+Public Winch_Download_TimedOut_Warning As Boolean = False
+
+Dim SaveLog as Boolean = False ' Save log on Failed instrument sampling.
+
+
+Function ComputePositionDeviation As Float
+    ' Uses Haversine Equation
+    'Compute the distance of the current position (Latitude_Decimal, Longitude_Decimal) to  (Longitude_0, Latitude_0)
+    Dim a As Float = ""
+    Dim c As Float = ""
+
+    a = (SIN((Latitude_Decimal - Latitude_0)/2))^2 + COS(Latitude_Decimal) * COS(Latitude_0) * (SIN((Longitude_Decimal - Longitude_0)/2))^2 ' the difference with python is probably due to numerical precision
+    c = 2*ATN2(SQR(a), SQR(1-a)) * ( _PI_ / 180) ' This should be fine
+    ComputePositionDeviation =  EarthRadius * c
+EndFunction
+
+Sub Buoy_Adrift_Check ' Seems to work. Proper test needed
+    PositionDeviation = ComputePositionDeviation()
+    Call logging("Position Deviation: " & PositionDeviation & " m.")
+    If Not Buoy_Adrift_Alert_On Then
+        If PositionDeviation > Allowed_Position_Deviation Then 
+            Buoy_Adrift_Alert_On = True
+        EndIf
+    EndIf
+
+    If Buoy_Adrift_Alert_On Then
+        Call logging("ALERT Buoy Adrift")    
+        Call Set_Buoy_Adrift_Alarm
+    EndIf
+EndSub
+
+Sub Set_Buoy_Adrift_Alarm
+' Buoy Adrift Alarm will keep sending email until it is snoozed.
+    If Not Buoy_Adrift_Alert_Snoozed Then
+        'FIXME TEST IF UNITS OF SOG AND COG Follow
+        Call Email_Init(1, "BUOY ADRIFT")
+        Call Email_add_line("Lat: " & Latitude)
+        Call Email_add_line("Lon: " & Longitude)
+        Call Email_add_line("SOG: " & SOG)
+        Call Email_add_line("COG: " & COG)
+        Call SendEmail
+    EndIf
+EndSub
+
+
+Sub Set_Winch_Failed_Warning
+' Failed Winch Warning will only send one email when set. The alarm need
+' be turned off by the user and set again for a new email to be sent.
+    If Not Winch_Failed_Warning Then
+        Call Email_Init(0, "Winch Failed")
+        Call SendEmail
+
+        Winch_Failed_Warning = True
+    EndIf
+EndSub
+
+Sub Set_Winch_Download_TimedOut_Warning
+' Failed Winch Warning will only send one email when set. The alarm need
+' be turned off by the user and set again for a new email to be sent.
+    If Not Winch_Download_TimedOut_Warning Then
+        Call Email_Init(0, "Winch Download Timed Out")
+        Call SendEmail
+
+        Winch_Download_TimedOut_Warning = True
+    EndIf
+EndSub
+
+
+
+Sub Set_Water_Infiltration_Warning
+' Water Infiltration Warning will only send one email when set. The alarm
+' need be turned off by the user and set again for a new email to be sent.
+    If Not Water_Infiltration_Warning Then
+        Call Email_Init(0, "Water Infiltration")
+        Call Email_add_line("Water Detection: " &  Water_Detection_Main)
+        Call SendEmail
+
+        Water_Infiltration_Warning = True
+    EndIf
+EndSub
+
+
+Sub Set_Battery_Low_Warning
+' Battery Low Warning will only send one email when set. The alarm need
+' be turned off by the user and set again for a new email to be sent.
+    If Not Battery_Low_Warning Then
+        Call Email_Init(0, "Battery Low")
+        Call Email_add_line("VBatt1: " & VBatt1)
+        Call Email_add_line("VBatt2: " & VBatt2)
+        Call SendEmail
+
+        Battery_Low_Warning = True
+    EndIf
+EndSub
+
+
+Sub Failed_Sampling_Email(_instrument_ As String * 50)
+    'Once triggered during, a copy of the scan log is saved.
+    Call Email_Init(0, _instrument_ & " sampling failed.")
+    Call SendEmail
+    SaveLog = True
+EndSub

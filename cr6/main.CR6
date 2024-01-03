@@ -2,102 +2,163 @@
 'Date: 04 avril 2023
 'Authors: Anthony Ouellet & Jérôme Guay
 '
+' Last Update: Jan 2024
 '--------------------------------------------------------------------------------------
 '--------------------------------- Main Program ---------------------------------------
 '--------------------------------------------------------------------------------------
 
-' TODO 
+' TODO
 
-'################################# Instruments #########################################
-' + Instrument Serial Port are defined in serials.CR6
-' + Water Detectio Channel is defined in water_detection.CR6
-'--------------------------------------------
-'[Tower]: [Anemometer WMT700] >---------+--> [SerialTower(485)] >-----+-> [SDM-SIO4A] >--+--> [CR6]
-'         [Weather station WMXT536] >--/                             /                  /
-'         [Compass DCM260B] >---------/                             /                  /
-'         [PAR] >--------------------------> [SerialPAR(232)] >----/                  /
-'         [HyperOCR_I] >-------------------> [SerialOCRI(232)] >--/                  /
-'         [GPS 19xHVS] >-------------------> [SerialGPS(232)] >---------------------/
-'--------------------------------------------
-'[Well]           #W1 CTD SBE37 w/ Pump SBE05
-'                 #W2 SeaFet
-'                 #W3 ECO-Triplet
-'                 #W4 SUNA
-'                 #W5 PCO2
-'                 #W6 Flowmeter
-'                 #W7 HyperOCR_R
-'--------------------------------------------
-'[Miscellaneous]  #M1 Wave monitor
-'                 #M2 Water detection
-'                 #M3 Power controller
-'                 #M4 ADCP
-'                 #M5 Winch
-'--------------------------------------------
-'############################### Naming Conventions ####################################
+'####################### Instruments Connections Diagrams ##############################
+'
+' ======================================= Main =======================================
+'
+'                          +-------------------+
+'                          |        CR6        |
+'                          | +---+             |
+'  +----------+ RS232 (12) | |   |             |
+'  + ADCP     |<-(U11 U12)-->|   |             |
+'  +----------+            | |   |             |
+'  +----------+ RS232 (13) | |   |       +---+ |               +---+---+---+---+
+'  | Winch    |<-(U05 U06)-->|   |       |   |<----(C1 C2 C3)->| 0 | 4 | 8 | C |
+'  +----------+            | |   |       |   | |               +---+---+---+---+
+'  +----------+ RS232 (16) | |   |       |   | |               +-------------+
+'  | GPS      |<-(U03 U04)-->|   |       |   |>----(SW12-2)--->| Tower Power |
+'  +----------+            | |   |       |   | |               +-------------+
+'  +----------+            | |   |       |   | |               +-------------+
+'  | WD       |<-(U01)------>|   |       |   |>----(SW12-1)--->| Pump  Power |
+'  +----------+            | |   |       |   | |               +-------------+
+'                          | +---+       +---+ |
+'                          +-------------------+
+'
+' * WD: Water Dectection
+'                            +---+---+
+'                            |   | C |
+'                            |   +---+
+'   +----------+  RS232 (44) |   |
+'   | Logging  |<----------->| S |
+'   +----------+             | D |
+'   +----------+  RS232 (45) | M |                +-----+
+'   | Power    |<----------->| - |<--(C1 C2 C3)-->| CR6 |
+'   +----------+             | S |                +-----+
+'   +----------+  RS232 (46) | I |
+'   | Wave     |<----------->| O |
+'   +----------+             | 4 |
+'                            |   |
+'                            +---+
+'
+' ======================================= Tower =====================================
+'  +----------+
+'  | WMT700   |<-+
+'  +----------+  |              +---+---+
+'  +----------+  |   RS485 (32) |   | 0 |
+'  | WXT536   |<-+------------->|   +---+
+'  +----------+  |              |   |
+'  +----------+  |              | S |
+'  | Compass  |<-+              | D |
+'  +----------+                 | M |                +-----+
+'                               | - |<--(C1 C2 C3)-->| CR6 |
+'  +----------+     RS232 (33)  | S |                +-----+
+'  | PAR      |<--------------->| I |
+'  +----------+                 | O |
+'  +----------+     RS232 (34)  | 4 |     +-------------+              +-----+
+'  |OCR_I     |<--------------->|   |<---<| Tower Power |<--(SW12-2)--<| CR6 |
+'  +----------+                 |   |     +-------------+              +-----+
+'                               +---+
+'
+' ======================================= Well =======================================
+'                               +---+---+
+'                               |   | 4 |
+'   +----------+   RS232 (36)   |   +---+
+'   | CTD      |<-------------->| S |
+'   +----------+                | D |
+'   +----------+   RS232 (37)   | M |                +-----+
+'   | ECO      |<-------------->| - |<--(C1 C2 C3)-->| CR6 |
+'   +----------+                | S |                +-----+
+'   +----------+   RS232 (38)   | I |
+'   | SeaFet   |<-------------->| O |
+'   +----------+                | 4 |
+'   +----------+   RS232 (39)   |   |
+'   | OCR_R    |<-------------->|   |
+'   +----------+                |   |
+'                               +---+
 
-'#######################################################################################
+'                              +---+---+
+'                              |   | 8 |
+'    +----------+  RS232 (40)  |   +---+
+'    | PCO2     |<------------>| S |
+'    +----------+              | D |
+'    +----------+  RS232 (41)  | M |                +-----+
+'    | SUNA     |<------------>| - |<--(C1 C2 C3)-->| CR6 |
+'    +----------+              | S |                +-----+
+'                              | I |
+'                              | O |
+'                              | 4 |
+'                              |   |
+'                              +---+
+'
+'#####################################################################################
 
 SequentialMode
 AngleDegrees
 PreserveVariables
 
-Public WhereAmI As String ' Debug Purposes ' Maybe merge WhereAmI and Loggings
+Dim SlowSequenceLocked As Boolean = false
 
-Public ScanTimeStamp(2) As String : Alias ScanTimeStamp = ScanDate, ScanTime 
+Public ScanTimeStamp(2) As String : Alias ScanTimeStamp = ScanDate, ScanTime
 
 Public TAGString As String * 2000 ' TODO fixme check if lengths is ok
 
-'########### CR6 Scripts Imports (Includes)
+' ########## CR6 Scripts Includes (Imports) ##########
+' ### Global
 Include "CPU:buoy_config.cr6"                   '#   Declare Buoy Config
-Include "CPU:serials.cr6"                       '#   Define all Serials and Channels
+Include "CPU:ports.cr6"                         '#   Define all Serials and Channels
 Include "CPU:logging.cr6"                       '#   Logging module
 Include "CPU:timers.cr6"                        '#   Timer Values module
 
+' ###  Instruments Sampling
+Include "CPU:wmt700.cr6"
+Include "CPU:wxt536.cr6"
+Include "CPU:compass.cr6"
+Include "CPU:gps.cr6"
+Include "CPU:par.cr6"
+Include "CPU:SBE37.cr6"
+Include "CPU:eco_triplet.cr6"
+Include "CPU:seafet.cr6"
+Include "CPU:suna.cr6"
+Include "CPU:pco2.cr6"
+Include "CPU:ocr.cr6"
+Include "CPU:wave.cr6"
+Include "CPU:power_controller.cr6"
+Include "CPU:adcp.cr6"
+Include "CPU:winch.cr6"
 
+Include "CPU:tower.cr6"
+Include "CPU:water_detection.cr6"
+Include "CPU:well_pump.cr6"
 
-'#######  Instruments
-Include "CPU:wmt700.cr6"                    
-Include "CPU:wxt536.cr6"                    
-Include "CPU:compass.cr6"                   
-Include "CPU:gps.cr6"                       
-Include "CPU:par.cr6"                       
-Include "CPU:SBE37.cr6"                     
-Include "CPU:eco_triplet.cr6"               
-Include "CPU:seafet.cr6"                    
-Include "CPU:suna.cr6"                      
-Include "CPU:pco2.cr6"                      
-Include "CPU:ocr.cr6"                       
-Include "CPU:wave.cr6"             
-Include "CPU:power_controller.cr6"  
-Include "CPU:adcp.cr6"              
-Include "CPU:winch.cr6"             
-
-Include "CPU:tower.cr6"                    
-Include "CPU:water_detection.cr6"          
-Include "CPU:well_pump.cr6"                
-
-'####### Processing
+' ### Processing
 Include "CPU:weather.cr6"    ' Build Wind-Atms tables and Wind-Atms-PAR Tag Strings from WMT, WXT and PAR.
 
-'####### Slow Sequence | User Command Interface
-Include "CPU:slow_sequences.cr6"             ' ?
-Include "CPU:email_alert.cr6"
+' ### Slow Sequences | User Command Interface
+Include "CPU:slow_sequences.cr6"
+Include "CPU:emails.cr6"
+Include "CPU:alerts.cr6"
 
-
-' FileRaw data from the instruments. Needs to be decalred after the Imports
-DataTable (FileRaw,1,-1)
+' ########## DataTable Defintions ##########
+DataTable (FileRaw,1,-1) ' This need to be declared after the instrument script imports
   DataInterval(0,0,Sec,10)
   Sample (1,RawWXT536_Wind,String)
   Sample (1,RawWXT536_Weather,String)
   Sample (1,RawWXT536_Rain,String)
   Sample (1,RawWMT700,String)
   Sample (1,RawGPS,String)
-  Sample (1,RawPAR,String)  
+  Sample (1,RawPAR,String)
   Sample (1,RawWave,String)
   Sample (1,RawPower,String)
   Sample (1,RawSBE37,String)
   Sample (1,RawTriplet,String)
-  Sample (1,RawSeafet,String)  
+  Sample (1,RawSeafet,String)
   Sample (1,RawSUNADark,String)
   Sample (1,RawSUNALight,String)
   Sample (1,RawPCO2_Water,String)
@@ -110,14 +171,16 @@ DataTable (FileTAGS,1,-1) ' fixme change name
   Sample (1, TAGString, String)
 EndTable
 
-Function InitTagString as String * 120 ' may be too much, but maybe not FIXME
+' ########## Tag String Functions ##########
+Function InitTagString as String * 200 ' may be too much, but maybe not FIXME
   InitTagString = "[INIT]" & Buoy_Name & "," & ScanDate & "," & ScanTime & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
 EndFunction
 
-Function EndTagString as String
-  EndTagString = "[END]" & CHR(10)
+Function EndTagString as String * 5
+  EndTagString = "[END]"
 EndFunction
 
+' ########## Update Flags and Raw String Reset Routine ##########
 Sub ResetTablesUpdateFlag
   UpdateGPSTable = false
   UpdateCompassTable = false
@@ -132,7 +195,7 @@ Sub ResetTablesUpdateFlag
   UpdateWMT700Table = false
   UpdateWeatherTable = false
   UpdateWaveTable = false
-  UpdateADCPTable = false 
+  UpdateADCPTable = false
   UpdatePCO2Tables = false
 EndSub
 
@@ -151,28 +214,30 @@ Sub ResetRawStrings
   RawSeafet = ""
   RawSUNADark = ""
   RawSUNALight = ""
-  
+
   Call ResetPCO2RawStrings
 EndSub
 
-
+' ########## Date Time Handling SubRoutines ##########
 Sub GetScanDateTime
   SplitStr(ScanTimeStamp, Public.TimeStamp(4,0), " ", 2, 5) ' ScanTimeStamp = (ScanDate, ScanTime)
   Call logging("Scan TimeStamp: " & ScanDate &"T"& ScanTime)
 EndSub
 
-Sub GPSTimeAjustment 
+Sub GPSTimeAjustment
   If With_GPS AND GPS_Date <> "" AND GPS_Time <> "" Then
     ClockSet(GPS_Date &" "& GPS_Time)
     Call logging("Update Buoy Clock with GPS")
   EndIf
-
 EndSub
 
+'>>>>>>>>>>>>>>>>>>>> MAIN PROGRAM BEGINS HERE <<<<<<<<<<<<<<<<<<<<
 
 BeginProg
-  SetSetting("WIFIconfig",4) 'This is turning the Wifi Off 
-  
+  SetSetting("WIFIconfig",4) 'This is turning the Wifi Off
+
+  Call logging("Program Started.")
+
   Call CloseSerialPorts
 
   Call StartADCP
@@ -181,16 +246,16 @@ BeginProg
 
   Scan(Buoy_Interval_Min,Min,0,0)
 
-  WhereAmI = "Initializing instrument"
-  
-  Call logging(">>>>>>>>>>>> Scan Start")
+  Call logging("Scan Start")
 
   SlowSequenceLocked = True ' Lockling Slow Sequence
-  
+
   Call GetScanDateTime
-    
+
+  Call InitTmpLogFile
+
   Call PowerWaterDetectionMain
-      
+
   Call PowerTowerInstruments ' PAR, WMT700, Compass, With_OCR_I. Start Tower_Timer
 
   Call StartPAR
@@ -199,30 +264,32 @@ BeginProg
 
   Call SampleGPS             ' GPS samples for 10s. Gives time to other tower instrument to initialize.
 
+  Call Buoy_Adrift_Check
+
   Call GPSTimeAjustment
 
   Call ResetWXT536
 
   Call StartWMT700           ' Slow to start
-  
-  Call StartATMSTimer
+
+  Call StartWeatherTimer
 
   Call SBE37SalinityCheck ' Skipped if BypassSalinity is true.
-    
+
   Call PowerWellPump        ' Power Well Pump and Start Well Timer.
-  
+
   Call StartTriplet         ' Starts Triplet_Timer
-  
+
   Call SampleCompass        ' Requires GPS Magnetic Declination
-  
+
   Call CheckWaterDectectionMain
 
   TAGString = InitTagString()             'Requires Gps, Compass and WaterDectection Variables.
-    
+
   Call SamplePowerController
 
   Call CollectTriplet
-  
+
   ' ### Well Pump InstrumentTower ###
   Call WaitForWellPump   ' Well Instrument that required SBE37, Seafet, SUNA, OCR_R (Sensor Conditionning).
   Call StartSUNA         ' why don't isn't SUNA started in THE begining --- FIXME ---
@@ -230,26 +297,26 @@ BeginProg
   Call SampleSBE37
   Call SampleSeafet(SBE37_Temperature, SBE37_Salinity)
   Call CollectSUNA
-  Call StopWellPump 
-  
+  Call StopWellPump
+
   ' ### Tower Instruments ##
   Call WaitForWeather        ' Tower Instrument that required to sample over time
   Call CollectPAR
-  Call CollectWXT536 
+  Call CollectWXT536
   Call CollectWMT700
   Call StopTower485
-        
-  Call ProcessWeather(Heading)     
+
+  Call ProcessWeather(Heading)
 
   Call SampleWave
 
   Call CollectADCP
-  
-  Call PCO2Sampling
+
+  Call PCO2Routine
 
   Call logging("Scan Sampling Done.")
-  
-  Call WinchMission
+
+  Call WinchRoutine
 
   Call logging("Closing serial ports.")
 
@@ -273,25 +340,29 @@ BeginProg
   CallTable FileWave
   CallTable FileADCP
   CallTable FilePCO2A
-  CallTable FilePCO2W  
+  CallTable FilePCO2W
   CallTable FileRaw
-  
+
   Call ResetRawStrings
 
   Call ResetTablesUpdateFlag
-  
-  TAGString &= "\n" & EndTagString()
+
+  TAGString &= EndTagString()
   CallTable FileTAGS
 
   Call CollectWinch
 
   TriggerSequence (1,0) ' Unlocking Slow Sequence
-  
-  WhereAmI = "Scan end"
-  Call logging("Scan finished. <<<<<<<<<<<<" & CHR(13) & CHR(10))
-  
+
+  Call logging("Scan Done" & CHR(13) & CHR(10)) ' double new line to separate the san in the loggings.
+
+  If SaveLog Then
+    Call CopyTmpLogFile
+    SaveLog = False
+  EndIf
+
   NextScan
-	
+
   SlowSequence
     Do
       If SlowSequenceLocked Then
@@ -300,18 +371,15 @@ BeginProg
         SlowSequenceLocked = false
         Call logging("Slow Sequence Unlocked")
       EndIf
-        
+
       Call TowerSwitchSequence
       Call WellSwitchSequence
       Call WinchStartSequence
       Call ADCPBreakSequence
-      ' Call ADCPUpdateSequence
       Call ADCPDeploySequence
       Call ADCPShutdownSequence
-      
+
       Call EmailTestSequence
       Delay(1,1,Sec)
     Loop
 EndProg
-
-

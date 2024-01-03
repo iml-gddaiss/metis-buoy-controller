@@ -53,7 +53,7 @@ EndTable
 Sub StartRainTimer
   If With_WXT536 Then
     Call logging("Starting Rain Timer")
-    Timer(Rain_Timer,Hr, 0)
+    Timer(Rain_Timer,Hr, 2)
   EndIf
 EndSub
 
@@ -66,7 +66,7 @@ Sub ResetWXT536
       SerialOut(SerialTower,CHR(13)&CHR(10)&"2XZRU"&CHR(13)&CHR(10),"",1,0)
       SerialOut(SerialTower,CHR(13)&CHR(10)&"2XZRI"&CHR(13)&CHR(10),"",1,0)
       Timer(Rain_Timer,Hr,2) 'Timer #6 Reset&Start
-      Call logging("WXT536 Rain Reset")
+      Call logging("WXT536 Rain and Rain Timer Reset")
     EndIf	
         
     'Reset wind & weather measurements    
@@ -80,7 +80,6 @@ Sub CollectWXT536
   
   If With_WXT536 Then
     Call logging("Collecting WXT536")
-    WhereAmI = "Collect WXT536"
 
     WXT536_Wind () = ""
     WXT536_Rain () = ""
@@ -123,9 +122,18 @@ Sub CollectWXT536
 
     Next X
 
+    If RawWXT536_Wind = "" Then
+      Call Failed_Sampling_Email("WXT536 Wind")
+    EndIf
+    If RawWXT536_Weather = "" Then
+      Call Failed_Sampling_Email("WXT536 Weather")
+    EndIf
+    If RawWXT536_Rain = "" Then
+      Call Failed_Sampling_Email("WXT536 Rain")
+    EndIf
+
     UpdateWXT536Table = true
 
     Call logging("WXT536 Done")
-    WhereAmI = "Finish WXT536"
   EndIf
 EndSub

@@ -28,7 +28,7 @@ EndTable
 
 
 '### Sampling ###
-Function WaveTagString  As String
+Function WaveTagString As String * 200
   WaveTagString = "[WAVE]" & Wave_Date & "," & Wave_Time & "," & Wave_Period & "," & Wave_Hm0 & "," & Wave_H13 & "," & Wave_Hmax
 EndFunction
 
@@ -47,7 +47,10 @@ Sub CollectWave
       ExitFor
     EndIf        
   Next X
-  
+
+  If RawWave = "" Then
+    Call Failed_Sampling_Email("Wave")
+  EndIf
 EndSub
 
 
@@ -55,7 +58,6 @@ Sub SampleWave
   
   If With_Wave Then
     Call logging("Sampling Wave")
-    WhereAmI = "Sample Wave"
 
     SerialOpen(SerialWave,19200,3,600,200) ' No flush ? FIXME
     
@@ -65,10 +67,8 @@ Sub SampleWave
 
     UpdateWaveTable = true
     
-    TAGString &= "\n" & WaveTagString()
-    ' Call WriteTagString
+    TAGString &= WaveTagString()
 
     Call logging("Wave Done")
-    WhereAmI = "Finish Wave"
   EndIf
 EndSub

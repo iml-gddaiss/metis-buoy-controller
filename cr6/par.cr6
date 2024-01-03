@@ -29,7 +29,6 @@ EndSub
 Sub CollectPAR
   If With_PAR Then
     Call logging("Collecting PAR")
-    WhereAmI = "Collect PAR"
 
     PAR() = ""
     
@@ -38,6 +37,10 @@ Sub CollectPAR
     SerialClose(SerialPAR)
 
     Call logging("RawPAR: `" & RawPAR & "`")
+
+    If RawPAR = "" Then
+      Call Failed_Sampling_Email("PAR")
+    EndIf
 
     UpdatePARTable = true
 

@@ -6,6 +6,7 @@ Sub PowerTowerInstruments
       SW12(SW12_1,1)
       Tower_IsPowered = True
       Timer(Tower_Timer,Sec,2)  'WMT700 power up delay
+      Call logging("Starting Tower Timer")
       Call logging("Tower Instrument Powered Up")
   EndIf
 EndSub
@@ -27,6 +28,5 @@ Sub StopTower485
     SW12(SW12_1,0)
     Tower_IsPowered = False
     Call logging("Tower Closed")
-    WhereAmI = "Close Tower"
   EndIf	  
 EndSub

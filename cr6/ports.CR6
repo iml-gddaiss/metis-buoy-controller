@@ -1,6 +1,3 @@
-' Water Detectuin Channel is declared in water_detection.CR6
-
-'Const SerialLogging = 1 ' RS232 CPI
 Const SerialADCP = 12 'U3-U4 | If ADCP port is not between 11 and 16, Modify the ClosePorts functions to keep ADCP open.
 
 Const SerialWinch = 13 'U5-U6

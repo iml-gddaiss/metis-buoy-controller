@@ -1,7 +1,4 @@
 ' GPS_HVS related code
-'### Serial Port ###
-' Const SerialGPS = 16 'U11-U12 (trouble with GPS_HVS on SDM)
-
 
 '### Data Variables ###
 Dim RawGPS As String * 100
@@ -14,6 +11,9 @@ Public Longitude As String
 Public SOG As Float = ""
 Public COG As Float = ""
 Public Magnetic_Variation As Float = ""
+
+Dim Latitude_Decimal As Float = ""
+Dim Longitude_Decimal As Float = ""
 
 
 '### Units ###
@@ -35,6 +35,7 @@ DataTable(FileGPS,UpdateGPSTable,-1)
     Sample(1,Magnetic_Variation , IEEE4)
 EndTable
 
+
 Sub StartGPS
     SerialOpen(SerialGPS,19200,3,20,1000)
 EndSub
@@ -52,6 +53,9 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
     SOG = ""
     COG = ""
     Magnetic_Variation = ""
+
+    Latitude_Decimal = ""
+    Longitude_Decimal = ""
 
 
     If single_sample Then
@@ -73,7 +77,8 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
             Call logging("No Speed Overground returned. Skipping remaining gps sampling.")
             UV() = ""
             ExitFor
-        Else
+        Else    
+            'Fimxe fix a removed _Buf if not used.
             U += CTYPE(GPS_SOG, float) * COS(CTYPE(GPS_COG, float))
             V += CTYPE(GPS_SOG, float) * SIN(CTYPE(GPS_COG, float))
         EndIf
@@ -83,6 +88,8 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
         'COG and SOG time averaging.
         SOG = Round( SQR(U^2 + V^2) / number_of_sample, 2)
         COG = Round( ATN2(V, U), 1) MOD 360
+        Call logging("GPS  Averaging: SOG="& SOG &", COG="& COG)
+
         
         'Formatting Date & Time String
         GPS_Date = "20"&Mid(GPS_Date,5,2) &"-"& Mid(GPS_Date,3,2) &"-"& Mid(GPS_Date,1,2)
@@ -92,25 +99,33 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
         Latitude = Mid(GPS_Lat,1,2) &"°"& Mid(GPS_Lat,3,6) &"'"& GPS_Lat_Hem
         Longitude = Mid(GPS_Lon,1,3) &"°"& Mid(GPS_Lon,4,6) &"'"& GPS_Lon_Hem
 
-        ' Converting Magnetic Variation to decimal
-        Magnetic_Variation  = CTYPE(GPS_Mag_Var, float) ' Test if it works
-        If GPS_Mag_Var_Dir = "W" Then
-            Magnetic_Variation  += -1
+        Latitude_Decimal = CTYPE(Mid(GPS_Lat,1,2),float) + CTYPE(Mid(GPS_Lat,3,6), float) / 60
+        Longitude_Decimal = CTYPE(Mid(GPS_Lon,1,3), float) + CTYPE(Mid(GPS_Lon,4,6), float) / 60
+
+        If GPS_Lat_Hem = "S" Then
+            Latitude_Decimal *= -1
+        EndIf
+        
+        If GPS_Lon_Hem = "W" Then
+            Longitude_Decimal *= -1
         EndIf
 
-        'If Mid(GPS_Mag_Var_Dir,1,1) = "W" Then 
-        '    GPS_Mag_Var = "-"&Mid(GPS_Mag_Var,2,5)
-        'Else
-        '    GPS_Mag_Var = "+"&Mid(GPS_Mag_Var,2,5)
-        'EndIf 
+        ' Converting Magnetic Variation to decimal
+        Magnetic_Variation  = CTYPE(GPS_Mag_Var, float)
+        If GPS_Mag_Var_Dir = "W" Then
+            Magnetic_Variation  *= -1
+        EndIf
+    Else
+        Call Failed_Sampling_Email("GPS") 
     EndIf
+
+    
 EndSub
 
 
 '### Sampling ###
 Sub SampleGPS
     If With_GPS Then
-        WhereAmI = "Sample GPS_HVS"
         Call logging("Sampling GPS")
         
         Call StartGPS
@@ -122,6 +137,5 @@ Sub SampleGPS
         UpdateGPSTable = true
         
         Call logging("GPS Done")
-        WhereAmI = "EndGPS"
     EndIf
 EndSub

@@ -1,10 +1,10 @@
 'SEAFET related code
 
 '### Data Variables ###
-Public RawSeafet As String * 120
+Dim RawSeafet As String * 120
 
-Public Seafet_Value(11) As String : Alias Seafet_Value = SeaFet_Serial, Seafet_Date_Time, Sample_Number, Error_Flag, Ext_pH, Int_pH, Volt_Ext_pH, Volt_Int_pH, pH_Temp, Seafet_Rel_Hum, Seafet_Int_Temp
-Public Seafet_pH_Calc(2) As Float = {"", ""} : Alias Seafet_pH_Calc = Ext_pH_Calc, Int_pH_Calc
+Dim Seafet_Value(11) As String : Alias Seafet_Value = SeaFet_Serial, Seafet_Date_Time, Sample_Number, Error_Flag, Ext_pH, Int_pH, Volt_Ext_pH, Volt_Int_pH, pH_Temp, Seafet_Rel_Hum, Seafet_Int_Temp
+Dim Seafet_pH_Calc(2) As Float = {"", ""} : Alias Seafet_pH_Calc = Ext_pH_Calc, Int_pH_Calc
 
 Public Seafet_SerialNumber As String * 15 ' Should be Length 11.
 
@@ -13,7 +13,7 @@ Const GasConstantR = 8.3144621 'Universal Gas constant in J/Kmol
 Const FaradayConstant = 96485.365 'Faraday constant
 Const KelvinToCelsius = 273.15
 
-Public Seafet_Coeff(4) As Float = {"", "", "", ""} : Alias Seafet_Coeff = K0_Int, K2_Int, K0_Ext, K2_Ext
+Dim Seafet_Coeff(4) As Float = {"", "", "", ""} : Alias Seafet_Coeff = K0_Int, K2_Int, K0_Ext, K2_Ext
 
 Dim UpdateSeafetTable As Boolean = false
 
@@ -36,7 +36,7 @@ DataTable (FileSeafet,UpdateSeafetTable,-1)
 EndTable
 
 
-Function PHTagString as String
+Function PHTagString as String * 200
   PHTagString = "[PH]" & Ext_pH_Calc & "," & Int_pH_Calc & "," & Error_Flag & "," & Ext_pH & "," & Int_pH
 EndFunction
 
@@ -71,6 +71,10 @@ Sub CollectSeafet
     EndIf
   
   Next X
+
+  If RawSeafet = "" Then
+    Call Failed_Sampling_Email("Seafet")
+  EndIf
 
   If Error_Flag = "0000" Then
     Error_Flag = 0
@@ -220,7 +224,6 @@ EndSub
 Sub SampleSeafet(Temperature As Float, Salinity As Float)
   If With_Seafet Then
     Call logging("Sampling Seafet")
-    WhereAmI = "Sample Seafet"
     
     Call StartSeafet
     
@@ -240,9 +243,8 @@ Sub SampleSeafet(Temperature As Float, Salinity As Float)
 
     UpdateSeafetTable = true
     
-    TAGString &= "\n" & PHTagString() 
-    ' Call WriteTagString
-    WhereAmI = "End Seafet"
+    TAGString &= PHTagString() 
+  
     Call logging("Seafet Done")
   EndIf
 EndSub

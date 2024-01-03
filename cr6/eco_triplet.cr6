@@ -1,6 +1,6 @@
 Dim RawTriplet As String * 200
 
-Public Triplet(11) As String
+Dim Triplet(11) As String
 Alias Triplet(1) = Triplet_Date
 Alias Triplet(2) = Triplet_Hour
 Alias Triplet(3) = Scattering_Wavelenght
@@ -28,7 +28,7 @@ EndTable
 
 '### Sampling ###
 
-Function TripletTagString as String
+Function TripletTagString as String * 200
   'Values are put in CTYPE to convert from scientific notation (0.00E+00)  float notation.
   Dim formatted_string As String * 40
   SprintF(formatted_string,"[TRP1]%.8g,%.8g,%.8g", CTYPE(Scattering_Value, float), CTYPE(Chlorophyll_Value, float), CTYPE(FDOM_Value, float))
@@ -39,13 +39,13 @@ EndFunction
 
 Sub StartTripletTimer
   Timer(Triplet_Timer, Sec, 2) 
+  Call logging("Starting Triplet Timer")
 EndSub
 
 
 Sub StartTriplet
   'ECO-Triplet/w (W3) Start
   If With_Triplet Then
-    WhereAmI = "Start Triplet"
     Call logging("Start Triplet")
     SerialFlush(SerialTriplet)
     SerialOpen(SerialTriplet,19200,3,20,500) 'Triplet string is around 100 char.
@@ -64,7 +64,6 @@ Sub CollectTriplet
   Dim NBR ' Number of Bytes Returned  
   If With_Triplet Then
     Call logging("Collecting Triplet")
-    WhereAmI = "Collect Triplet"
     
     Triplet() = ""
     
@@ -73,13 +72,16 @@ Sub CollectTriplet
     SerialInRecord(SerialTriplet,RawTriplet,&H4242,0,&H0D0A,NBR,01) ' &4242 -> BB &0D0A -> CR LF
     SerialClose(SerialTriplet)
     
-    RawTriplet = "BB"+RawTriplet
-    SplitStr(Triplet(),RawTriplet,CHR(09),11,4) ' Ignoring serial number (Option 4: strings after the first split sep)
-    
+    If RawTriplet <> "" Then
+      RawTriplet = "BB"+RawTriplet
+      SplitStr(Triplet(),RawTriplet,CHR(09),11,4) ' Ignoring serial number (Option 4: strings after the first split sep)
+    Else
+      Call Failed_Sampling_Email("ECO Triplet")
+    EndIf
+
     UpdateTripleTable = true
     
-    TAGString &= "\n" & TripletTagString()
-    ' Call WriteTagString
+    TAGString &= TripletTagString()
 
     Call logging("Triplet Done")
   EndIf
