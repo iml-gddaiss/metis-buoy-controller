@@ -46,7 +46,6 @@ EndSub
 Sub StartTriplet
   'ECO-Triplet/w (W3) Start
   If With_Triplet Then
-    WhereAmI = "Start Triplet"
     Call logging("Start Triplet")
     SerialFlush(SerialTriplet)
     SerialOpen(SerialTriplet,19200,3,20,500) 'Triplet string is around 100 char.
@@ -65,7 +64,6 @@ Sub CollectTriplet
   Dim NBR ' Number of Bytes Returned  
   If With_Triplet Then
     Call logging("Collecting Triplet")
-    WhereAmI = "Collect Triplet"
     
     Triplet() = ""
     

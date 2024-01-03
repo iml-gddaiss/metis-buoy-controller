@@ -58,7 +58,6 @@ Sub SampleWave
   
   If With_Wave Then
     Call logging("Sampling Wave")
-    WhereAmI = "Sample Wave"
 
     SerialOpen(SerialWave,19200,3,600,200) ' No flush ? FIXME
     
@@ -69,9 +68,7 @@ Sub SampleWave
     UpdateWaveTable = true
     
     TAGString &= WaveTagString()
-    ' Call WriteTagString
 
     Call logging("Wave Done")
-    WhereAmI = "Finish Wave"
   EndIf
 EndSub

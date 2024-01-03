@@ -92,7 +92,7 @@ EndSub
 
 Sub ProcessWeather(Heading)
   If With_Weather Then
-    WhereAmI = "Processing Weather"
+    Call logging("Processig Weather")
 
     Call SelectWindInstrument   
 
@@ -102,10 +102,9 @@ Sub ProcessWeather(Heading)
     EndIf
     
     TAGString &= ATMSTagString()
-    ' Call WriteTagString
 
     UpdateWeatherTable = true
     
-    WhereAmI = "Finish Weather"
+    Call logging("Weather Processig Done")
   EndIf
 EndSub

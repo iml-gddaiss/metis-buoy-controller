@@ -1,17 +1,19 @@
 Const TmpLogFileName as String = "Tmp_Log"
 Dim TmpLogFile As Long
+Public LogMessage as String * 2000
 
 
-Sub logging(log_message As String * 2000)
+Sub logging(_message_ As String * 2000)
     'Logging use Serial Logging only if Enable_Serial_logging is True on Compiling
     #If Enable_Serial_Logging Then
         SerialOpen(SerialLogging, 115200,0,0,10000)
-        SerialOut(SerialLogging, Public.Timestamp(4,1) & " - " & log_message & CHR(13) & CHR(10),"",0,1000)
+        SerialOut(SerialLogging, Public.Timestamp(4,1) & " - " & _message_ & CHR(13) & CHR(10),"",0,1000)
         SerialClose(SerialLogging)
     #EndIf
     
+
     TmpLogFile = FileOpen("CRD:"&TmpLogFileName&".log","a", -1)
-    FileWrite(TmpLogFile, log_message & CHR(10), 0)
+    FileWrite(TmpLogFile, _message_ & CHR(10), 0)
     FileClose(TmpLogFile)
 EndSub
 

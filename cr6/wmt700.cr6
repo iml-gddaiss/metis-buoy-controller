@@ -40,7 +40,6 @@ Sub CollectWMT700
   '&H0D0A is the hexadecimal representation for carriage return/line feed
   If With_WMT700 Then
     Call logging("Collect WMT700")
-    WhereAmI = "Collect WMT700"
 
     WMT700() = ""
 
@@ -65,6 +64,5 @@ Sub CollectWMT700
     UpdateWMT700Table = true
 
     Call logging("WMT700 Done")
-    WhereAmI = "Finish WMT700"
   EndIf
 EndSub

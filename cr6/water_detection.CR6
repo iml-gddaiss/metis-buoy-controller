@@ -9,7 +9,6 @@ EndSub
 
 Sub CheckWaterDectectionMain
   If With_Water_Detection_Main Then
-    WhereAmI = "Check Water Detection"
     Water_Detection_Main = 0
     VoltSe(Water_Detection_Main,1,AutoRange,Water_Detection_Channel,0,0,15000,1,0)
     PortSet(C4,0)

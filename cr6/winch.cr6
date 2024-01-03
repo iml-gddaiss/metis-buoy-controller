@@ -110,7 +110,9 @@ Sub CheckWinchStatus
     EndIf
 EndSub
 
-Sub StartWinchMission
+Sub StartWinch
+    Call logging("Startig Winch Mission")    
+
     SerialOpen(SerialWinch,19200,3,20,100)
     SerialOut(SerialWinch,CHR(13),"",1,0)
     SerialOut(SerialWinch,"p1"&CHR(13)&CHR(10),.,2,300)
@@ -147,19 +149,16 @@ Sub StartWinchMission
     EndIf
 EndSub
 
-Sub WinchMission
+Sub WinchRoutine
     'Start a Winch Mission if its not Ongoing and possible.
     If With_Winch AND (SBE37_In_Saltwater OR Bypass_Salinity) Then
         Call logging("Entering Winch Mission Sequence")
-               
-        WhereAmI = "Entering the WinchMission"
         
         If ((Winch_Last_Sample + Winch_Interval_Hr * 3600 - 60) > Public.TimeStamp(1)) AND NOT Start_Winch_Override Then
             ' Skipped if Start_Winch_Override is True.
             ' minus 60sec to not skip a scan planned at Winch_Interval hour (got 3599s and didn't sampled)
             WinchMessage = "Interval not reach"
             TAGString &= "[WNCH]" + WinchMessage
-            ' Call WriteTagString
             ExitSub
         EndIf
         
@@ -167,12 +166,10 @@ Sub WinchMission
 
         If WinchStatus = "Standby" Then
 
-            WhereAmI = "Starting A Winch"
-
             Call WinchConditionsCheck
 
             If WinchMissingCondition <> 0 Then
-                Call StartWinchMission
+                Call StartWinch
             Else
                 Call logging("Winch Number of Missing Conditions: " & WinchMissingCondition)
             EndIf  
@@ -181,7 +178,6 @@ Sub WinchMission
         If NOT Start_Winch_Override Then
             ' Skipped if Start_Winch_Override is True.
             TAGString &= "[WNCH]" + WinchMessage
-            ' Call WriteTagString
         EndIf
     EndIf
 EndSub
@@ -189,8 +185,8 @@ EndSub
 ' ####################### Collecting Data ############################## 
 
 Sub InitWinchFile
-    WinchFileName = Buoy_Name &"_"& Replace(Winch_Date, "-", "") &"_"& Replace(Winch_Time, ":", "")
-    WinchFileHandle = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
+    WinchFileName = "WDATA_"& Buoy_Name &"_"& Replace(Winch_Date, "-", "") &"_"& Replace(Winch_Time, ":", "")
+    WinchFileHandle = FileOpen("CRD:"&WinchFileName&".txt","a",-1)
 
     FileWrite(WinchFileHandle,Winch_Time&" "&Winch_Date&CHR(10),0)
     FileWrite(WinchFileHandle,Buoy_Name&CHR(10),0)     
@@ -198,14 +194,18 @@ Sub InitWinchFile
     FileWrite(WinchFileHandle,"D"&CHR(10),0)
 
     FileClose(WinchFileHandle)
+    
+    Call logging("Winch File Created -> " &WinchFileName)
 EndSub
 
 
 Sub DownloadWinchData
     Dim X
-    Dim Winch_Failed As Boolean = True
+    Dim Winch_Sampling_Failed As Boolean = True
 
-    Winch_Failed = True
+    Call logging("Downloadig Winch Data")
+
+    Winch_Sampling_Failed = True
 
     SerialOpen(SerialWinch,19200,3,20,100) 'Should it be started earlier ??
     SerialFlush(SerialWinch)
@@ -216,25 +216,31 @@ Sub DownloadWinchData
     For X = 1 To WinchMaxFileLength Step 1
         WinchString = ""
         SerialIn(WinchString,SerialWinch,300,10,60)
-        If WinchString = "" Then
+        
+        If WinchString = SuccesfulWinchMessage Then
+            Winch_Sampling_Failed = False
+        ElseIf WinchString = "" Then
             ExitFor
-        ElseIf WinchString = SuccesfulWinchMessage Then
-            Winch_Failed = False
         EndIf
+
         FileWrite(WinchFileHandle,WinchString,0)
     Next
 
-    If Winch_failed Then
+    SerialClose(SerialWinch)
+    FileClose(WinchFileHandle)
+
+    Call logging("Winch Data Download Done")
+
+    If Winch_Sampling_Failed Then
         Call Set_Winch_Failed_Warning
+        Call logging("Winch Sampling Failed")
     EndIf
 
     If WinchString <> "" Then
         Call Set_Winch_Download_TimedOut_Warning
+        Call logging("Winch Download Timed Out")
         WinchString = ""
     EndIf
-
-    SerialClose(SerialWinch)
-    FileClose(WinchFileHandle)
 EndSub
 
 
@@ -242,14 +248,11 @@ Sub CollectWinch
     Call CheckWinchStatus
     
     If WinchStatus = "Completed" Then
+        Call logging("Collecting Winch")
         WinchStatus = "Standby"
-        
-        WhereAmI = "Collecting the winch"
         
         Call InitWinchFile
         
         Call DownloadWinchData
-
-        WhereAmI = "Out of Do.. While Loop after winch"        
     EndIf
 EndSub

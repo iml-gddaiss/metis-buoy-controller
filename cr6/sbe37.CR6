@@ -46,7 +46,6 @@ Sub SBE37SalinityCheck
   SBE37_In_Saltwater = false
   
   If With_SBE37 AND Not Bypass_Salinity Then ' NOT IF BYPASS SALINITY IS TRUE ?? FIMXE
-    WhereAmI = "SBE37 Salinity Check"
     Call logging("SBE37 Salinity Check")
     
     Call StartSBE37
@@ -114,7 +113,6 @@ Sub SampleSBE37
   SBE37() = "" ' Always reset since it is used in calculation
   
   If With_SBE37 Then
-    WhereAmI = "Sampling SBE37"
     Call logging("Sampling SBE37")
     
     Call StartSBE37
@@ -127,9 +125,8 @@ Sub SampleSBE37
     UpdateSBE37Table = true
   
     TAGString &= SBE37TagString()
-    ' Call WriteTagString
-    WhereAmI = "SBE37 Sampling finished"
-    Call logging("SBE37 Sampled")
+    
+    Call logging("SBE37 Sampling Done")
   EndIf
   
 EndSub

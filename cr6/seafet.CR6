@@ -224,7 +224,6 @@ EndSub
 Sub SampleSeafet(Temperature As Float, Salinity As Float)
   If With_Seafet Then
     Call logging("Sampling Seafet")
-    WhereAmI = "Sample Seafet"
     
     Call StartSeafet
     
@@ -245,8 +244,7 @@ Sub SampleSeafet(Temperature As Float, Salinity As Float)
     UpdateSeafetTable = true
     
     TAGString &= PHTagString() 
-    ' Call WriteTagString
-    WhereAmI = "End Seafet"
+  
     Call logging("Seafet Done")
   EndIf
 EndSub

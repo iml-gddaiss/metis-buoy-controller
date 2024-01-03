@@ -126,7 +126,6 @@ EndSub
 '### Sampling ###
 Sub SampleGPS
     If With_GPS Then
-        WhereAmI = "Sample GPS_HVS"
         Call logging("Sampling GPS")
         
         Call StartGPS
@@ -138,6 +137,5 @@ Sub SampleGPS
         UpdateGPSTable = true
         
         Call logging("GPS Done")
-        WhereAmI = "EndGPS"
     EndIf
 EndSub

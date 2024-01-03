@@ -49,7 +49,7 @@ EndFunction
 Sub StartSUNA
   If With_SUNA Then
     Call logging("Starting SUNA")
-    WhereAmI = "Starting SUNA"
+
     SerialOpen(SerialSUNA,19200,3,20,250)
     SerialOut(SerialSUNA,"$","CMD?",1,400)
     SerialOut(SerialSUNA,"measure 1"&CHR(13),CHR(10),1,50)
@@ -73,7 +73,6 @@ Sub CollectSUNA ' FIXME is this correct ?
 
     Call TimerDelay_Sec(Suna_Timer, Suna_Delay_Sec)
     
-    WhereAmI = "Collect SUNA"  
     SerialInRecord(SerialSUNA,RawSUNALight,&H4C43,0,&H0D0A,NBR,101)
     SerialOut(SerialSUNA,"sleep"&CHR(13),0,1,0)
     SerialClose(SerialSUNA)
@@ -98,9 +97,7 @@ Sub CollectSUNA ' FIXME is this correct ?
     UpdateSUNATable = true
 
     TAGString &= SUNATagString()
-    ' Call WriteTagString
 
     Call logging("SUNA Done")
-    WhereAmI = "End SUNA"
   EndIf
 EndSub

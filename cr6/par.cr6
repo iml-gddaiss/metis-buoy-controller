@@ -29,7 +29,6 @@ EndSub
 Sub CollectPAR
   If With_PAR Then
     Call logging("Collecting PAR")
-    WhereAmI = "Collect PAR"
 
     PAR() = ""
     

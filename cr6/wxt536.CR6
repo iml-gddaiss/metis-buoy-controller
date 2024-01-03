@@ -80,7 +80,6 @@ Sub CollectWXT536
   
   If With_WXT536 Then
     Call logging("Collecting WXT536")
-    WhereAmI = "Collect WXT536"
 
     WXT536_Wind () = ""
     WXT536_Rain () = ""
@@ -136,6 +135,5 @@ Sub CollectWXT536
     UpdateWXT536Table = true
 
     Call logging("WXT536 Done")
-    WhereAmI = "Finish WXT536"
   EndIf
 EndSub

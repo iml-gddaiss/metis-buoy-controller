@@ -12,9 +12,9 @@
 '####################### Instruments Connections Diagrams ##############################
 '
 ' ======================================= Main =======================================
+'
 '                          +-------------------+
 '                          |        CR6        |
-'                          |                   |
 '                          | +---+             |
 '  +----------+ RS232 (12) | |   |             |
 '  + ADCP     |<-(U11 U12)-->|   |             |
@@ -105,21 +105,18 @@ PreserveVariables
 
 Dim SlowSequenceLocked As Boolean = false
 
-Public WhereAmI As String ' Debug Purposes ' Maybe merge WhereAmI and Loggings
-
 Public ScanTimeStamp(2) As String : Alias ScanTimeStamp = ScanDate, ScanTime
 
 Public TAGString As String * 2000 ' TODO fixme check if lengths is ok
 
-'########### CR6 Scripts Imports (Includes)
+' ########## CR6 Scripts Includes (Imports) ##########
+' ### Global
 Include "CPU:buoy_config.cr6"                   '#   Declare Buoy Config
 Include "CPU:ports.cr6"                         '#   Define all Serials and Channels
 Include "CPU:logging.cr6"                       '#   Logging module
 Include "CPU:timers.cr6"                        '#   Timer Values module
 
-
-
-'#######  Instruments
+' ###  Instruments Sampling
 Include "CPU:wmt700.cr6"
 Include "CPU:wxt536.cr6"
 Include "CPU:compass.cr6"
@@ -140,17 +137,16 @@ Include "CPU:tower.cr6"
 Include "CPU:water_detection.cr6"
 Include "CPU:well_pump.cr6"
 
-'####### Processing
+' ### Processing
 Include "CPU:weather.cr6"    ' Build Wind-Atms tables and Wind-Atms-PAR Tag Strings from WMT, WXT and PAR.
 
-'####### Slow Sequence | User Command Interface
+' ### Slow Sequences | User Command Interface
 Include "CPU:slow_sequences.cr6"
 Include "CPU:emails.cr6"
 Include "CPU:alerts.cr6"
 
-
-' FileRaw data from the instruments. Needs to be decalred after the Imports
-DataTable (FileRaw,1,-1)
+' ########## DataTable Defintions ##########
+DataTable (FileRaw,1,-1) ' This need to be declared after the instrument script imports
   DataInterval(0,0,Sec,10)
   Sample (1,RawWXT536_Wind,String)
   Sample (1,RawWXT536_Weather,String)
@@ -175,6 +171,7 @@ DataTable (FileTAGS,1,-1) ' fixme change name
   Sample (1, TAGString, String)
 EndTable
 
+' ########## Tag String Functions ##########
 Function InitTagString as String * 200 ' may be too much, but maybe not FIXME
   InitTagString = "[INIT]" & Buoy_Name & "," & ScanDate & "," & ScanTime & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
 EndFunction
@@ -183,6 +180,7 @@ Function EndTagString as String * 5
   EndTagString = "[END]"
 EndFunction
 
+' ########## Update Flags and Raw String Reset Routine ##########
 Sub ResetTablesUpdateFlag
   UpdateGPSTable = false
   UpdateCompassTable = false
@@ -220,7 +218,7 @@ Sub ResetRawStrings
   Call ResetPCO2RawStrings
 EndSub
 
-
+' ########## Date Time Handling SubRoutines ##########
 Sub GetScanDateTime
   SplitStr(ScanTimeStamp, Public.TimeStamp(4,0), " ", 2, 5) ' ScanTimeStamp = (ScanDate, ScanTime)
   Call logging("Scan TimeStamp: " & ScanDate &"T"& ScanTime)
@@ -231,9 +229,9 @@ Sub GPSTimeAjustment
     ClockSet(GPS_Date &" "& GPS_Time)
     Call logging("Update Buoy Clock with GPS")
   EndIf
-
 EndSub
 
+'>>>>>>>>>>>>>>>>>>>> MAIN PROGRAM BEGINS HERE <<<<<<<<<<<<<<<<<<<<
 
 BeginProg
   SetSetting("WIFIconfig",4) 'This is turning the Wifi Off
@@ -248,9 +246,7 @@ BeginProg
 
   Scan(Buoy_Interval_Min,Min,0,0)
 
-  WhereAmI = "Initializing instrument"
-
-  Call logging(">>>>>>>>>>>> Scan Start")
+  Call logging("Scan Start")
 
   SlowSequenceLocked = True ' Lockling Slow Sequence
 
@@ -316,11 +312,11 @@ BeginProg
 
   Call CollectADCP
 
-  Call PCO2Sampling
+  Call PCO2Routine
 
   Call logging("Scan Sampling Done.")
 
-  Call WinchMission
+  Call WinchRoutine
 
   Call logging("Closing serial ports.")
 
@@ -358,8 +354,7 @@ BeginProg
 
   TriggerSequence (1,0) ' Unlocking Slow Sequence
 
-  WhereAmI = "Scan end"
-  Call logging("Scan finished. <<<<<<<<<<<<" & CHR(13) & CHR(10)) ' double new line to separate the san in the loggings.
+  Call logging("Scan Done" & CHR(13) & CHR(10)) ' double new line to separate the san in the loggings.
 
   If SaveLog Then
     Call CopyTmpLogFile
@@ -388,5 +383,3 @@ BeginProg
       Delay(1,1,Sec)
     Loop
 EndProg
-
-

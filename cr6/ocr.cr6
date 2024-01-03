@@ -65,7 +65,6 @@ Sub SampleOCRs
   
   If With_OCR_R AND WellPump_IsPowered Then
     Call logging("Sampling OCR R")
-    WhereAmI = "Sample OCR R"
     
     SerialOpen(SerialOCRR,19200,3,0,800)
     Call TimerDelay_Sec(Pump_Timer, OCR_R_Delay_Sec)
@@ -83,13 +82,12 @@ Sub SampleOCRs
     SerialClose(SerialOCRR)
     
     UpdateHyperOCRTable = true
-    WhereAmI = "End OCRR"
+
     Call logging("OCR R Sampling Done")
   EndIf
   
   If With_OCR_I AND Tower_IsPowered Then
     Call logging("Sampling OCR I")
-    WhereAmI = "Sample OCR I"
 
     SerialOpen(SerialOCRI,19200,51,0,800)
     Call TimerDelay_Sec(Tower_Timer, OCR_I_Delay_Sec)
@@ -107,7 +105,7 @@ Sub SampleOCRs
     SerialClose(SerialOCRI)
     
     UpdateHyperOCRTable = true
-    WhereAmI = "End OCRI"
+
     Call logging("Sampling OCR I")
   EndIf
   

@@ -59,7 +59,7 @@ EndSub
 
 Sub WinchStartSequence
     If Start_Winch_Override Then
-        Call WinchMission
+        Call WinchRoutine
 
         Start_Winch_Override = false
     EndIf

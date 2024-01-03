@@ -1,7 +1,5 @@
 .TODO
 
-.. Remove WhereAmI and add a public log_message variable to take the place.
-
 .. Winch
 ... Set SuccesfulWinchMessage
 ... Set WinchMaxFileLength
@@ -21,7 +19,7 @@
 
 .. DataTables
 ... Add units to every table. 
-... Set proper type ? maybe
+... Set proper type ? maybe Probably not nescessary since we can remove the double quotes on collecting.
 
 . TO TESTS
 .. Winch on demande.

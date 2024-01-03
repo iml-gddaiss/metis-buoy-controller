@@ -60,7 +60,6 @@ Sub SamplePowerController
   
   If With_Power Then
     Call logging("Sampling Power Controller")
-    WhereAmI = "Sample Power Controller"
       
     SerialOpen(SerialPower,19200,51,600,200) 'No Flush FIXME 
       
