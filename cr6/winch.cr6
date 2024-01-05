@@ -1,5 +1,5 @@
 'Winch related code
-Const SuccesfulWinchMessage = "Winch was sampled succesfully" ' TODO CHANGE TO THE CORRECT VALUE
+Const SuccesfulWinchMessage = "Winch was sampled successfully" ' TODO CHANGE TO THE CORRECT VALUE
 Const WinchMaxFileLength = 100000 ' Maximum number of lines of a file (Safety)  TODO CHANGE TO THE CORRECT VALUE
 Public WinchString As String * 50
 ' The actual maximum size of the file in bytes would be WinchMaxFileLength * Length(WinchString) of the winch file in bytes.
@@ -33,14 +33,16 @@ Public Winch_Longitude As String
 ' ####################### Start Conditions ############################## 
 Sub WinchAirCheck(Air_Temp)
     If Air_Temp < Min_Air_Temp_for_Winch Then
-        WinchMessage = "The air temperature is too cold. "
+        WinchMessage = "The air temperature is too cold."
+        Call logging("Winch : " & WinchMessage)
         WinchMissingCondition += 1
     EndIf
 EndSub
 
 Sub WinchWaveCheck(Wave_H13, Wave_Period)
     If Wave_H13 > Max_Wave_H13_for_Winch Then
-        WinchMessage = "Average wave is too high. "
+        WinchMessage = "Average wave is too high."
+        Call logging("Winch : " & WinchMessage)
         WinchMissingCondition += 1
     EndIf
         
@@ -52,7 +54,8 @@ EndSub
 
 Sub WinchGPSCheck(SOG)
     If SOG > Max_Buoy_Speed_for_Winch Then
-        WinchMessage = "The buoy is moving too fast. "
+        WinchMessage = "The buoy is moving too fast."
+        Call logging("Winch : " & WinchMessage)
         WinchMissingCondition += 1
     EndIf
 EndSub
@@ -66,14 +69,15 @@ Sub WinchPowerCheck(VBatt1, VBatt2)
     EndIf
     
     If Winch_Voltage < Min_Voltage_for_Winch Then
-        WinchMessage = "The Winch voltage is too low. "
+        WinchMessage = "The Winch voltage is too low."
+        Call logging("Winch : " & WinchMessage)
         WinchMissingCondition += 1
     EndIf
 EndSub
 
 Sub WinchConditionsCheck
     WinchMissingCondition = 0
-    
+    Call logging("Winch Condition Checks")
     If With_WXT536 Then
       Call WinchAirCheck(Air_Temp)
     EndIf
@@ -122,43 +126,49 @@ Sub StartWinch
     SerialOut(SerialWinch,"p0"&CHR(13)&CHR(10),.,2,300)
 
     If Mid(WinchString,1,3) = "[S]" Then 'If [S] is received from CTD -> winch has started
-            SerialOut(SerialWinch,"X"&CHR(13)&CHR(10),"[W]1B>Operation Complete",2,200)
-            SerialOut(SerialWinch,"R"&CHR(13)&CHR(10),"[W]09>Top Switch Activated",3,1000)
-            SerialOut(SerialWinch,"K"&CHR(13)&CHR(10),"[W]13>Lenght Manually Cleared",2,200)
-            SerialOut(SerialWinch,"Y"&Depth_for_Winch&CHR(13)&CHR(10),CHR(13),1,0)
-            
-            WinchStatus = "Sampling"
-            
-            If Start_Winch_Override Then
-                'Updating GPS Values for Winch TimeStamp
-                Call StartGPS              
-                Call CollectGPS(true) ' single_sample = true
-                SerialClose(SerialGPS)
-            Else
-                ' The next winch is still scheduled isn't changed if Start_Winch_Override is True.
-                Winch_Last_Sample = Public.TimeStamp(1)
-            EndIf
+        Call logging("Winch Mission was Started")
+        SerialOut(SerialWinch,"X"&CHR(13)&CHR(10),"[W]1B>Operation Complete",2,200)
+        SerialOut(SerialWinch,"R"&CHR(13)&CHR(10),"[W]09>Top Switch Activated",3,1000)
+        SerialOut(SerialWinch,"K"&CHR(13)&CHR(10),"[W]13>Lenght Manually Cleared",2,200)
+        SerialOut(SerialWinch,"Y"&Depth_for_Winch&CHR(13)&CHR(10),CHR(13),1,0)
+        
+        WinchStatus = "Sampling"
+        
+        If Start_Winch_Override Then
+            'Updating GPS Values for Winch TimeStamp
+            Call logging("Sampling GPS for Winch Manual Override")
+            Call StartGPS              
+            Call CollectGPS(true) ' single_sample = true
+            SerialClose(SerialGPS)
+        Else
+            ' The next winch is still scheduled isn't changed if Start_Winch_Override is True.
+            Winch_Last_Sample = Public.TimeStamp(1)
+        EndIf
 
-            SplitStr(Winch_DateTime, Public.TimeStamp(4), " ", 2, 5)
-            Winch_Latitude = Latitude
-            Winch_Longitude = Longitude
+        SplitStr(Winch_DateTime, Public.TimeStamp(4), " ", 2, 5)
+        Winch_Latitude = Latitude
+        Winch_Longitude = Longitude
 
-            WinchMessage = "Winch Mission Started"
+        WinchMessage = "Winch Mission Started"
     Else 'No string from CTD
-            WinchMessage = "No String received from CTD"
+        WinchMessage = "No String received from CTD"
+        Call logging("WINCH FAILED. Winch Start Confirmation not received.")
     EndIf
+    
+    Call logging("Winch Status: " & WinchStatus)
 EndSub
 
 Sub WinchRoutine
     'Start a Winch Mission if its not Ongoing and possible.
     If With_Winch AND (SBE37_In_Saltwater OR Bypass_Salinity) Then
-        Call logging("Entering Winch Mission Sequence")
+        Call logging("Entering Winch Routine")
         
         If ((Winch_Last_Sample + Winch_Interval_Hr * 3600 - 60) > Public.TimeStamp(1)) AND NOT Start_Winch_Override Then
             ' Skipped if Start_Winch_Override is True.
             ' minus 60sec to not skip a scan planned at Winch_Interval hour (got 3599s and didn't sampled)
             WinchMessage = "Interval not reach"
             TAGString &= "[WNCH]" + WinchMessage
+            Call logging("Winch: " & WinchMessage)
             ExitSub
         EndIf
         
