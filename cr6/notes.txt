@@ -1,6 +1,12 @@
-.TODO
+.New Features
+.. Winch Max File Length (number of line and bytes limit).
+    Prevent the Winch routine to loop forever.
+     -> If the winch bugs and sends a constant none null character.
+... Alarm was added in this case. TimedOut Error. 
 
-.. Winch
+
+
+.TODO
 ... Set SuccesfulWinchMessage
 ... Set WinchMaxFileLength
 
@@ -22,8 +28,11 @@
 ... Set proper type ? maybe Probably not nescessary since we can remove the double quotes on collecting.
 
 . TO TESTS
-.. Winch on demande.
-... GPS: test new GPS optional single_sample for Winch.
+.. Test with real GPS if the first Message received is cut. It was with he emmulator.
+.. Winch seems to work as expected test again.
+... Test Alarms
+.. Winch on demande. (yes) Alarms
+... GPS: test new GPS optional single_sample for Winch. (maybe) TODO
 .. Test PCO2 New Unpacking (on receive)
 .. Test if all TagString are long enough
 .. Suna Unpacking

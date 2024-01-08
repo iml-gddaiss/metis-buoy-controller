@@ -59,6 +59,7 @@ EndSub
 
 Sub WinchStartSequence
     If Start_Winch_Override Then
+        Call logging("Winch Manual Override")
         Call WinchRoutine
 
         Start_Winch_Override = false

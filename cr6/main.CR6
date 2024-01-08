@@ -6,10 +6,47 @@
 '--------------------------------------------------------------------------------------
 '--------------------------------- Main Program ---------------------------------------
 '--------------------------------------------------------------------------------------
-
-' TODO
-
-'####################### Instruments Connections Diagrams ##############################
+'
+' TODO Description of the Program
+' + Before Scan
+' + Scan
+' + SlowScan
+'
+'################################# Alerts & Emails ####################################
+' Alerts (Alarms and Warnings) are located in the `alerts.CR6 file.
+' Emails are handled in the `emails.CR6` file.
+' Alerts are defined as Flag (Boolean) public variables.
+'
+' All emails can be disable by setting the `Disable_Email` Flag to True.
+'
+' + `Buoy_Adrift_Alert`: 
+'   In the `buoy_config.cr6` file set the following Constant:
+'     `Latitude_0`: Mooring Anchor Latitude in Degree-Decimal North 
+'     `Longitude_0`:Mooring Anchor Longitude in Degree-Decimal East
+'     `Allowed_Position_Deviation_m`: From Latitude_0,Longitude_0 in meters
+'   Once the alert is set, the buoy is considered adrift until it's resetted to false.
+'   Emails will continue to be sent even if the buoy return within the acceptable range.
+'   - `Buoy_Adrift_Alert_Snoozed`:
+'     Snoozing will only stop the Emails, the buoy is still considere adrift.
+'
+' + `Battery_Low_Warning`
+'   TODO
+'
+' + `Water_Infiltration_Warning`
+'   TODO
+'
+' + `Winch_Failed_Warning`
+'   TODO
+'
+' + `Winch_Download_TimedOut_Warning`
+'   TODO
+'
+'############################## Instruments List ######################################
+'
+' ADCP : Teledyne WorkHorse
+' ... TODO
+'
+'######################## Instruments Connections Diagrams ############################
 '
 ' ======================================= Main =======================================
 '
@@ -17,13 +54,13 @@
 '                          |        CR6        |
 '                          | +---+             |
 '  +----------+ RS232 (12) | |   |             |
-'  + ADCP     |<-(U11 U12)-->|   |             |
+'  + ADCP     |<-(U03 U04)-->|   |             |
 '  +----------+            | |   |             |
 '  +----------+ RS232 (13) | |   |       +---+ |               +---+---+---+---+
 '  | Winch    |<-(U05 U06)-->|   |       |   |<----(C1 C2 C3)->| 0 | 4 | 8 | C |
 '  +----------+            | |   |       |   | |               +---+---+---+---+
 '  +----------+ RS232 (16) | |   |       |   | |               +-------------+
-'  | GPS      |<-(U03 U04)-->|   |       |   |>----(SW12-2)--->| Tower Power |
+'  | GPS      |<-(U11 U12)-->|   |       |   |>----(SW12-2)--->| Tower Power |
 '  +----------+            | |   |       |   | |               +-------------+
 '  +----------+            | |   |       |   | |               +-------------+
 '  | WD       |<-(U01)------>|   |       |   |>----(SW12-1)--->| Pump  Power |

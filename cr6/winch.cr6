@@ -6,6 +6,8 @@ Public WinchString As String * 50
 ' At the moment the max file size is 500 Kbs (1 000 000 * 50).
 
 
+Public Winch_Conditions_ByPass As Boolean = false
+
 Const Min_Air_Temp_for_Winch = 1
 Const Max_Wave_H13_for_Winch = 2
 Const Min_Wave_Period_for_Winch = 6
@@ -16,9 +18,9 @@ Const Min_Voltage_for_Winch = 12.2
 Public OnWhichBattery
 Public Winch_Voltage As Float = ""
 
-Public WinchStatus as String * 10 'Standby / Sampling / Completed
+Public WinchStatus As String * 10 = "Standby" 'Standby / Sampling / Completed
 Public WinchMessage As String * 50
-Public WinchMissingCondition As Long = 0
+Public WinchMissingConditions As Long = 0
 
 
 Public WinchFileName As String * 50
@@ -35,7 +37,7 @@ Sub WinchAirCheck(Air_Temp)
     If Air_Temp < Min_Air_Temp_for_Winch Then
         WinchMessage = "The air temperature is too cold."
         Call logging("Winch : " & WinchMessage)
-        WinchMissingCondition += 1
+        WinchMissingConditions += 1
     EndIf
 EndSub
 
@@ -43,12 +45,12 @@ Sub WinchWaveCheck(Wave_H13, Wave_Period)
     If Wave_H13 > Max_Wave_H13_for_Winch Then
         WinchMessage = "Average wave is too high."
         Call logging("Winch : " & WinchMessage)
-        WinchMissingCondition += 1
+        WinchMissingConditions += 1
     EndIf
         
     If Wave_H13 > 1 AND Wave_Period < Min_Wave_Period_for_Winch  AND Wave_Period <> 0 Then 
         WinchMessage = "Wave period is too short. "
-        WinchMissingCondition += 1
+        WinchMissingConditions += 1
     EndIf
 EndSub
 
@@ -56,7 +58,7 @@ Sub WinchGPSCheck(SOG)
     If SOG > Max_Buoy_Speed_for_Winch Then
         WinchMessage = "The buoy is moving too fast."
         Call logging("Winch : " & WinchMessage)
-        WinchMissingCondition += 1
+        WinchMissingConditions += 1
     EndIf
 EndSub
 
@@ -71,12 +73,18 @@ Sub WinchPowerCheck(VBatt1, VBatt2)
     If Winch_Voltage < Min_Voltage_for_Winch Then
         WinchMessage = "The Winch voltage is too low."
         Call logging("Winch : " & WinchMessage)
-        WinchMissingCondition += 1
+        WinchMissingConditions += 1
     EndIf
 EndSub
 
 Sub WinchConditionsCheck
-    WinchMissingCondition = 0
+    WinchMissingConditions = 0
+    
+    If NOT Winch_Conditions_ByPass Then
+        Call logging("Winch Conditions Check ByPassed")
+        ExitSub
+    EndIf
+
     Call logging("Winch Condition Checks")
     If With_WXT536 Then
       Call WinchAirCheck(Air_Temp)
@@ -112,6 +120,7 @@ Sub CheckWinchStatus
     Else
         WinchMessage = "Winch in Progress"
     EndIf
+    Call logging("Winch Status: " & Winch Status)
 EndSub
 
 Sub StartWinch
@@ -178,10 +187,10 @@ Sub WinchRoutine
 
             Call WinchConditionsCheck
 
-            If WinchMissingCondition <> 0 Then
+            If WinchMissingConditions <> 0 Then
                 Call StartWinch
             Else
-                Call logging("Winch Number of Missing Conditions: " & WinchMissingCondition)
+                Call logging("Winch Number of Missing Conditions: " & WinchMissingConditions)
             EndIf  
         EndIf
         
@@ -189,6 +198,8 @@ Sub WinchRoutine
             ' Skipped if Start_Winch_Override is True.
             TAGString &= "[WNCH]" + WinchMessage
         EndIf
+    Else
+        Call logging("Winch Routine Skipped to too low salinity.")
     EndIf
 EndSub
 

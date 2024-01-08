@@ -5,7 +5,7 @@ ConstTable (Buoy_Config,0)
     
     Const Latitude_0 As Float =   48.64050 ' (IML Pos) Degree-Decimal North 
     Const Longitude_0 As Float = -68.15576 ' (IML Pos) Degree-Decimal East
-    Const Allowed_Position_Deviation As Float = 500 ' Meters. Distance from Latitude_0,Longitude_0
+    Const Allowed_Position_Deviation_m As Float = 500 ' Meters. Distance from Latitude_0,Longitude_0
     
     Const Buoy_Configuration = "As Follow" 
     ' ### Sampling Interval ####
