@@ -120,7 +120,7 @@ Sub CheckWinchStatus
     Else
         WinchMessage = "Winch in Progress"
     EndIf
-    Call logging("Winch Status: " & Winch Status)
+    Call logging("Winch Status: " & WinchStatus)
 EndSub
 
 Sub StartWinch
