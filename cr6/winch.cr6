@@ -80,12 +80,13 @@ EndSub
 Sub WinchConditionsCheck
     WinchMissingConditions = 0
     
-    If NOT Winch_Conditions_ByPass Then
+    If Winch_Conditions_ByPass Then
         Call logging("Winch Conditions Check ByPassed")
         ExitSub
     EndIf
 
     Call logging("Winch Condition Checks")
+    
     If With_WXT536 Then
       Call WinchAirCheck(Air_Temp)
     EndIf
@@ -185,7 +186,7 @@ Sub WinchRoutine
 
                 Call WinchConditionsCheck
 
-                If WinchMissingConditions <> 0 Then
+                If WinchMissingConditions = 0 Then
                     Call StartWinch
                 Else
                     Call logging("Winch Number of Missing Conditions: " & WinchMissingConditions)

@@ -13,6 +13,7 @@
 ' + SlowScan
 '
 '################################# Alerts & Emails ####################################
+'             >> Change the Email and Phone number in `emails.CR6` <<
 ' Alerts (Alarms and Warnings) are located in the `alerts.CR6 file.
 ' Emails are handled in the `emails.CR6` file.
 ' Alerts are defined as Flag (Boolean) public variables.

@@ -10,6 +10,9 @@
 .. Buoy Config
 ... Set water_detection threshold value (If value > threhold) -> Alert (right ?)
 ... Set Low_Battery_Threshold
+.. Emails
+... Change email and phone number
+
 
 ..Winch
 ... Set SuccesfulWinchMessage
@@ -36,11 +39,7 @@
 ... Set proper type ? maybe Probably not nescessary since we can remove the double quotes on collecting.
 
 . TO TESTS
-.. Test with real GPS if the first Message received is cut. It was with he emmulator.
-.. Winch seems to work as expected test again.
 ... Test Alarms
-.. Winch on demande. (yes) Alarms
-... GPS: test new GPS optional single_sample for Winch. (maybe) TODO
 .. Test PCO2 New Unpacking (on receive)
 .. Test if all TagString are long enough
 .. Suna Unpacking
