@@ -7,8 +7,16 @@
 
 
 .TODO
+.. Buoy Config
+... Set water_detection threshold value (If value > threhold) -> Alert (right ?)
+... Set Low_Battery_Threshold
+
+..Winch
 ... Set SuccesfulWinchMessage
 ... Set WinchMaxFileLength
+
+
+... Reset Variables to #.# or something ??
 
 ... Review all Failed_Sampling_Error (especially WMT700 AN -> NAN)
 .... Should WXT536 have 3 sampling alerts (Wind, Weather, Rain) 

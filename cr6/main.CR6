@@ -17,7 +17,7 @@
 ' Emails are handled in the `emails.CR6` file.
 ' Alerts are defined as Flag (Boolean) public variables.
 '
-' All emails can be disable by setting the `Disable_Email` Flag to True.
+' All emails can be disabled by setting the `Disable_Email` Flag to True.
 '
 ' + `Buoy_Adrift_Alert`: 
 '   In the `buoy_config.cr6` file set the following Constant:
@@ -389,7 +389,7 @@ BeginProg
 
   Call CollectWinch
 
-  TriggerSequence (1,0) ' Unlocking Slow Sequence
+  TriggerSequence(1,0) ' Unlocking Slow Sequence
 
   Call logging("Scan Done" & CHR(13) & CHR(10)) ' double new line to separate the san in the loggings.
 

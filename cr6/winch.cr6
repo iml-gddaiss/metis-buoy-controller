@@ -145,18 +145,15 @@ Sub StartWinch
         
         If Start_Winch_Override Then
             'Updating GPS Values for Winch TimeStamp
-            Call logging("Sampling GPS for Winch Manual Override")
-            Call StartGPS              
-            Call CollectGPS(true) ' single_sample = true
-            SerialClose(SerialGPS)
+            Call GetGpsPosition(Winch_Latitude, Winch_Longitude)
         Else
             ' The next winch is still scheduled isn't changed if Start_Winch_Override is True.
             Winch_Last_Sample = Public.TimeStamp(1)
+            Winch_Latitude = Latitude
+            Winch_Longitude = Longitude
         EndIf
 
         SplitStr(Winch_DateTime, Public.TimeStamp(4), " ", 2, 5)
-        Winch_Latitude = Latitude
-        Winch_Longitude = Longitude
 
         WinchMessage = "Winch Mission Started"
     Else 'No string from CTD
@@ -169,37 +166,39 @@ EndSub
 
 Sub WinchRoutine
     'Start a Winch Mission if its not Ongoing and possible.
-    If With_Winch AND (SBE37_In_Saltwater OR Bypass_Salinity) Then
-        Call logging("Entering Winch Routine")
-        
-        If ((Winch_Last_Sample + Winch_Interval_Hr * 3600 - 60) > Public.TimeStamp(1)) AND NOT Start_Winch_Override Then
-            ' Skipped if Start_Winch_Override is True.
-            ' minus 60sec to not skip a scan planned at Winch_Interval hour (got 3599s and didn't sampled)
-            WinchMessage = "Interval not reach"
-            TAGString &= "[WNCH]" + WinchMessage
-            Call logging("Winch: " & WinchMessage)
-            ExitSub
-        EndIf
-        
-        Call CheckWinchStatus
+    If With_Winch 
+        If (SBE37_In_Saltwater OR Bypass_Salinity) Then
+            Call logging("Entering Winch Routine")
+            
+            If ((Winch_Last_Sample + Winch_Interval_Hr * 3600 - 60) > Public.TimeStamp(1)) AND NOT Start_Winch_Override Then
+                ' Skipped if Start_Winch_Override is True.
+                ' minus 60sec to not skip a scan planned at Winch_Interval hour (got 3599s and didn't sampled)
+                WinchMessage = "Interval not reach"
+                TAGString &= "[WNCH]" + WinchMessage
+                Call logging("Winch: " & WinchMessage)
+                ExitSub
+            EndIf
+            
+            Call CheckWinchStatus
 
-        If WinchStatus = "Standby" Then
+            If WinchStatus = "Standby" Then
 
-            Call WinchConditionsCheck
+                Call WinchConditionsCheck
 
-            If WinchMissingConditions <> 0 Then
-                Call StartWinch
-            Else
-                Call logging("Winch Number of Missing Conditions: " & WinchMissingConditions)
-            EndIf  
+                If WinchMissingConditions <> 0 Then
+                    Call StartWinch
+                Else
+                    Call logging("Winch Number of Missing Conditions: " & WinchMissingConditions)
+                EndIf  
+            EndIf
+            
+            If NOT Start_Winch_Override Then
+                ' Skipped if Start_Winch_Override is True.
+                TAGString &= "[WNCH]" + WinchMessage
+            EndIf
+        Else
+            Call logging("Winch Routine Skipped due to low salinity.")
         EndIf
-        
-        If NOT Start_Winch_Override Then
-            ' Skipped if Start_Winch_Override is True.
-            TAGString &= "[WNCH]" + WinchMessage
-        EndIf
-    Else
-        Call logging("Winch Routine Skipped to too low salinity.")
     EndIf
 EndSub
 

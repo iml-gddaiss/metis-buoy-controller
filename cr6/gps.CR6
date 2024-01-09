@@ -41,8 +41,8 @@ Sub StartGPS
 EndSub
 
 
-Sub CollectGPS(Optional single_sample As Boolean = false)
-    Dim X, number_of_sample
+Sub CollectGPS
+    Dim X
     Dim UV(2) As Float = {0, 0}: Alias UV = U, V
 
     UV() = 0
@@ -56,20 +56,13 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
 
     Latitude_Decimal = ""
     Longitude_Decimal = ""
-
-
-    If single_sample Then
-        number_of_sample = 1
-    Else
-        number_of_sample = GPS_Sample_Size
-    EndIf
     
     SerialFlush(SerialGPS) ' To clear buffer (continuous feed)
-    SerialIn(RawGPS,SerialGPS,150,10,80) '(to make sure it didn't cut mid transmission.) FIXME DO IT TWICE ? EMMULATOR FIRST MSG WAS CUT
+    SerialIn(RawGPS,SerialGPS,150,10,80) '(to make sure it didn't cut mid transmission.)
 
     ' Averaging SOG and COG over time. 
-    For X = 1 To number_of_sample Step 1 ' GPS should be setup to 1 sec interval to get GPS_Sample_Size to correspond to seconds.
-        SerialIn(RawGPS,SerialGPS,150,13,80)
+    For X = 1 To GPS_Sample_Size Step 1 ' GPS should be setup to 1 sec interval to get GPS_Sample_Size to correspond to seconds.
+        SerialIn(RawGPS,SerialGPS,150,10,80)
         Call logging("Last Raw GPS (" &X& "): " & RawGPS)
         SplitStr(GPS_HVS,RawGPS,",",13,5)
         
@@ -118,9 +111,8 @@ Sub CollectGPS(Optional single_sample As Boolean = false)
     Else
         Call Failed_Sampling_Email("GPS") 
     EndIf
-
-    
 EndSub
+
 
 
 '### Sampling ###
@@ -137,5 +129,32 @@ Sub SampleGPS
         UpdateGPSTable = true
         
         Call logging("GPS Done")
+    EndIf
+EndSub
+
+
+
+Sub GetGPSPosition(_latitude_ As String, _longitude_ As String,)
+    Dim _rawgps_ as String * 100
+    Dim _GPS_HVS_(13) As String
+
+    _latitude_ = ""
+    _longitude_ = ""
+
+    If With_GPS
+        Call logging("Collecting GPS for Winch Manual Override")
+        
+        SerialFlush(SerialGPS) ' To clear buffer (continuous feed)
+        SerialIn(_rawgps_,SerialGPS,150,10,80) '(to make sure it didn't cut mid transmission.)
+        SerialIn(_rawgps_,SerialGPS,150,10,80)
+
+        SerialClose(SerialGPS)
+
+        SplitStr(_GPS_HVS_,_rawgps_,",",13,5)
+
+        _latitude_ = Mid(_GPS_HVS_(4)1,2) &"°"& Mid(_GPS_HVS_(4),3,6) &"'"& _GPS_HVS_(5)
+        _longitude_ = Mid(_GPS_HVS_(5),1,3) &"°"& Mid(_GPS_HVS_(5),4,6) &"'"& _GPS_HVS_(6)
+    Else
+        Call logging("Could not get position, With_GPS is False.")
     EndIf
 EndSub
