@@ -417,11 +417,14 @@ BeginProg
 
       Call TowerSwitchSequence
       Call WellSwitchSequence
+      
       Call WinchStartSequence
+      
       Call ADCPBreakSequence
       Call ADCPDeploySequence
       Call ADCPShutdownSequence
 
+      Call Reset_Instrument_Warnings
       Call EmailTestSequence
       Delay(1,1,Sec)
     Loop

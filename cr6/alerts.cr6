@@ -23,8 +23,8 @@ Public Winch_Download_TimedOut_Warning As Boolean = False
 Dim SaveLog as Boolean = False ' Save log on Failed instrument sampling.
 
 Dim Instrument_Failed_Warnings(15) As Boolean = False
-Alias Instrument_Failed_Warnings = ADCP_Warning, Compass_Warning, Triplet_Warning, GPS_Warning, OCR_R_Warning,_
-                            OCR_I_Warning, PAR_Warning,PCO2_Warning, Power_Controller_Warning, SBE37_Warning,_
+Alias Instrument_Failed_Warnings = ADCP_Warning, Compass_Warning, Triplet_Warning, GPS_Warning, OCR_R_Warning, _
+                            OCR_I_Warning, PAR_Warning,PCO2_Warning, Power_Controller_Warning, SBE37_Warning, _
                             Seafet_Warning, Suna_Warning, Wave_Warning, WMT700_Warning, WXT536_Warning
 
 Function ComputePositionDeviation As Float
