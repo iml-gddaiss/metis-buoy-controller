@@ -109,7 +109,7 @@ Sub CollectGPS
             Magnetic_Variation  *= -1
         EndIf
     Else
-        Call Failed_Sampling_Email("GPS") 
+        Call Failed_Sampling_Warning("GPS") 
     EndIf
 EndSub
 

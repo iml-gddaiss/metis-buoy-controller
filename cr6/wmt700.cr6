@@ -56,7 +56,7 @@ Sub CollectWMT700
     EndIf
 
     If RawWMT700 = "" Then
-      Call Failed_Sampling_Email("WMT700")
+      Call Failed_Sampling_Warning("WMT700")
     Else
       SplitStr(WMT700(),RawWMT700,",",6,10)
     EndIf

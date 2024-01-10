@@ -51,7 +51,7 @@ Sub CollectPowerController
   Next X
   
   If RawPower = "" Then
-    Call Failed_Sampling_Email("Power Controller")
+    Call Failed_Sampling_Warning("Power Controller")
   EndIf
 EndSub
 

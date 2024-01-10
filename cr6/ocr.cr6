@@ -74,7 +74,7 @@ Sub SampleOCRs
 
     If OCRR_String = "" Then
       Call logging("OCR R string was NOT received.")
-      Call Failed_Sampling_Email("OCR-R")
+      Call Failed_Sampling_Warning("OCR-R")
     Else 
       Call logging("OCR R string was received.")
     EndIf
@@ -97,7 +97,7 @@ Sub SampleOCRs
 
     If OCRI_String = "" Then
       Call logging("OCR I string was NOT received.")
-      Call Failed_Sampling_Email("OCR-I")
+      Call Failed_Sampling_Warning("OCR-I")
     Else 
       Call logging("OCR I string was received.")
     EndIf

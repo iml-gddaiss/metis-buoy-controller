@@ -60,7 +60,7 @@ Sub CollectADCP
     SplitStr(ADCPBin1,ADCP(5),",",11,5)
 
     If ADCP(1) = "" Then ' FIXME test and check if its the correct way to check
-      Call Failed_Sampling_Email("ADCP")
+      Call Failed_Sampling_Warning("ADCP")
     EndIf
 
     SerialFlush(SerialADCP)

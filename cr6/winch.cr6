@@ -125,6 +125,11 @@ Sub CheckWinchStatus
 EndSub
 
 Sub StartWinch
+    If Buoy_Adrift_Alert Then
+        Call logging("Buoy Adrift Alert is ON. Winch Disabled.")
+        ExitSub
+    EndIf
+    
     Call logging("Startig Winch Mission")    
 
     SerialOpen(SerialWinch,19200,3,20,100)

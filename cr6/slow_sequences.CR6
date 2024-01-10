@@ -10,6 +10,8 @@ Public Shutdown_ADCP_Switch As Boolean = false
 
 Public Send_test_email As Boolean = false
 
+Public Reset_Instrument_Warnings_Switch As Boolean = False
+
 Sub TowerSwitchSequence
     If Manual_Tower_Switch AND NOT Tower_IsPowered Then
         SW12(SW12_1,1)
@@ -66,6 +68,14 @@ Sub WinchStartSequence
     EndIf
 EndSub
 
+Sub Reset_Instrument_Warnings 'TODO TEST ME
+    If Reset_Instrument_Warnings_Switch Then
+        Call logging("Instrument Warnings Reset")
+        Instrument_Failed_Warnings = False ' array of all the flags
+        Reset_Instrument_Warnings_Switch = False
+    EndIf
+EndSub
+
 
 Sub EmailTestSequence
     If Send_test_email Then
@@ -75,5 +85,4 @@ Sub EmailTestSequence
         Call SendEmail
         Send_test_email = false
     EndIf
-
 EndSub

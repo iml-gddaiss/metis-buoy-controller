@@ -42,6 +42,11 @@
 ' + `Winch_Download_TimedOut_Warning`
 '   TODO
 '
+' Instruments have no public warning variable. If an instrument fails to sample, a warning email 
+' is only sent the first time it fails. Each instrument as its own internal warning flags.
+' Set the variable `Reset_Instrument_Warnings_Switch` to true to reset all the instrument warning 
+' flags.
+'
 '############################## Instruments List ######################################
 '
 ' ADCP : Teledyne WorkHorse

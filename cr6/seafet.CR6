@@ -73,7 +73,7 @@ Sub CollectSeafet
   Next X
 
   If RawSeafet = "" Then
-    Call Failed_Sampling_Email("Seafet")
+    Call Failed_Sampling_Warning("Seafet")
   EndIf
 
   If Error_Flag = "0000" Then

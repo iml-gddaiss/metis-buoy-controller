@@ -39,7 +39,7 @@ Sub CollectPAR
     Call logging("RawPAR: `" & RawPAR & "`")
 
     If RawPAR = "" Then
-      Call Failed_Sampling_Email("PAR")
+      Call Failed_Sampling_Warning("PAR")
     EndIf
 
     UpdatePARTable = true

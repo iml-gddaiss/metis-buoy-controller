@@ -12,7 +12,8 @@
 ... Set Low_Battery_Threshold
 .. Emails
 ... Change email and phone number
-
+.. Alerts
+... Test new instrument warnings and Swicht and flags
 
 ..Winch
 ... Set SuccesfulWinchMessage
