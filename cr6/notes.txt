@@ -4,12 +4,15 @@
      -> If the winch bugs and sends a constant none null character.
 ... Alarm was added in this case. TimedOut Error. 
 
-
+.FIXME
+.. Raw Triplet RawString is NAN even if nothing is plugged in.
+.. INsturment may still be missing raw logging
 
 .TODO
 .. Buoy Config
 ... Set water_detection threshold value (If value > threhold) -> Alert (right ?)
 ... Set Low_Battery_Threshold
+... Set Low Salinity Threshold
 .. Emails
 ... Change email and phone number
 .. Alerts
@@ -40,7 +43,12 @@
 ... Set proper type ? maybe Probably not nescessary since we can remove the double quotes on collecting.
 
 . TO TESTS
+.. TEST SUNA DARK SERIALIN 10 instead of CHR(10)
 ... Test Alarms
 .. Test PCO2 New Unpacking (on receive)
 .. Test if all TagString are long enough
 .. Suna Unpacking
+
+.. PCO2 INTERVAL
+.. WINCH INTERVAL
+

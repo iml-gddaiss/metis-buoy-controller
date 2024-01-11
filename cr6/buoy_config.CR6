@@ -1,5 +1,3 @@
-StationName = "PMZA-RIKI" ' Stores Value in Status.StationName(1,1) FIXME
-
 ConstTable (Buoy_Config,0)
     Const Buoy_Name = "PMZA-RIKI"
     
@@ -8,6 +6,7 @@ ConstTable (Buoy_Config,0)
     Const Allowed_Position_Deviation_m As Float = 500 ' Meters. Distance from Latitude_0,Longitude_0
     
     Const Buoy_Configuration = "As Follow" 
+    
     ' ### Sampling Interval ####
     Const Buoy_Interval_Min = 2
     Const PCO2_Interval_Hr = 12
@@ -16,13 +15,16 @@ ConstTable (Buoy_Config,0)
     ' ### Instruments Config ### 
     Const Depth_for_Winch = 210
 
+    ' ### Threshold ###
+    Const Required_Salinity As Long = 10 ' (PSU) Threshold for the Salinity Check
+
     ' ### Control Switches ###
     Const Bypass_Salinity As Boolean = true
     Const Disable_Well_Pump As Boolean = false
     Const Seafet_Auto_Calculation As Boolean = true
 
     Const Enable_Serial_Logging As Boolean = true
-    
+
     ' ### Instruments Enable/Disable Switches ###
     Const Instrument_Installed = "As Follow" 
     Const With_GPS As Boolean = true
@@ -32,19 +34,18 @@ ConstTable (Buoy_Config,0)
     Const With_PAR As Boolean = false
     Const With_OCR_I As Boolean = false
 
-    Const With_SBE37 As Boolean = false
+    Const With_SBE37 As Boolean = true
     Const With_Seafet As Boolean = false
-    Const With_Triplet As Boolean = false
+    Const With_Triplet As Boolean = true
     Const With_SUNA As Boolean = false
     Const With_PCO2 As Boolean = false
     Const With_OCR_R As Boolean = false
 
-    Const With_Wave As Boolean = false
+    Const With_Wave As Boolean = true
     Const With_ADCP As Boolean = false
-    Const With_Winch As Boolean = true
+    Const With_Winch As Boolean = false
     Const With_Water_Detection_Main As Boolean = true
     Const With_Power As Boolean = true
-    
 EndConstTable
 
 Const With_Tower_485 = With_WXT536 OR With_WMT700 OR With_Compass       
@@ -79,10 +80,9 @@ Const Triplet_Delay_Sec As Long = 20    '(Triplet_Timer): Triplet takes at least
 Const OCR_R_Delay_Sec As Long = 8       '(Pump_Timer)
 Const OCR_I_Delay_Sec As Long = 8       '(Tower_Timer)   
 
-' ### Alerts Parameters ###
+' ### Thresholds | Alerts ###
 Const Battery_Low_Voltage_Threshold As Float = 10 'volt ? FIXME  (value < threshold)
-Const Water_Detection_Main_Threshold As Float = 0 ' TODO FIXME   (value > threshold)
+Const Water_Detection_Main_Threshold As Float = 3000 ' TODO FIXME   (value > threshold)
 
-' ### Misc Parameters ###
-Const Required_Salinity As Long = 10 ' (PSU) Threshold for the Salinity Check
+
 ' #####################################################################

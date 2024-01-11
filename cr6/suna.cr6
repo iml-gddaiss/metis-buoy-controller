@@ -46,37 +46,21 @@ Function SUNATagString As String * 200
 EndFunction
 
 '### Sampling ###
-Sub StartSUNA
+Sub StartSUNA  
   If With_SUNA Then
+    SUNALight() = ""
+    SUNADark() = ""
+    
     Call logging("Starting SUNA")
 
     SerialOpen(SerialSUNA,19200,3,20,250)
     SerialOut(SerialSUNA,"$","CMD?",1,400)
     SerialOut(SerialSUNA,"measure 1"&CHR(13),CHR(10),1,50)
-    SerialIn(RawSUNADark,SerialSUNA,150,CHR(13),80) 'The Dark sample is nearly auto, then at least 12sec for the Light one
-      
-    Timer(Suna_Timer,Sec,2) 'Timer #5 Start for at least 12 sec
-    Call logging("Starting Suna Timer")
-  EndIf
-EndSub
-
-
-Sub CollectSUNA ' FIXME is this correct ?
-  ' &4C43 -> LC &0D0A -> CR LF
-  Dim NBR ' Number of Bytes Returned
-  If With_SUNA Then
-
-    Call logging("Collecting SUNA")
-
-    SUNADark() = ""
-    SUNALight() = ""
-
-    Call TimerDelay_Sec(Suna_Timer, Suna_Delay_Sec)
     
-    SerialInRecord(SerialSUNA,RawSUNALight,&H4C43,0,&H0D0A,NBR,101)
-    SerialOut(SerialSUNA,"sleep"&CHR(13),0,1,0)
-    SerialClose(SerialSUNA)
-    
+    Call logging("Collecting SUNAaDark")
+    SerialIn(RawSUNADark,SerialSUNA,150,13,80) 'The Dark sample is nearly auto, then at least 12sec for the Light one
+    Call logging("Raw SUNADark: " & RawSUNADark)
+
     If RawSUNADark = "" Then
       RawSUNADark = "NAN"
     EndIf
@@ -86,6 +70,27 @@ Sub CollectSUNA ' FIXME is this correct ?
     Else
       Call Failed_Sampling_Warning("Suna")
     EndIf
+      
+    Timer(Suna_Timer,Sec,2) 'Timer #5 Start for at least 12 sec
+    Call logging("Starting SUNALight Timer")
+  EndIf
+EndSub
+
+
+Sub CollectSUNA ' FIXME is this correct ?
+  ' &4C43 -> LC &0D0A -> CR LF
+  ' Note: SUNADAark is Collected on start.
+  Dim NBR ' Number of Bytes Returned
+  If With_SUNA Then
+    Call logging("Collecting SUNALight")
+
+    Call TimerDelay_Sec(Suna_Timer, Suna_Delay_Sec)
+    
+    SerialInRecord(SerialSUNA,RawSUNALight,&H4C43,0,&H0D0A,NBR,101)
+    SerialOut(SerialSUNA,"sleep"&CHR(13),0,1,0)
+    SerialClose(SerialSUNA) 
+    
+    Call logging("Raw SunaLight: " & RawSUNALight)
     
     If RawSUNALight <> "NAN" Then
       RawSUNALight = "SATSLC"&RawSUNALight

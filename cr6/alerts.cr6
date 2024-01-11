@@ -83,7 +83,7 @@ Sub Set_Winch_Download_TimedOut_Warning
 ' Failed Winch Warning will only send one email when set. The alarm need
 ' be turned off by the user and set again for a new email to be sent.
     If Not Winch_Download_TimedOut_Warning Then
-        Call Email_Init(0, "Winch Download Timed Out")
+        Call Email_Init(0, "Winch TimedOut")
         Call SendEmail
 
         Winch_Download_TimedOut_Warning = True
@@ -128,66 +128,71 @@ Sub Failed_Sampling_Warning(_instrument_ As String * 50)
     ' Notes
     ' -----
     ' Set the `Reset_Instrument_Warnings_Switch` flag to true to reset the instrument_warning
-    Select Case _instrument_
-        Case "ADCP" AND NOT ADCP_Warning
-            Call Email_Init(0, _instrument_ & " sampling failed."):Call SendEmail
-            ADCP_Warning = True
-            SaveLog = True
-        Case "Compass" AND NOT Compass_Warning
-            Call Email_Init(0, _instrument_ & " sampling failed."):Call SendEmail
-            Compass_Warning = True
-            SaveLog = True
-        Case "Triplet" AND NOT Triplet_Warning
-            Call Email_Init(0, _instrument_ & " sampling failed."):Call SendEmail
-            Triplet_Warning = True
-            SaveLog = True
-        Case "GPS" AND NOT GPS_Warning
-            Call Email_Init(0, _instrument_ & " sampling failed."):Call SendEmail
-            GPS_Warning = True
-            SaveLog = True
-        Case "OCR-R" AND NOT OCR_R_Warning
-            Call Email_Init(0, _instrument_ & " sampling failed."):Call SendEmail
-            OCR_R_Warning = True
-            SaveLog = True
-        Case "OCR-I" AND NOT OCR_I_Warning
-            Call Email_Init(0, _instrument_ & " sampling failed."):Call SendEmail
-            OCR_I_Warning = True
-            SaveLog = True
-        Case "PAR" AND NOT PAR_Warning
-            Call Email_Init(0, _instrument_ & " sampling failed."):Call SendEmail
-            PAR_Warning = True
-            SaveLog = True
-        Case "PCO2" AND NOT PCO2_Warning
-            Call Email_Init(0, _instrument_ & " sampling failed."):Call SendEmail
-            PCO2_Warning = True
-            SaveLog = True
-        Case "Power Controller" AND NOT Power_Controller_Warning
-            Call Email_Init(0, _instrument_ & " sampling failed."):Call SendEmail
-            Power_Controller_Warning = True
-            SaveLog = True
-        Case "SBE37" AND NOT SBE37_Warning
-            Call Email_Init(0, _instrument_ & " sampling failed."):Call SendEmail
-            SBE37_Warning = True
-            SaveLog = True
-        Case "Seafet" AND NOT Seafet_Warning
-            Call Email_Init(0, _instrument_ & " sampling failed."):Call SendEmail
-            Seafet_Warning = True
-            SaveLog = True
-        Case "Suna" AND NOT Suna_Warning
-            Call Email_Init(0, _instrument_ & " sampling failed."):Call SendEmail
-            Suna_Warning = True
-            SaveLog = True
-        Case "Wave" AND NOT Wave_Warning
-            Call Email_Init(0, _instrument_ & " sampling failed."):Call SendEmail
-            Wave_Warning = True
-            SaveLog = True
-        Case "WMT700" AND NOT WMT700_Warning
-            Call Email_Init(0, _instrument_ & " sampling failed."):Call SendEmail
-            WMT700_Warning = True
-            SaveLog = True
-        Case "WXT536" AND NOT WXT536_Warning
-            Call Email_Init(0, _instrument_ & " sampling failed."):Call SendEmail
-            WXT536_Warning = True
-            SaveLog = True
-    EndSelect
+    Dim _subject_ as String * 50
+
+    Call logging("Instrument Sampling Failed: " & _instrument_)
+
+    _subject_ = _instrument_ & " failed"
+
+    If _instrument_="ADCP" AND NOT ADCP_Warning Then
+        Call Email_Init(0, _subject_):Call SendEmail
+        ADCP_Warning = True
+        SaveLog = True
+    ElseIf _instrument_="Compass" AND NOT Compass_Warning Then
+        Call Email_Init(0, _subject_):Call SendEmail
+        Compass_Warning = True
+        SaveLog = True
+    ElseIf _instrument_="Triplet" AND NOT Triplet_Warning Then
+        Call Email_Init(0, _subject_):Call SendEmail
+        Triplet_Warning = True
+        SaveLog = True
+    ElseIf _instrument_="GPS" AND NOT GPS_Warning Then
+        Call Email_Init(0, _subject_):Call SendEmail
+        GPS_Warning = True
+        SaveLog = True
+    ElseIf _instrument_="OCR-R" AND NOT OCR_R_Warning Then
+        Call Email_Init(0, _subject_):Call SendEmail
+        OCR_R_Warning = True
+        SaveLog = True
+    ElseIf _instrument_="OCR-I" AND NOT OCR_I_Warning Then
+        Call Email_Init(0, _subject_):Call SendEmail
+        OCR_I_Warning = True
+        SaveLog = True
+    ElseIf _instrument_="PAR" AND NOT PAR_Warning Then
+        Call Email_Init(0, _subject_):Call SendEmail
+        PAR_Warning = True
+        SaveLog = True
+    ElseIf _instrument_="PCO2" AND NOT PCO2_Warning Then
+        Call Email_Init(0, _subject_):Call SendEmail
+        PCO2_Warning = True
+        SaveLog = True
+    ElseIf _instrument_="Power Controller" AND NOT Power_Controller_Warning Then
+        Call Email_Init(0, _subject_):Call SendEmail
+        Power_Controller_Warning = True
+        SaveLog = True
+    ElseIf _instrument_="SBE37" AND NOT SBE37_Warning Then
+        Call Email_Init(0, _subject_):Call SendEmail
+        SBE37_Warning = True
+        SaveLog = True
+    ElseIf _instrument_="Seafet" AND NOT Seafet_Warning Then
+        Call Email_Init(0, _subject_):Call SendEmail
+        Seafet_Warning = True
+        SaveLog = True
+    ElseIf _instrument_="Suna" AND NOT Suna_Warning Then
+        Call Email_Init(0, _subject_):Call SendEmail
+        Suna_Warning = True
+        SaveLog = True
+    ElseIf _instrument_="Wave" AND NOT Wave_Warning Then
+        Call Email_Init(0, _subject_):Call SendEmail
+        Wave_Warning = True
+        SaveLog = True
+    ElseIf _instrument_="WMT700" AND NOT WMT700_Warning Then
+        Call Email_Init(0, _subject_):Call SendEmail
+        WMT700_Warning = True
+        SaveLog = True
+    ElseIf _instrument_="WXT536" AND NOT WXT536_Warning Then
+        Call Email_Init(0, _subject_):Call SendEmail
+        WXT536_Warning = True
+        SaveLog = True
+    EndIf
 EndSub
