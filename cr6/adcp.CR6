@@ -20,7 +20,7 @@ EndTable
 
 
 Function ADCPTagString As String * 200
-  ADCPTagString = "[RDI]" & ADCPDate & "," & ADCPTime & "," & ADCPDir & "," & ADCPMag
+  ADCPTagString = "[RDI]" & ADCPDate & "," & ADCPTime & "," & EW & "," & NS & "," & Vert & "," & Err
 EndFunction
 
 
