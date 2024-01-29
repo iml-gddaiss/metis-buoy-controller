@@ -8,7 +8,7 @@ ConstTable (Buoy_Config,0)
     Const Buoy_Configuration = "As Follow" 
     
     ' ### Sampling Interval ####
-    Const Buoy_Interval_Min = 2
+    Const Buoy_Interval_Min = 15
     Const PCO2_Interval_Hr = 12
     Const Winch_Interval_Hr = 5
    
@@ -28,21 +28,21 @@ ConstTable (Buoy_Config,0)
     ' ### Instruments Enable/Disable Switches ###
     Const Instrument_Installed = "As Follow" 
     Const With_GPS As Boolean = true
-    Const With_WMT700 As Boolean = false
-    Const With_WXT536 As Boolean = false
-    Const With_Compass As Boolean = false
-    Const With_PAR As Boolean = false
+    Const With_WMT700 As Boolean = true
+    Const With_WXT536 As Boolean = true
+    Const With_Compass As Boolean = true
+    Const With_PAR As Boolean = true
     Const With_OCR_I As Boolean = false
 
     Const With_SBE37 As Boolean = true
-    Const With_Seafet As Boolean = false
+    Const With_Seafet As Boolean = true
     Const With_Triplet As Boolean = true
-    Const With_SUNA As Boolean = false
-    Const With_PCO2 As Boolean = false
+    Const With_SUNA As Boolean = true
+    Const With_PCO2 As Boolean = true
     Const With_OCR_R As Boolean = false
 
     Const With_Wave As Boolean = true
-    Const With_ADCP As Boolean = false
+    Const With_ADCP As Boolean = true
     Const With_Winch As Boolean = false
     Const With_Water_Detection_Main As Boolean = true
     Const With_Power As Boolean = true

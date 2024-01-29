@@ -4,6 +4,8 @@
      -> If the winch bugs and sends a constant none null character.
 ... Alarm was added in this case. TimedOut Error. 
 
+.. ADCP tag string changed to have EW NS Vert Err
+
 .FIXME
 .. Raw Triplet RawString is NAN even if nothing is plugged in.
 .. INsturment may still be missing raw logging
