@@ -69,9 +69,12 @@ Sub WinchStartSequence
 EndSub
 
 Sub Reset_Instrument_Warnings 'TODO TEST ME
+    Dim X
     If Reset_Instrument_Warnings_Switch Then
         Call logging("Instrument Warnings Reset")
-        Instrument_Failed_Warnings = False ' array of all the flags
+        For X = 1 To 15 Step 1
+            Instrument_Failed_Warnings(X) = False ' array of all the flags
+        Next X
         Reset_Instrument_Warnings_Switch = False
     EndIf
 EndSub

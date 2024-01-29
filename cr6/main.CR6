@@ -1,46 +1,75 @@
 '#####################################################################################
 'Date: 04 avril 2023
-'Authors: Anthony Ouellet & Jérôme Guay
+'Authors: Anthony Ouellet 
+'         Jérôme Guay     | jerome.guay@protonmail.com
 '
 ' Last Update: Jan 2024
+'
+'                           >>> READ THE FOLLOWING <<<
+'
 '--------------------------------------------------------------------------------------
 '--------------------------------- Main Program ---------------------------------------
 '--------------------------------------------------------------------------------------
 '
 ' TODO Description of the Program
-' + Before Scan
-' + Scan
-' + SlowScan
+' - Before Scan
+' - Scan
+' - SlowScan
+'
+'######################### Variable/Constant To Configure ############################
+' o `buoy_config.CR6`
+'   - All Constant in the ConstantTable
+' o `emails.CR6`
+'   - `email_address`
+'   - `sms_address`
+' o `Winch.CR6`
+' - `SuccesfulWinchMessage`
+' - `WinchMaxFileLength`
+'
+'################################ Flags And Switches ##################################
+'  o `slow_sequences.CR6`
+'    - `Manual_Tower_Switch` 
+'    - `Manual_Well_Switch`
+'    - `Start_Winch_Override`
+'    - `Send_Break_to_ADCP`
+'    - `Deploy_ADCP_Switch`
+'    - `Shutdown_ADCP_Switch`
+'    - `Send_test_email`
+'    - `Reset_Instrument_Warnings_Switch`
+'  o `Winch.CR6`
+'    - `Winch_Conditions_Bypass`
+'  o `emails.CR6`
+'    - `Disable_Emails`
+'  o `alerts.CR6` 
+'    - (See Section Below)
 '
 '################################# Alerts & Emails ####################################
-'             >> Change the Email and Phone number in `emails.CR6` <<
 ' Alerts (Alarms and Warnings) are located in the `alerts.CR6 file.
 ' Emails are handled in the `emails.CR6` file.
 ' Alerts are defined as Flag (Boolean) public variables.
 '
 ' All emails can be disabled by setting the `Disable_Email` Flag to True.
+'  o `Buoy_Adrift_Alert`: 
+'    In the `buoy_config.cr6` file set the following Constant:
+'       `Latitude_0`: Mooring Anchor Latitude in Degree-Decimal North 
+'       `Longitude_0`:Mooring Anchor Longitude in Degree-Decimal East
+'      `Allowed_Position_Deviation_m`: From Latitude_0,Longitude_0 in meters
+'    Once the alert is set, the buoy is considered adrift until it's resetted to false.
+'    Emails will continue to be sent even if the buoy return within the acceptable range.
+'    - `Buoy_Adrift_Alert_Snoozed`:
+'       Snoozing will only stop the Emails, the buoy is still considere adrift.
 '
-' + `Buoy_Adrift_Alert`: 
-'   In the `buoy_config.cr6` file set the following Constant:
-'     `Latitude_0`: Mooring Anchor Latitude in Degree-Decimal North 
-'     `Longitude_0`:Mooring Anchor Longitude in Degree-Decimal East
-'     `Allowed_Position_Deviation_m`: From Latitude_0,Longitude_0 in meters
-'   Once the alert is set, the buoy is considered adrift until it's resetted to false.
-'   Emails will continue to be sent even if the buoy return within the acceptable range.
-'   - `Buoy_Adrift_Alert_Snoozed`:
-'     Snoozing will only stop the Emails, the buoy is still considere adrift.
+'  o `Battery_Low_Warning`
+'    TODO
 '
-' + `Battery_Low_Warning`
-'   TODO
+'  o `Water_Infiltration_Warning`
+'    TODO
 '
-' + `Water_Infiltration_Warning`
-'   TODO
+'   o `Winch_Failed_Warning`
+'     TODO
 '
-' + `Winch_Failed_Warning`
-'   TODO
-'
-' + `Winch_Download_TimedOut_Warning`
-'   TODO
+'  o `Winch_Download_TimedOut_Warning`
+'     TODO
 '
 ' Instruments have no public warning variable. If an instrument fails to sample, a warning email 
 ' is only sent the first time it fails. Each instrument as its own internal warning flags.
@@ -49,8 +78,12 @@
 '
 '############################## Instruments List ######################################
 '
-' ADCP : Teledyne WorkHorse
-' ... TODO
+' [ADCP] Teledyne WorkHorse
+'  - Number of Bin: buoy_config.CR6 -> Const ADCP_Num_Bin (Default=27)
+' [...]
+'
+' [WXT536] Vaisala
+'  - Rain Reset: buoy_config.CR6 -> Const Rain_Interval_Hr 
 '
 '######################## Instruments Connections Diagrams ############################
 '
@@ -216,7 +249,7 @@ EndTable
 
 ' ########## Tag String Functions ##########
 Function InitTagString as String * 200 ' may be too much, but maybe not FIXME
-  InitTagString = "[INIT]" & Buoy_Name & "," & ScanDate & "," & ScanTime & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Water_Detection_Main
+  InitTagString = "[INIT]" & Buoy_Name & "," & ScanDate & "," & ScanTime & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Magnetic_Variation & Water_Detection_Main
 EndFunction
 
 Function EndTagString as String * 5

@@ -71,8 +71,10 @@ Sub CollectTriplet
     
     SerialInRecord(SerialTriplet,RawTriplet,&H4242,0,&H0D0A,NBR,01) ' &4242 -> BB &0D0A -> CR LF
     SerialClose(SerialTriplet)
+
+    Call logging("Raw Triplet: " & RawTriplet)
     
-    If RawTriplet <> "" Then
+    If RawTriplet <> "NAN" Then
       RawTriplet = "BB"+RawTriplet
       SplitStr(Triplet(),RawTriplet,CHR(09),11,4) ' Ignoring serial number (Option 4: strings after the first split sep)
     Else
