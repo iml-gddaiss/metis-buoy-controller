@@ -188,6 +188,7 @@ Public TAGString As String * 2000 ' TODO fixme check if lengths is ok
 ' ########## CR6 Scripts Includes (Imports) ##########
 ' ### Global
 Include "CPU:buoy_config.cr6"                   '#   Declare Buoy Config
+Include "CPU:emails.cr6"                        '#   Emails
 Include "CPU:ports.cr6"                         '#   Define all Serials and Channels
 Include "CPU:logging.cr6"                       '#   Logging module
 Include "CPU:timers.cr6"                        '#   Timer Values module
@@ -218,7 +219,6 @@ Include "CPU:weather.cr6"    ' Build Wind-Atms tables and Wind-Atms-PAR Tag Stri
 
 ' ### Slow Sequences | User Command Interface
 Include "CPU:slow_sequences.cr6"
-Include "CPU:emails.cr6"
 Include "CPU:alerts.cr6"
 
 ' ########## DataTable Defintions ##########
