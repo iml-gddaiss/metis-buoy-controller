@@ -249,7 +249,7 @@ EndTable
 
 ' ########## Tag String Functions ##########
 Function InitTagString as String * 200 ' may be too much, but maybe not FIXME
-  InitTagString = "[INIT]" & Buoy_Name & "," & ScanDate & "," & ScanTime & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Magnetic_Variation & Water_Detection_Main
+  InitTagString = "[INIT]" & Buoy_Name & "," & ScanDate & "," & ScanTime & "," & Latitude & "," & Longitude & "," & Heading & "," & Pitch & "," & Roll & "," & COG & "," & SOG & "," & Magnetic_Variation & "," & Water_Detection_Main
 EndFunction
 
 Function EndTagString as String * 5
