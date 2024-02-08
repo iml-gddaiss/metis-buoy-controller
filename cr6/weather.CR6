@@ -1,4 +1,4 @@
-Dim WindTAG As String
+Dim Wind_Source_Flag As String = "" " 5: wxt536, 7: wmt700"
 
 
 ' Weather manipulation with selection of better wind and compensation
@@ -36,7 +36,7 @@ EndTable
 
 
 Function WindTagString as String * 200
-  WindTagString = WindTAG & Wind_Dir_Min & "," & Wind_Dir_Ave & "," & Wind_Dir_Max & "," & Wind_Spd_Min & "," & Wind_Spd_Ave & "," & Wind_Spd_Max ' (had flag for motion correction)
+  WindTagString = "[WIND]" & Wind_Source_Flag & "," & Wind_Dir_Min & "," & Wind_Dir_Ave & "," & Wind_Dir_Max & "," & Wind_Spd_Min & "," & Wind_Spd_Ave & "," & Wind_Spd_Max
 EndFunction
 
 
@@ -67,11 +67,11 @@ Sub SelectWindInstrument
 
   If With_WMT700 AND WMT700(6) <> "NAN" Then ' Check the six value (so at least 6 values)
     Wind() = WMT700()   
-    WindTAG = "[W700]"
+    Wind_Source_Flag = 7
     Call logging("Wind Instrument -> WMT700")
   ElseIf With_WXT536 Then
     Wind() = WXT536_Wind()
-    WindTAG = "[W536]"
+    Wind_Source_Flag = 5
     Call logging("Wind Instrument -> WXT536")
   Else
     Wind() = ""

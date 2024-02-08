@@ -1,7 +1,7 @@
 'Winch related code
 Const SuccesfulWinchMessage = "Winch was sampled successfully" ' TODO CHANGE TO THE CORRECT VALUE
 Const WinchMaxFileLength = 100000 ' Maximum number of lines of a file (Safety)  TODO CHANGE TO THE CORRECT VALUE
-Public WinchString As String * 50
+Public WinchString As String * 30
 ' The actual maximum size of the file in bytes would be WinchMaxFileLength * Length(WinchString) of the winch file in bytes.
 ' At the moment the max file size is 500 Kbs (1 000 000 * 50).
 
@@ -36,28 +36,28 @@ Public Winch_Longitude As String
 ' ####################### Start Conditions ############################## 
 Sub WinchAirCheck(Air_Temp)
     If Air_Temp < Min_Air_Temp_for_Winch Then
-        WinchMessage = "The air temperature is too cold."
+        WinchMessage = "Air temperature is too low"
         Call logging("Winch : " & WinchMessage)
         WinchMissingConditions += 1
     EndIf
 EndSub
 
-Sub WinchWaveCheck(Wave_H13, Wave_Period)
-    If Wave_H13 > Max_Wave_H13_for_Winch Then
-        WinchMessage = "Average wave is too high."
+Sub WinchWaveCheck(WaveH13, WavePeriod)
+    If WaveH13 > Max_Wave_H13_for_Winch Then
+        WinchMessage = "Waves are too high"
         Call logging("Winch : " & WinchMessage)
         WinchMissingConditions += 1
     EndIf
         
-    If Wave_H13 > 1 AND Wave_Period < Min_Wave_Period_for_Winch  AND Wave_Period <> 0 Then 
-        WinchMessage = "Wave period is too short. "
+    If WaveH13 > 1 AND WavePeriod < Min_Wave_Period_for_Winch  AND WavePeriod <> 0 Then 
+        WinchMessage = "Wave period is too short"
         WinchMissingConditions += 1
     EndIf
 EndSub
 
 Sub WinchGPSCheck(SOG)
     If SOG > Max_Buoy_Speed_for_Winch Then
-        WinchMessage = "The buoy is moving too fast."
+        WinchMessage = "Buoy is moving too fast"
         Call logging("Winch : " & WinchMessage)
         WinchMissingConditions += 1
     EndIf
@@ -72,7 +72,7 @@ Sub WinchPowerCheck(VBatt1, VBatt2)
     EndIf
     
     If Winch_Voltage < Min_Voltage_for_Winch Then
-        WinchMessage = "The Winch voltage is too low."
+        WinchMessage = "Voltage is too low"
         Call logging("Winch : " & WinchMessage)
         WinchMissingConditions += 1
     EndIf
@@ -93,7 +93,7 @@ Sub WinchConditionsCheck
     EndIf
     
     If With_Wave Then
-      Call WinchWaveCheck(Wave_H13, Wave_Period) 
+      Call WinchWaveCheck(WaveH13, WavePeriod) 
     EndIf
           
     If With_GPS Then
@@ -115,12 +115,12 @@ Sub CheckWinchStatus
     If WinchString = "" Then
         If WinchStatus = "Sampling"
             WinchStatus = "Completed"
-            WinchMessage = "Winch Completed"
+            WinchMessage = "Mission Completed"
         Else
-            WinchMessage = "No Winch in Progress"
+            WinchMessage = "No Mission in Progress"
         EndIf
     Else
-        WinchMessage = "Winch in Progress"
+        WinchMessage = "Mission in Progress"
     EndIf
     Call logging("Winch Status: " & WinchStatus)
 EndSub
@@ -162,7 +162,7 @@ Sub StartWinch
 
         SplitStr(Winch_DateTime, Public.TimeStamp(4), " ", 2, 5)
 
-        WinchMessage = "Winch Mission Started"
+        WinchMessage = "Mission Started"
     Else 'No string from CTD
         WinchMessage = "No String received from CTD"
         Call logging("WINCH FAILED. Winch Start Confirmation not received.")
@@ -174,7 +174,7 @@ EndSub
 Sub WinchRoutine
     'Start a Winch Mission if its not Ongoing and possible.
     If With_Winch 
-        If (SBE37_In_Saltwater OR Bypass_Salinity) Then
+        If (CTD_In_Saltwater OR Bypass_Salinity) Then
             Call logging("Entering Winch Routine")
             
             If ((Winch_Last_Sample + Winch_Interval_Hr * 3600 - 60) > Public.TimeStamp(1)) AND NOT Start_Winch_Override Then
@@ -209,7 +209,7 @@ Sub WinchRoutine
     EndIf
 EndSub
 
-' ####################### Collecting Data ############################## 
+' ####################### Collecting Data ##############################
 
 Sub InitWinchFile
     WinchFileName = "WDATA_"& Buoy_Name &"_"& Replace(Winch_Date, "-", "") &"_"& Replace(Winch_Time, ":", "")

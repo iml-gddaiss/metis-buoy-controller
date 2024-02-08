@@ -20,7 +20,22 @@ EndTable
 
 
 Function ADCPTagString As String * 200
-  ADCPTagString = "[RDI]" & ADCPDate & "," & ADCPTime & "," & EW & "," & NS & "," & Vert & "," & Err
+  Dim adcp_date as String
+  Dim adcp_time as String
+
+  adcp_date = "NA"
+  adcp_time = "NA"
+
+  If ADCPDate <> "" Then
+    adcp_date = Replace(ADCPDate, "/", "-")
+  EndIf
+
+  If ADCPTime <> "" Then ' a second check is probably redundant. Since both would be missing.
+    adcp_time = ADCPTime
+  EndIf
+
+
+  ADCPTagString = "[ADCP]" & adcp_date & "," & adcp_time & "," & EW & "," & NS & "," & Vert & "," & Err
 EndFunction
 
 

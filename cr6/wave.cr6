@@ -4,32 +4,55 @@
 
 '### Data Variables ###
 Dim RawWave As String * 80
-Dim Wave(6) As String : Alias Wave = Wave_Date, Wave_Time, Wave_Period, Wave_Hm0, Wave_H13, Wave_Hmax
+Dim Wave(6) As String : Alias Wave = WaveDate, WaveTime, WavePeriod, WaveHm0, WaveH13, WaveHmax
 
 Dim UpdateWaveTable As Boolean = false
 
 '### Units ###
-Units Wave_Period = Sec
-Units Wave_Hm0 = m
-Units Wave_H13 = m
-Units Wave_Hmax = m
+Units WavePeriod = Sec
+Units WaveHm0 = m
+Units WaveH13 = m
+Units WaveHmax = m
 
 
 '### Tables ###
 DataTable(FileWave,UpdateWaveTable,-1)
   DataInterval(0,0,Sec,10)
-  Sample (1,Wave_Date,String)
-  Sample (1,Wave_Time,String)
-  Sample (1,Wave_Period,IEEE4)
-  Sample (1,Wave_Hm0,IEEE4)
-  Sample (1,Wave_H13,IEEE4)
-  Sample (1,Wave_Hmax,IEEE4)
+  Sample (1,WaveDate,String)
+  Sample (1,WaveTime,String)
+  Sample (1,WavePeriod,IEEE4)
+  Sample (1,WaveHm0,IEEE4)
+  Sample (1,WaveH13,IEEE4)
+  Sample (1,WaveHmax,IEEE4)
 EndTable
 
 
 '### Sampling ###
 Function WaveTagString As String * 200
-  WaveTagString = "[WAVE]" & Wave_Date & "," & Wave_Time & "," & Wave_Period & "," & Wave_Hm0 & "," & Wave_H13 & "," & Wave_Hmax
+  Dim wave_date as String
+  Dim wave_time as String
+  Dim wave_period as Float
+  Dim wave_hm0 as Float
+  Dim wave_h13 as Float
+  Dim wave_hmax as Float
+
+  wave_date = "NA"
+  wave_time = "NA"
+
+  If WaveDate <> "" Then
+    wave_date = Replace(WaveDate, "/", "-")
+  EndIf
+
+  If WaveTime <> "" Then ' a second check is probably redundant. Since both would be missing.
+    wave_time = WaveTime
+  EndIf
+
+  wave_period = WavePeriod ' sets "" to "NAN"
+  wave_hm0 = WaveHm0       ' sets "" to "NAN"
+  wave_h13 = WaveH13       ' sets "" to "NAN"
+  wave_hmax = WaveHmax     ' sets "" to "NAN"
+
+  WaveTagString = "[WAVE]" & wave_date & "," & wave_time & "," & wave_period & "," & wave_hm0 & "," & wave_h13 & "," & wave_hmax
 EndFunction
 
 
