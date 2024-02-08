@@ -229,7 +229,7 @@ Sub SampleSeafet(Temperature As Float, Salinity As Float)
     
     Call CollectSeafet
     
-    If Seafet_Auto_Calculation AND CTD_In_Saltwater Then
+    If Seafet_Auto_Calculation AND SBE37_In_Saltwater Then
 
       If SeaFet_Serial <> Seafet_SerialNumber Then
         'Fetch the Coefficients only if the serial number doesn't match the one previously recorded.

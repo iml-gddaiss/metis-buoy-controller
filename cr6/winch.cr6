@@ -174,7 +174,7 @@ EndSub
 Sub WinchRoutine
     'Start a Winch Mission if its not Ongoing and possible.
     If With_Winch 
-        If (CTD_In_Saltwater OR Bypass_Salinity) Then
+        If (SBE37_In_Saltwater OR Bypass_Salinity) Then
             Call logging("Entering Winch Routine")
             
             If ((Winch_Last_Sample + Winch_Interval_Hr * 3600 - 60) > Public.TimeStamp(1)) AND NOT Start_Winch_Override Then

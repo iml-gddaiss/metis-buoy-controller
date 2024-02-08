@@ -117,7 +117,7 @@ EndFunction
 '### Sampling ###
 
 Sub StartPCO2
-  If (CTD_In_Saltwater OR Bypass_Salinity) Then
+  If (SBE37_In_Saltwater OR Bypass_Salinity) Then
     Call logging("Starting PCO2")
 
     RawPCO2 = ""

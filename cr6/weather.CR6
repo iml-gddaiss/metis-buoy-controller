@@ -1,4 +1,4 @@
-Dim Wind_Source_Flag As String = "" " 5: wxt536, 7: wmt700"
+Dim Wind_Source_Flag As String = "" ' 5: wxt536, 7: wmt700"
 
 
 ' Weather manipulation with selection of better wind and compensation
@@ -75,7 +75,7 @@ Sub SelectWindInstrument
     Call logging("Wind Instrument -> WXT536")
   Else
     Wind() = ""
-    WindTag = ""
+    Wind_Source_Flag = ""
     Call logging("Wind Instrument -> NA")
   EndIf
 EndSub
@@ -96,7 +96,7 @@ Sub ProcessWeather(Heading)
 
     Call SelectWindInstrument   
 
-    If WindTag <> "" Then
+    If Wind_Source_Flag <> "" Then
       WindHeadingCorrection(Heading) ' Carry correction only if Wind values were loaded.
       TAGString &= WindTagString()
     EndIf

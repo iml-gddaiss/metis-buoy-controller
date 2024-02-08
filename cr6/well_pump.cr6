@@ -1,7 +1,7 @@
 Dim WellPump_IsPowered As Boolean  ' Flag for Well Pump State
 
 Sub PowerWellPump
-  If (CTD_In_Saltwater OR Bypass_Salinity) AND (With_Well_Pump AND NOT Disable_Well_Pump) Then
+  If (SBE37_In_Saltwater OR Bypass_Salinity) AND (With_Well_Pump AND NOT Disable_Well_Pump) Then
     Call logging("Starting Well Pump")
    
     SW12(SW12_2,1)  'Open Switch #2 to control pump for X sec
