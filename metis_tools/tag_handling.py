@@ -113,11 +113,11 @@ def _format_lonlat(value: str):
 
 
 def _make_SD_string(data: Dict[str, List[str]]) -> str:
-    v = ["#" for x in range(37)]  # Rename to SD String FIXME what is the null value
+    v = ["#" for x in range(38)]  # Rename to SD String FIXME what is the null value
 
     if "init" in data:
         v[0] = data["init"]['buoy_name']  # Buoy_Name
-        v[1] = data["init"]['data'].replace("-", "/")
+        v[1] = data["init"]['date'].replace("-", "/")
         v[2] = data["init"]['time']  # Buoy_Hour
 
         v[3] = _format_lonlat(data['init']['latitude'])
@@ -137,21 +137,23 @@ def _make_SD_string(data: Dict[str, List[str]]) -> str:
 
         try:
             _water_detection = float(data['init']['water_detection'])
-            v[37] = f"{0 if _water_detection < 2000 else _water_detection:.0f}"
+            if _water_detection < 2000:
+                _water_detection = 0
+            v[37] = f"{_water_detection:.0f}"
         except ValueError:
             pass
 
     if "powr" in data:
         try:
-            v[24] = f"{round(max(float(data['POWR']['volt_batt_1']), float(data['POWR']['volt_batt_2'])), 1)}"
-            v[25] = f"{round(float(data['POWR']['amp_solar']), 1)}"
-            v[26] = f"{round(float(data['POWR']['amp_turbine']), 1)}"
-            v[27] = f"{round(float(data['POWR']['amp_main']) + float(data['POWR']['amp_winch']), 1)}"
+            v[24] = f"{round(max(float(data['powr']['volt_batt_1']), float(data['powr']['volt_batt_2'])), 1)}"
+            v[25] = f"{round(float(data['powr']['amp_solar']), 1)}"
+            v[26] = f"{round(float(data['powr']['amp_turbine']), 1)}"
+            v[27] = f"{round(float(data['powr']['amp_main']) + float(data['powr']['amp_winch']), 1)}"
         except ValueError:
             pass
 
         try:
-            v[38] = data['POWR']['relay_state'][7]
+            v[38] = data['powr']['relay_state'][7]
         except IndexError:
             pass
 
@@ -225,7 +227,7 @@ def _make_SD_string(data: Dict[str, List[str]]) -> str:
         except ValueError:
             v[34] = "#"
 
-    if "wave" in data:
+    #if "wave" in data:
 
 #     elif data[1:5] == "WAVE":
 #         data = data[6:]
@@ -279,6 +281,7 @@ def _make_SD_string(data: Dict[str, List[str]]) -> str:
 #                 else:
 #                     v_str.append(str(val))
 #        f.write(','.join(v_str) + '\n')
+    return v
 
 if __name__ == "__main__":
     PATH = "/home/jeromejguay/ImlSpace/Projects/mitis-buoy-controller/tests/"
@@ -286,3 +289,5 @@ if __name__ == "__main__":
     FN = "PMZA-RIKI_FileTAGS.dat"
 
     d = process_transmitted_data(PATH + FN)
+
+    v = _make_SD_string(d)
