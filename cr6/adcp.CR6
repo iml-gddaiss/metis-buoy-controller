@@ -23,12 +23,7 @@ Function ADCPTagString As String * 200
   Dim I as Long
   Dim adcp_date as String
   Dim adcp_time as String
-  Dim vels_(4) as Float: Alis vels_ = u_, v_, w_, e_
-
-  Dim u_ as Float
-  Dim v_ as Float
-  Dim w_ as Float
-  Dim e_ as Float
+  Dim vels_(4) as Float: Alias vels_ = u_, v_, w_, e_
 
   adcp_date = "NA"
   adcp_time = "NA"

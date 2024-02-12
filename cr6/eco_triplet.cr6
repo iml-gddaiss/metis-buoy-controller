@@ -32,7 +32,6 @@ Function TripletTagString as String * 200
   'Values are put in CTYPE to convert from scientific notation (0.00E+00)  float notation.
   Dim formatted_string As String * 40
   SprintF(formatted_string,"[ECO1]%.8g,%.8g,%.8g", CTYPE(Scattering_Value, float), CTYPE(Chlorophyll_Value, float), CTYPE(FDOM_Value, float))
-  Call logging("Triplet Tag String: " & formatted_string)
   TripletTagString = formatted_string
 EndFunction
 
