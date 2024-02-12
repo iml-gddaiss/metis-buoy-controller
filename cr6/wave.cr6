@@ -39,11 +39,11 @@ Function WaveTagString As String * 200
   wave_date = "NA"
   wave_time = "NA"
 
-  If WaveDate <> "" Then
+  If WaveDate <> "" or WaveDate = "####/##/##" Then
     wave_date = Replace(WaveDate, "/", "-")
   EndIf
 
-  If WaveTime <> "" Then ' a second check is probably redundant. Since both would be missing.
+  If WaveTime <> "" or WaveDate = "##:##:##" Then ' a second check is probably redundant. Since both would be missing.
     wave_time = WaveTime
   EndIf
 

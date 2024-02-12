@@ -83,7 +83,8 @@ EndSub
 
 Sub ApplyMagneticCorrection
   Call logging("Magnetic Correction: " & Heading & " + " & Magnetic_Variation)
-  Heading = Round((Heading + Magnetic_Variation) MOD 360, 2)
+  Heading = (Heading + 360 + Magnetic_Variation) MOD 360
+  Heading = Round(Heading, 2)
 EndSub
 
 

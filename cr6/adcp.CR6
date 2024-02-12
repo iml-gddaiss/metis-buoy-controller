@@ -20,8 +20,15 @@ EndTable
 
 
 Function ADCPTagString As String * 200
+  Dim I as Long
   Dim adcp_date as String
   Dim adcp_time as String
+  Dim vels_(4) as Float: Alis vels_ = u_, v_, w_, e_
+
+  Dim u_ as Float
+  Dim v_ as Float
+  Dim w_ as Float
+  Dim e_ as Float
 
   adcp_date = "NA"
   adcp_time = "NA"
@@ -33,9 +40,19 @@ Function ADCPTagString As String * 200
   If ADCPTime <> "" Then ' a second check is probably redundant. Since both would be missing.
     adcp_time = ADCPTime
   EndIf
+  
+  u_ = EW
+  v_ = NS
+  w_ = Vert
+  e_ = Err
 
+  For I = 1 to 4
+    If vels_(I) = -32768 Then
+      vels_(I) = ""
+    EndIf
+  Next
 
-  ADCPTagString = "[ADCP]" & adcp_date & "," & adcp_time & "," & EW & "," & NS & "," & Vert & "," & Err
+  ADCPTagString = "[ADCP]" & adcp_date & "," & adcp_time & "," & u_ & "," & v_ & "," & w_ & "," & e_
 EndFunction
 
 
