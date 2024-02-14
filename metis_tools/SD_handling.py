@@ -70,8 +70,6 @@ _MMS_TO_MS = 1 / 1000
 
 STATION_INDEX_FILE = ".sd_current_index.json"
 
-SD_PADDING = True
-
 
 def process_SD(filename: str, source_dir: str, sd_directory: str, sd_padding: bool) -> None:
 

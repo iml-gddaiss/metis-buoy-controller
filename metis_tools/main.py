@@ -9,7 +9,7 @@ with open(CONFIG_FILE) as f:
     config = json.load(f)
 
 SOURCE_DIR = config['source_dir']
-SD_DIR = config['SD_dir']
+OUTPUT_DIR = config['output_dir']
 
 SD_PADDING = config['sd_padding']
 
@@ -23,7 +23,7 @@ def main():
             process_SD(
                 filename=file_name,
                 source_dir=SOURCE_DIR,
-                sd_directory=SD_DIR,
+                sd_directory=OUTPUT_DIR,
                 sd_padding=SD_PADDING
                 )
 
