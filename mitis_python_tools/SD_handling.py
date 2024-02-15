@@ -84,7 +84,7 @@ class FilePointer:
             self._update(0)
 
 
-def process_SD(filename: str, target_directory: str, sd_padding: bool, pointer: FilePointer):
+def process_SD(input_file: str, target_directory: str, sd_padding: bool, pointer: FilePointer):
     """Append SD String to the target_directory/SD_file.
 
     :param: filename : str
@@ -93,7 +93,7 @@ def process_SD(filename: str, target_directory: str, sd_padding: bool, pointer: 
     :param: pointers_file : str
 
     """
-    data = read_TAG_file(filename=filename, pointer_location=pointer.value)
+    data = read_TAG_file(filename=input_file, pointer_location=pointer.value)
 
     if data:
         station_name = data[0]['init']['buoy_name']
