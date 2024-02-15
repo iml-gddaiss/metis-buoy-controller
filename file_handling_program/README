@@ -1,0 +1,5 @@
+Install the package `mitis_python_tools` first.
+
+```
+> pip install -e mitis_python_tools/
+```

@@ -2,11 +2,11 @@ import os
 import json
 from pathlib import Path
 
-from mitis_python_tools.SD_handling import process_SD, FilePointer
-from mitis_python_tools.WINCH_handling import process_winch
+from file_handling_program.mitis_python_tools import process_SD, FilePointer
+from file_handling_program.mitis_python_tools import process_winch
 
 CONFIG_FILE = Path("config.json")
-POINTERS_DIR = Path("./pointers")
+POINTERS_DIR = Path("pointers")
 
 with open(CONFIG_FILE) as f:
     config = json.load(f)
