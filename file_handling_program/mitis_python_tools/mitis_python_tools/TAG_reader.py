@@ -1,3 +1,34 @@
+"""
+Tag String Structure
+
+[INIT]Buoy_Name,Date,Time,Latitude,Longitude,Heading,Pitch,Roll,COG,SOG,Magnetic_Variation,Water_Detection_Main
+[POWR]VBatt1,ABatt1,VBatt2,ABatt2,VSolar,ASolar,AMain,ATurbine,AWinch,PM_RH,Relay_State
+[ECO1]Scattering,Chlorophyll,FDOM
+[CTD]Temperature,Conductivity,Salinity,Density
+[PH]Ext_pH_Calc,Int_pH_Calc,Error_Flag,Ext_pH,Int_pH
+[NO2]Dark_Nitrate,Light_Nitrate,Dark_Nitrogen_in_Nitrate,Light_Nitrogen_in_Nitrate,Dark_Bromide,Light_Bromide
+[Wind]Source,Wind_Dir_Min,Wind_Dir_Ave,Wind_Dir_Max,Wind_Spd_Min,Wind_Spd_Ave,Wind_Spd_Max
+                Source: 7: wmt700, 5: wxt536
+[ATMS]Air_Temp,Air_Humidity,Air_Pressure,PAR,Rain_Total,Rain_Duration,Rain_Intensity
+[WAVE]Wave_Date,Wave_Time,Wave_Period,Wave_Hm0,Wave_H13,Wave_Hmax
+[ADCP]ADCPDate,ADCPTime,EW,NS,Vert,Err
+[PCO2]CO2_Air,CO2_Water,Pressure_Air,Pressure_Water,Air_Humidity
+[WNCH]messages
+    messages:
+        Air temperature is too low
+        Waves are too high
+        Wave period is too short
+        Buoy is moving too fast
+        Voltage is too low
+        Mission Completed
+        No Mission in Progress
+        Mission in Progress
+        Mission Started
+        No String received from CTD
+        Interval not reach
+[END]
+"""
+
 import re
 from typing import Dict, List
 
