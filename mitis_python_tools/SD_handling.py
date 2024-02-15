@@ -35,52 +35,69 @@ Notes
 
 
 """
-import json
-import os
 import re
+import json
 import math
 from typing import Dict, List
 from pathlib import Path
 
-# Tag found in transmitted file.
-INSTRUMENTS_TAG = ['INIT', 'POWR', 'ECO1', 'CTD', 'PH', 'NO2', 'WIND', 'ATMS', 'WAVE', 'ADCP', 'PCO2', 'WNCH']
-
-DATA_TAG_REGEX = re.compile(rf"\[({'|'.join(INSTRUMENTS_TAG)})]((?:(?!\[).)*)", re.DOTALL)
-
-TAG_VARIABLES = {
-    'init': ['buoy_name', 'date', 'time', 'latitude', 'longitude', 'heading', 'pitch', 'roll', 'cog', 'sog',
-             'magnetic_declination', 'water_detection'],
-    'powr': ['volt_batt_1', 'amp_batt_1', 'volt_batt_2', 'amp_batt_2', 'volt_solar', 'amp_solar', 'amp_main',
-             'amp_turbine', 'amp_winch', 'pm_rh', 'relay_state'],
-    'eco1': ['scattering', 'chlorophyll', 'fdom'],
-    'ctd': ['temperature', 'conductivity', 'salinity', 'density'],
-    'ph': ['ext_ph_calc', 'int_ph_calc', 'error_flag', 'ext_ph', 'int_ph'],
-    'no2': ['dark_nitrate', 'light_nitrate', 'dark_nitrogen_in_nitrate', 'light_nitrogen_in_nitrate', 'dark_bromide',
-            'light_bromide'],
-    'wind': ['source', 'wind_dir_min', 'wind_dir_ave', 'wind_dir_max', 'wind_spd_min', 'wind_spd_ave', 'wind_spd_max'],
-    'atms': ['air_temperature', 'air_humidity', 'air_pressure', 'par', 'rain_total', 'rain_duration', 'rain_intensity'],
-    'wave': ['date', 'time', 'period', 'hm0', 'h13', 'hmax'],
-    'adcp': ['date', 'time', 'u', 'v', 'w', 'err'],
-    'pco2': ['co2_air', 'co2_water', 'gas_pressure_air', 'gas_pressure_water', 'air_humidity'],
-    'wnch': ['message']
-}
+from TAG_reader import read_TAG_file
 
 _KNOTS_TO_KPH = 1.852
 _MMS_TO_MS = 1 / 1000
 
-STATION_INDEX_FILE = ".sd_current_index.json"
+
+SD_PADDINGS = {
+    0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 2, 6: 2, 7: 3, 8: 4, 9: 3, 10: 6, 11: 5, 12: 5, 13: 5,
+    14: 9, 15: 6, 16: 5, 17: 4, 18: 5, 19: 5, 20: 6, 21: 4, 22: 4, 23: 4, 24: 4, 25: 4, 26: 4,
+    27: 4, 28: 3, 29: 3, 30: 0, 31: 3, 32: 4, 33: 3, 34: 4, 35: 3, 36: 3, 37: 0, 38: 0,
+}
 
 
-def process_SD(filename: str, source_dir: str, sd_directory: str, sd_padding: bool) -> None:
+class FilePointer:
+    """Allows to read and update pointer value in pointer file."""
+    pointer_key = "pointer"
 
-    start_index = _get_current_file_index(filename)
+    def __init__(self, filename: str):
+        self.filename = filename
 
-    data = load_raw_data(filename=Path(source_dir).joinpath(filename), start_index=start_index)
+        self._ensure_file_exist()
+
+    @property
+    def value(self):
+        return self._get_value()
+
+    def increment(self, increment=1):
+        self._update(self.value + increment)
+
+    def _get_value(self):
+        with open(self.filename, 'r') as f:
+            value = json.load(f)[self.pointer_key]
+        return value
+
+    def _update(self, value):
+        with open(self.filename, "w") as f:
+            json.dump({self.pointer_key: value}, f, indent=4)
+
+    def _ensure_file_exist(self):
+        if not Path(self.filename).exists():
+            self._update(0)
+
+
+def process_SD(filename: str, target_directory: str, sd_padding: bool, pointer: FilePointer):
+    """Append SD String to the target_directory/SD_file.
+
+    :param: filename : str
+    :param: target_directory : str
+    :param: sd_padding : If True, SD string's values will be padded.
+    :param: pointers_file : str
+
+    """
+    data = read_TAG_file(filename=filename, pointer_location=pointer.value)
 
     if data:
-
         station_name = data[0]['init']['buoy_name']
-        station_directory = Path(sd_directory).joinpath(station_name)
+        station_directory = Path(target_directory).joinpath(station_name)
         Path(station_directory).mkdir(parents=True, exist_ok=True)
 
         for d in data:
@@ -88,73 +105,19 @@ def process_SD(filename: str, source_dir: str, sd_directory: str, sd_padding: bo
             SD_filename = f"{station_name}_SD_{d['init']['date'].replace('-', '')}.dat"
             SD_target_file = station_directory.joinpath(SD_filename)
 
-            _write_SD(dest_file=SD_target_file, data=SD_data_string)
-            start_index += 1
-            _update_file_current_index(file_name=filename, pointer_index=start_index)
-    else:
-        print("No New Sample")
-        'Fixme maybe add an error code'
+            _write_SD(dest_file=SD_target_file, sd_string=SD_data_string)
+
+            pointer.increment()
 
 
-def load_raw_data(filename: str, start_index: int = 0) -> List[Dict[str, dict[str, str]]]:
-    """
-    :param start_index: Number of line to skip in raw file.
-    :param filename: Path to file
-
-    """
-
-    unpacked_data = []
-    with open(filename, 'r') as f:
-        for _ in range(start_index):
-            next(f)
-
-        for line in f:
-            unpacked_data.append(_unpack_data(line))
-
-    return unpacked_data
-
-
-def _get_current_file_index(file_name: str) -> int:
-    with open(STATION_INDEX_FILE) as f:
-         pointers = json.load(f)
-    if file_name in pointers.keys():
-        return pointers[file_name]
-    else:
-        return 0
-
-
-def _update_file_current_index(file_name: str, pointer_index: int):
-    with open(STATION_INDEX_FILE) as f:
-        pointers = json.load(f)
-    pointers[file_name] = pointer_index
-
-    with open(STATION_INDEX_FILE, "w") as f:
-        json.dump(pointers, f, indent=4)
-
-
-def _write_SD(dest_file: str, data: str):
+def _write_SD(dest_file: str, sd_string: str):
     """Append data to the end of dest_file.
 
     :param dest_file: SD file to append to.
-    :param data: SD data string.
+    :param sd_string: SD data string.
     """
     with open(dest_file, 'a') as f:
-        f.write(data + '\n')
-
-
-def _unpack_data(data: str) -> Dict[str, dict[str, str]]:
-    """Unpack Mitis Tag Data
-    Returns Data as a dictionary of {TAG:DATA}
-    """
-
-    unpacked_data = {}
-    for data_sequence in DATA_TAG_REGEX.finditer(data):
-        tag = data_sequence.group(1).lower()
-        data = data_sequence.group(2).split(",")
-
-        unpacked_data[tag] = {key: value for key, value in zip(TAG_VARIABLES[tag], data)}
-
-    return unpacked_data
+        f.write(sd_string + '\n')
 
 
 def _format_lonlat(value: str):
@@ -303,21 +266,7 @@ def _make_SD_string(data: Dict[str, List[str]], sd_padding: bool) -> str:
             sd_data[index] = '#'
 
     if sd_padding is True:
-        padding = {
-            0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 2, 6: 2, 7: 3, 8: 4, 9: 3, 10: 6, 11: 5, 12: 5, 13: 5,
-            14: 9, 15: 6, 16: 5, 17: 4, 18: 5, 19: 5, 20: 6, 21: 4, 22: 4, 23: 4, 24: 4, 25: 4, 26: 4,
-            27: 4, 28: 3, 29: 3, 30: 0, 31: 3, 32: 4, 33: 3, 34: 4, 35: 3, 36: 3, 37: 0, 38: 0,
-        }
-        for index, _just in padding.items():
+        for index, _just in SD_PADDINGS.items():
             sd_data[index] = sd_data[index].rjust(_just)
 
     return ','.join(sd_data)
-
-
-def _ensure_target_dir(path: str):
-    Path(path).mkdir(parents=True, exist_ok=True)
-
-
-def _get_output_path(target_dir: str, station_name: str) -> str:
-    return Path(target_dir).joinpath(station_name)
-
