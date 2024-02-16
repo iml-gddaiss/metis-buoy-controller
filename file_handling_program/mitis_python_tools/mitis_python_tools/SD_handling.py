@@ -1,5 +1,46 @@
 """
+ <buoy name>_SD_<date>.dat
 
+    #1 Name of the buoy
+    #2 date buoy = 2017/02/28
+    #3 hour buoy = 00:00:46
+    #4 latitude buoy = 48 28.97N
+    #5 longitude buoy - 68 29.99W
+    #6 speed of the wind in km/h = 5
+    #7 maximal speed of the wind in km/h = 6
+    #8 Wind direction in degree = 177
+    #9 air temperature in degree Celsius = 24.1
+    #10 air humidity relative in % = 31
+    #11 air pressure in millibar = 1028.6
+    #12 water temperature in degree Celsius = 2.3
+    #13 water salinity in ppm = 12.0
+    #14 Density of water =1016.3 in Kg/cubic meter
+    #15 Fluorescent at 700nm (Scattering) in m-1 = 7.208E-03
+    #16 Fluorescent at 695nm (Chlorophyll) in µg/L = 1.098E+01
+    #17 Fluorescent at 460nm (Fluorescent Dissolved Organic Matter (FDOM)) in ppb = 2.822E+02
+    #18 PAR value in µmol photons•m-2•s-1 = 20
+    #19 Co2 in the water in ppm = 103.6 ppm
+    #20 Co2 in the air in ppm = 103.6 ppm
+    #21 pH = 7.6543
+    #22 Wave, period in second = 8.0
+    #23 Wave, average height in meter = 1.2
+    #24 Wave, height of the biggest wave in meter = 2.3
+    #25 Voltage of the batteries in Volt = 13.0
+    #26 Power of the charging solar in ampere = 0.2
+    #27 Power of the charging Wind turbine in ampere = 0.5
+    #28 Power consuming in ampere = 0.9
+    #29 pitch in degree (compass) = 0
+    #30 roll in degree (compass) = 0
+    #31 Power flow of the surface measured in m/s = 2.1
+    #32 Heading buoy (compass) in degree = 128
+    #33 Moving speed (GPS) in m/s = 0.0
+    #34 Moving direction (GPS) in degree =264
+    #35 Rain accumulation since midnight = #.#
+    #36 Current (ADCP RTI or RDI) bin #1 in m/s = 2.4
+    #37 Current direction (ADCP RTI ou RDI) in degree = 358
+    #38 Water presence in the buoy controller box (0= no water, 1= water)
+    #39 Water presence in the Power controller box (0= no water, 1= water)
+    #40 Water presence in the Winch controller box (0= no water, 1= water)
 
 Notes
 -----
@@ -21,9 +62,46 @@ _MMS_TO_MS = 1 / 1000
 
 
 SD_PADDINGS = {
-    0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 2, 6: 2, 7: 3, 8: 4, 9: 3, 10: 6, 11: 5, 12: 5, 13: 5,
-    14: 9, 15: 6, 16: 5, 17: 4, 18: 5, 19: 5, 20: 6, 21: 4, 22: 4, 23: 4, 24: 4, 25: 4, 26: 4,
-    27: 4, 28: 3, 29: 3, 30: 0, 31: 3, 32: 4, 33: 3, 34: 4, 35: 3, 36: 3, 37: 0, 38: 0,
+    0: 0,
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0,
+    5: 2,
+    6: 2,
+    7: 3,
+    8: 4,
+    9: 3,
+    10: 6,
+    11: 5,
+    12: 5,
+    13: 5,
+    14: 9,
+    15: 6,
+    16: 5,
+    17: 4,
+    18: 5,  #6?
+    19: 5,  #6?
+    20: 6,
+    21: 4,
+    22: 4,
+    23: 4,
+    24: 4,
+    25: 4,
+    26: 4,
+    27: 4,
+    28: 3,
+    29: 3,
+    30: 0,
+    31: 3,
+    32: 4,
+    33: 3,
+    34: 4,
+    35: 3,
+    36: 3,
+    37: 0,
+    38: 0,
+    38: 0
 }
 
 
@@ -114,50 +192,8 @@ def _format_lonlat(value: str):
 
 def _make_SD_string(data: Dict[str, List[str]], sd_padding: bool) -> str:
     """Make SD string from unpacked Mitis Tag Data
-    <buoy name>_SD_<date>.dat
-
-    #1 Name of the buoy
-    #2 date buoy = 2017/02/28
-    #3 hour buoy = 00:00:46
-    #4 latitude buoy = 48 28.97N
-    #5 longitude buoy - 68 29.99W
-    #6 speed of the wind in km/h = 5
-    #7 maximal speed of the wind in km/h = 6
-    #8 Wind direction in degree = 177
-    #9 air temperature in degree Celsius = 24.1
-    #10 air humidity relative in % = 31
-    #11 air pressure in millibar = 1028.6
-    #12 water temperature in degree Celsius = 2.3
-    #13 water salinity in ppm = 12.0
-    #14 Density of water =1016.3 in Kg/cubic meter
-    #15 Fluorescent at 700nm (Scattering) in m-1 = 7.208E-03
-    #16 Fluorescent at 695nm (Chlorophyll) in µg/L = 1.098E+01
-    #17 Fluorescent at 460nm (Fluorescent Dissolved Organic Matter (FDOM)) in ppb = 2.822E+02
-    #18 PAR value in µmol photons•m-2•s-1 = 20
-    #19 Co2 in the water in ppm = 103.6 ppm
-    #20 Co2 in the air in ppm = 103.6 ppm
-    #21 pH = 7.6543
-    #22 Wave, period in second = 8.0
-    #23 Wave, average height in meter = 1.2
-    #24 Wave, height of the biggest wave in meter = 2.3
-    #25 Voltage of the batteries in Volt = 13.0
-    #26 Power of the charging solar in ampere = 0.2
-    #27 Power of the charging Wind turbine in ampere = 0.5
-    #28 Power consuming in ampere = 0.9
-    #29 pitch in degree (compass) = 0
-    #30 roll in degree (compass) = 0
-    #31 Power flow of the surface measured in m/s = 2.1
-    #32 Heading buoy (compass) in degree = 128
-    #33 Moving speed (GPS) in m/s = 0.0
-    #34 Moving direction (GPS) in degree =264
-    #35 Rain accumulation since midnight = #.#
-    #36 Current (ADCP RTI or RDI) bin #1 in m/s = 2.4
-    #37 Current direction (ADCP RTI ou RDI) in degree = 358
-    #38 Water presence in the buoy controller box (0= no water, 1= water)
-    #39 Water presence in the Power controller box (0= no water, 1= water)
-    #40 Water presence in the Winch controller box (0= no water, 1= water)
     """
-    sd_data = ["#" for x in range(39)]
+    sd_data = ["#"] * 40
 
     if "init" in data:
         sd_data[0] = data["init"]['buoy_name']  # Buoy_Name
@@ -184,9 +220,9 @@ def _make_SD_string(data: Dict[str, List[str]], sd_padding: bool) -> str:
         _sum_amp = (float(data['powr']['amp_main']) + float(data['powr']['amp_winch']))
 
         sd_data[24] = f"{_max_battery:.1f}"
-        sd_data[27] = f"{_sum_amp:.1f}"
         sd_data[25] = f"{float(data['powr']['amp_solar']):.1f}"
         sd_data[26] = f"{float(data['powr']['amp_turbine']):.1f}"
+        sd_data[27] = f"{_sum_amp:.1f}"
         sd_data[38] = data['powr']['relay_state'][7]
 
     if "eco1" in data:
@@ -215,13 +251,13 @@ def _make_SD_string(data: Dict[str, List[str]], sd_padding: bool) -> str:
         sd_data[34] = f"{float(data['atms']['rain_total']):.1f}"
 
     if "wave" in data:
-        sd_data[11] = f"{float(data['wave']['period']):.1f}"
+        sd_data[21] = f"{float(data['wave']['period']):.1f}"
         sd_data[22] = f"{float(data['wave']['h13']):.1f}"
         sd_data[23] = f"{float(data['wave']['hmax']):.1f}"
 
     if "pco2" in data:
-        sd_data[18] = f"{float(data['pco2']['co2_air']):.1f}"
-        sd_data[19] = f"{float(data['pco2']['co2_water']):.1f}"
+        sd_data[18] = f"{float(data['pco2']['co2_water']):.1f}"
+        sd_data[19] = f"{float(data['pco2']['co2_air']):.1f}"
 
     if 'adcp' in data:
         _u = float(data['adcp']['u'])

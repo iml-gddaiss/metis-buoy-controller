@@ -1,6 +1,6 @@
 {
   "sd_padding": true,
-  "source_dir": "/home/jeromejguay/ImlSpace/Projects/mitis-buoy-controller/tests/",
-  "target_dir": "/home/jeromejguay/ImlSpace/Projects/mitis-buoy-controller/tests/SD/",
-  "winch_dir": "/home/jeromejguay/ImlSpace/Projects/mitis-buoy-controller/tests/Winch/"
+  "source_dir": "",
+  "target_dir": "",
+  "winch_dir": ""
 }
