@@ -80,8 +80,8 @@ SD_PADDINGS = {
     15: 6,
     16: 5,
     17: 4,
-    18: 5,  #6?
-    19: 5,  #6?
+    18: 6,  # used to be 5. Instrument could return a value in the thousands.
+    19: 6,  # used to be 5. Instrument could return a value in the thousands.
     20: 6,
     21: 4,
     22: 4,
