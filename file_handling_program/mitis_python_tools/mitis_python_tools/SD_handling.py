@@ -56,9 +56,9 @@ from typing import Dict, List
 from pathlib import Path
 
 from mitis_python_tools.TAG_reader import read_TAG_file
-
-_KNOTS_TO_KPH = 1.852
-_MMS_TO_MS = 1 / 1000
+_KNOTS_TO_MPS = 0.5144444444  # mps/knots
+_KNOTS_TO_KPH = 1.852  # kph/knots
+_MMPS_TO_MPS = 1 / 1000  # mms/ms
 
 
 SD_PADDINGS = {
@@ -208,7 +208,7 @@ def _make_SD_string(data: Dict[str, List[str]], sd_padding: bool) -> str:
         sd_data[29] = f"{float(data['init']['roll']):.1f}"
 
         sd_data[33] = f"{float(data['init']['cog']) % 360:.0f}"
-        sd_data[32] = f"{float(data['init']['sog']):.1f}"
+        sd_data[32] = f"{float(data['init']['sog']) * _KNOTS_TO_MPS:.1f}"
 
         _water_detection = float(data['init']['water_detection'])
         if _water_detection < 2000 and not math.isnan(_water_detection):
@@ -262,7 +262,7 @@ def _make_SD_string(data: Dict[str, List[str]], sd_padding: bool) -> str:
     if 'adcp' in data:
         _u = float(data['adcp']['u'])
         _v = float(data['adcp']['v'])
-        _uv = math.sqrt(_u ** 2 + _v ** 2) * _MMS_TO_MS
+        _uv = math.sqrt(_u ** 2 + _v ** 2) * _MMPS_TO_MPS
         _dir = math.atan2(_u, _v) % 360
 
         sd_data[35] = f"{_uv:.1f}"

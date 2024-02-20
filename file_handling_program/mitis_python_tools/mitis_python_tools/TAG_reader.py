@@ -6,7 +6,7 @@ Tag String Structure
 [ECO1]Scattering,Chlorophyll,FDOM
 [CTD]Temperature,Conductivity,Salinity,Density
 [PH]Ext_pH_Calc,Int_pH_Calc,Error_Flag,Ext_pH,Int_pH
-[NO2]Dark_Nitrate,Light_Nitrate,Dark_Nitrogen_in_Nitrate,Light_Nitrogen_in_Nitrate,Dark_Bromide,Light_Bromide
+[NO3]Dark_Nitrate,Light_Nitrate,Dark_Nitrogen_in_Nitrate,Light_Nitrogen_in_Nitrate,Dark_Bromide,Light_Bromide
 [Wind]Source,Wind_Dir_Min,Wind_Dir_Ave,Wind_Dir_Max,Wind_Spd_Min,Wind_Spd_Ave,Wind_Spd_Max
                 Source: 7: wmt700, 5: wxt536
 [ATMS]Air_Temp,Air_Humidity,Air_Pressure,PAR,Rain_Total,Rain_Duration,Rain_Intensity
@@ -33,7 +33,7 @@ import re
 from typing import Dict, List
 
 # Tag found in transmitted file.
-INSTRUMENTS_TAG = ['INIT', 'POWR', 'ECO1', 'CTD', 'PH', 'NO2', 'WIND', 'ATMS', 'WAVE', 'ADCP', 'PCO2', 'WNCH']
+INSTRUMENTS_TAG = ['INIT', 'POWR', 'ECO1', 'CTD', 'PH', 'NO3', 'WIND', 'ATMS', 'WAVE', 'ADCP', 'PCO2', 'WNCH']
 
 DATA_TAG_REGEX = re.compile(rf"\[({'|'.join(INSTRUMENTS_TAG)})]((?:(?!\[).)*)", re.DOTALL)
 
@@ -45,7 +45,7 @@ TAG_VARIABLES = {
     'eco1': ['scattering', 'chlorophyll', 'fdom'],
     'ctd': ['temperature', 'conductivity', 'salinity', 'density'],
     'ph': ['ext_ph_calc', 'int_ph_calc', 'error_flag', 'ext_ph', 'int_ph'],
-    'no2': ['dark_nitrate', 'light_nitrate', 'dark_nitrogen_in_nitrate', 'light_nitrogen_in_nitrate', 'dark_bromide',
+    'no3': ['dark_nitrate', 'light_nitrate', 'dark_nitrogen_in_nitrate', 'light_nitrogen_in_nitrate', 'dark_bromide',
             'light_bromide'],
     'wind': ['source', 'wind_dir_min', 'wind_dir_ave', 'wind_dir_max', 'wind_spd_min', 'wind_spd_ave', 'wind_spd_max'],
     'atms': ['air_temperature', 'air_humidity', 'air_pressure', 'par', 'rain_total', 'rain_duration', 'rain_intensity'],

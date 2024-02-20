@@ -1,0 +1,9 @@
+setup.py
+mitis_python_tools/SD_handling.py
+mitis_python_tools/TAG_reader.py
+mitis_python_tools/WINCH_handling.py
+mitis_python_tools/__init__.py
+mitis_python_tools.egg-info/PKG-INFO
+mitis_python_tools.egg-info/SOURCES.txt
+mitis_python_tools.egg-info/dependency_links.txt
+mitis_python_tools.egg-info/top_level.txt

@@ -42,7 +42,7 @@ DataTable(FileSUNA_Light,UpdateSUNATable,-1)
 
 
 Function SUNATagString As String * 200
-  SunaTAGString = "[NO2]" & Dark_Nitrate & "," & Light_Nitrate & "," & Dark_Nitrogen_in_Nitrate & "," & Light_Nitrogen_in_Nitrate & "," & Dark_Bromide & "," & Light_Bromide
+  SunaTAGString = "[NO33]" & Dark_Nitrate & "," & Light_Nitrate & "," & Dark_Nitrogen_in_Nitrate & "," & Light_Nitrogen_in_Nitrate & "," & Dark_Bromide & "," & Light_Bromide
 EndFunction
 
 '### Sampling ###
