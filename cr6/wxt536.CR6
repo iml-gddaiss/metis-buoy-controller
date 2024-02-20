@@ -7,7 +7,7 @@ Dim RawWXT536_Rain As String * 75
 
 Dim WXT536_Weather(3) As Float : Alias WXT536_Weather = Air_Temp, Air_Humidity, Air_Pressure
 'The wind is Dim because it depends on the presence of WMT700
-Dim WXT536_Wind(6) As Float : Alias WXT536_Wind = Dir_Min2, Dir_Ave2, Dir_Max2, Spd_Min2, Spd_Ave2, Spd_Max2
+Dim WXT536_Wind(6) As Float : Alias WXT536_Wind = Dir_Min_536, Dir_Ave_536, Dir_Max_536, Spd_Min_536, Spd_Ave_536, Spd_Max_536
 Dim WXT536_Rain(6) As Float : Alias WXT536_Rain = Rain_Total, Rain_Duration, Rain_Intensity, Hail_Total, Hail_Duration, Hail_Intensity
 
 Dim UpdateWXT536Table As Boolean = false
@@ -16,12 +16,12 @@ Dim UpdateWXT536Table As Boolean = false
 Units Air_Temp = °C
 Units Air_Humidity = %
 Units Air_Pressure = hPa
-Units Dir_Min2 = °
-Units Dir_Ave2 = °
-Units Dir_Max2 = °
-Units Spd_Min2 = Kn
-Units Spd_Ave2 = Kn
-Units Spd_Max2 = Kn
+Units Dir_Min_536 = °
+Units Dir_Ave_536 = °
+Units Dir_Max_536 = °
+Units Spd_Min_536 = Kn
+Units Spd_Ave_536 = Kn
+Units Spd_Max_536 = Kn
 Units Rain_Total = mm
 Units Rain_Duration = sec
 Units Rain_Intensity = mm/h
@@ -36,12 +36,12 @@ DataTable(FileWXT536,UpdateWXT536Table,-1)
   Sample (1,Air_Temp,IEEE4)
   Sample (1,Air_Humidity,IEEE4)
   Sample (1,Air_Pressure,IEEE4)
-  Sample (1,Dir_Min2,IEEE4)
-  Sample (1,Dir_Ave2,IEEE4)
-  Sample (1,Dir_Max2,IEEE4)
-  Sample (1,Spd_Min2,IEEE4)
-  Sample (1,Spd_Ave2,IEEE4)
-  Sample (1,Spd_Max2,IEEE4)
+  Sample (1,Dir_Min_536,IEEE4)
+  Sample (1,Dir_Ave_536,IEEE4)
+  Sample (1,Dir_Max_536,IEEE4)
+  Sample (1,Spd_Min_536,IEEE4)
+  Sample (1,Spd_Ave_536,IEEE4)
+  Sample (1,Spd_Max_536,IEEE4)
   Sample (1,Rain_Total,IEEE4)
   Sample (1,Rain_Duration,IEEE4)
   Sample (1,Rain_Intensity,IEEE4)
