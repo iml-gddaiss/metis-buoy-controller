@@ -25,6 +25,7 @@ Public WinchMissingConditions As Long = 0
 
 
 Public WinchFileName As String * 50
+Dim Winch_Internal_File as String * 50 ' Probably too long
 Dim WinchFileHandle As Long
 
 
@@ -107,7 +108,7 @@ EndSub
 
 ' ####################### Winch Mission Start ############################## 
 Sub CheckWinchStatus 
-    SerialOpen(SerialWinch,19200,3,20,100) 
+    SerialOpen(SerialWinch,115200,3,20,100) 
     SerialFlush(SerialWinch)
     Delay(1,500,mSec)
     SerialIn(WinchString,SerialWinch,100,10,60)
@@ -126,6 +127,7 @@ Sub CheckWinchStatus
 EndSub
 
 Sub StartWinch
+    Dim start_command as String * 30
     If Buoy_Adrift_Alert Then
         Call logging("Buoy Adrift Alert is ON. Winch Disabled.")
         ExitSub
@@ -133,20 +135,15 @@ Sub StartWinch
     
     Call logging("Startig Winch Mission")    
 
-    SerialOpen(SerialWinch,19200,3,20,100)
-    SerialOut(SerialWinch,CHR(13),"",1,0)
-    SerialOut(SerialWinch,"p1"&CHR(13)&CHR(10),.,2,300)
-    Delay(1,2,Sec)
-    SerialFlush(SerialWinch)
+    start_command = "W"&Replace(Winch_Date, "-", "")&Replace(Winch_Time, ":", "")&Winch_Latitude&Winch_Longitude
+    SerialOpen(SerialWinch,115200,3,20,100)
+    SerialOut(SerialWinch,start_command&CHR(13)&CHR(10),"",1,0)
+    
     SerialIn(WinchString,SerialWinch,100,10,100)
-    SerialOut(SerialWinch,"p0"&CHR(13)&CHR(10),.,2,300)
-
-    If Mid(WinchString,1,3) = "[S]" Then 'If [S] is received from CTD -> winch has started
-        Call logging("Winch Mission was Started")
-        SerialOut(SerialWinch,"X"&CHR(13)&CHR(10),"[W]1B>Operation Complete",2,200)
-        SerialOut(SerialWinch,"R"&CHR(13)&CHR(10),"[W]09>Top Switch Activated",3,1000)
-        SerialOut(SerialWinch,"K"&CHR(13)&CHR(10),"[W]13>Lenght Manually Cleared",2,200)
-        SerialOut(SerialWinch,"Y"&Depth_for_Winch&CHR(13)&CHR(10),CHR(13),1,0)
+    
+    If WinchString <> "" Then 'If [S] is received from CTD -> winch has started
+        Winch_Internal_File = WinchString
+        Call logging("Winch Mission was Started. Winch File: " &  Winch_Internal_File)
         
         WinchStatus = "Sampling"
         
@@ -156,15 +153,16 @@ Sub StartWinch
         Else
             ' The next winch is still scheduled isn't changed if Start_Winch_Override is True.
             Winch_Last_Sample = Public.TimeStamp(1)
-            Winch_Latitude = Latitude
-            Winch_Longitude = Longitude
+
+            Winch_Latitude = Mid(GPS_Lat,1,2) & Mid(GPS_Lat,3,6)
+            Winch_Longitude = Mid(GPS_Lon,1,3) & Mid(GPS_Lon,4,6)
         EndIf
 
         SplitStr(Winch_DateTime, Public.TimeStamp(4), " ", 2, 5)
 
         WinchMessage = "Mission Started"
     Else 'No string from CTD
-        WinchMessage = "No String received from CTD"
+        WinchMessage = "No String received from Winch"
         Call logging("WINCH FAILED. Winch Start Confirmation not received.")
     EndIf
     
@@ -234,9 +232,9 @@ Sub DownloadWinchData
 
     Winch_Sampling_Failed = True
 
-    SerialOpen(SerialWinch,19200,3,20,100) 'Should it be started earlier ??
+    SerialOpen(SerialWinch,115200,3,20,100) 'Should it be started earlier ??
     SerialFlush(SerialWinch)
-    SerialOut(SerialWinch,"D"&CHR(13)&CHR(10),0,1,0)
+    SerialOut(SerialWinch,"read " & Winch_Internal_File&CHR(13)&CHR(10),0,1,0)
     
     WinchFileHandle = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
         
@@ -256,7 +254,9 @@ Sub DownloadWinchData
     SerialClose(SerialWinch)
     FileClose(WinchFileHandle)
 
-    Call logging("Winch Data Download Done")
+    Call logging("Winch Data Download Done.")
+
+    Call logging("Winch Last Line: " & WinchString)
 
     If Winch_Sampling_Failed Then
         Call Set_Winch_Failed_Warning

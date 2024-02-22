@@ -8,7 +8,7 @@ ConstTable (Buoy_Config,0)
     Const Allowed_Position_Deviation_m As Float = 500 ' Meters. Distance from Latitude_0,Longitude_0
     
     ' ### Sampling Interval ####
-    Const Buoy_Interval_Min As Long = 15
+    Const Buoy_Interval_Min As Long = 30
     Const PCO2_Interval_Hr As Long = 12
     Const Winch_Interval_Hr As Long = 5
     Const Rain_Interval_Hr As Long = 24
@@ -48,7 +48,7 @@ ConstTable (Buoy_Config,0)
 
     Const With_Wave As Boolean = true
     Const With_ADCP As Boolean = true
-    Const With_Winch As Boolean = false
+    Const With_Winch As Boolean = true
     Const With_Water_Detection_Main As Boolean = true
     Const With_Power As Boolean = true
 EndConstTable
