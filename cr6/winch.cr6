@@ -136,6 +136,9 @@ Sub StartWinch
     Call logging("Startig Winch Mission")    
 
     start_command = "W"&Replace(Winch_Date, "-", "")&Replace(Winch_Time, ":", "")&Winch_Latitude&Winch_Longitude
+    
+    Call logging("Winch Start Command: " & start_command)
+    
     SerialOpen(SerialWinch,115200,3,20,100)
     SerialOut(SerialWinch,start_command&CHR(13)&CHR(10),"",1,0)
     

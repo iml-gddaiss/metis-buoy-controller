@@ -4,75 +4,104 @@
 
 
 '### Data Variables ###
-Dim RawSUNADark As String * 80
-Dim RawSUNALight As String * 80
+Dim RawSUNA As String * 80
+' Dim RawSUNADark As String * 80
+' Dim RawSUNALight As String * 80
 
-Dim SUNADark(8) As Float : Alias SUNADark = SUNA_Dark_Date, SUNA_Dark_Time, Dark_Nitrate, Dark_Nitrogen_in_Nitrate, Dark_254nm, Dark_300nm, Dark_Bromide, SUNA_Dark_RMSE
-Dim SUNALight(8) As Float : Alias SUNALight = SUNA_Light_Date, SUNA_Light_Time, Light_Nitrate, Light_Nitrogen_in_Nitrate, Light_254nm, Light_300nm, Light_Bromide, SUNA_Light_RMSE
+' SUNA data format: CONCENTRATION ASCII (from documentation)
+' SUNA_Nitrate: Concentration
+' SUNA_Nitrogen: Concentration
+' SUNA_254: Absorbance
+' SUNA_300: Absorbance
+' SUNA_Bromide: Concentration
+' SUNA_RMSE: Fit Root Mean Square (Error?)
+Dim SUNA(8) As Float : Alias SUNA = SUNA_Date, SUNA_Time, SUNA_Nitrate, SUNA_Nitrogen, SUNA_254, SUNA_300, SUNA_Bromide, SUNA_RMSE
+' Dim SUNADark(8) As Float : Alias SUNADark = SUNA_Dark_Date, SUNA_Dark_Time, Dark_Nitrate, Dark_Nitrogen_in_Nitrate, Dark_254nm, Dark_300nm, Dark_Bromide, SUNA_Dark_RMSE
+' Dim SUNALight(8) As Float : Alias SUNALight = SUNA_Light_Date, SUNA_Light_Time, Light_Nitrate, Light_Nitrogen_in_Nitrate, Light_254nm, Light_300nm, Light_Bromide, SUNA_Light_RMSE
 
 Dim UpdateSUNATable As Boolean = false
 
 '### Units ###
-Units Dark_Nitrate = µM
-Units Light_Nitrate = µM
-Units Dark_Nitrogen_in_Nitrate = mgN/L
-Units Light_Nitrogen_in_Nitrate = mgN/L
-Units Dark_Bromide = mg/L
-Units Light_Bromide = mg/L
+Units SUNA_Nitrate = µM
+Units SUNA_Nitrogen = mgN/L
+Units SUNA_254 = nm
+Units SUNA_300 = nm
+Units SUNA_Bromide = mg/L
+
+' Units Dark_Nitrate = µM
+' Units Light_Nitrate = µM
+' Units Dark_Nitrogen_in_Nitrate = mgN/L
+' Units Light_Nitrogen_in_Nitrate = mgN/L
+' Units Dark_Bromide = mg/L
+' Units Light_Bromide = mg/L
 
 
 '### Tables ###
-DataTable(FileSUNA_Dark,UpdateSUNATable,-1)
+ DataTable(FileSUNA,UpdateSUNATable,-1)
   DataInterval(0,0,Sec,10)
-  Sample (1,Dark_Nitrate,IEEE4)
-  Sample (1,Dark_Nitrogen_in_Nitrate,IEEE4)
-  Sample (1,Dark_254nm,IEEE4)
-  Sample (1,Dark_300nm,IEEE4)
-  Sample (1,Dark_Bromide,IEEE4)
+  Sample (1,SUNA_Nitrate,IEEE4)
+  Sample (1,SUNA_Nitrogen,IEEE4)
+  Sample (1,SUNA_254,IEEE4)
+  Sample (1,SUNA_300,IEEE4)
+  Sample (1,SUNA_Bromide,IEEE4)
  EndTable
+
+' DataTable(FileSUNA_Dark,UpdateSUNATable,-1)
+'   DataInterval(0,0,Sec,10)
+'   Sample (1,Dark_Nitrate,IEEE4)
+'   Sample (1,Dark_Nitrogen_in_Nitrate,IEEE4)
+'   Sample (1,Dark_254nm,IEEE4)
+'   Sample (1,Dark_300nm,IEEE4)
+'   Sample (1,Dark_Bromide,IEEE4)
+'  EndTable
  
-DataTable(FileSUNA_Light,UpdateSUNATable,-1)
-  DataInterval(0,0,Sec,10)
-  Sample (1,Light_Nitrate,IEEE4)
-  Sample (1,Light_Nitrogen_in_Nitrate,IEEE4)
-  Sample (1,Light_254nm,IEEE4)
-  Sample (1,Light_300nm,IEEE4)
-  Sample (1,Light_Bromide,IEEE4)
- EndTable
+' DataTable(FileSUNA_Light,UpdateSUNATable,-1)
+'   DataInterval(0,0,Sec,10)
+'   Sample (1,Light_Nitrate,IEEE4)
+'   Sample (1,Light_Nitrogen_in_Nitrate,IEEE4)
+'   Sample (1,Light_254nm,IEEE4)
+'   Sample (1,Light_300nm,IEEE4)
+'   Sample (1,Light_Bromide,IEEE4)
+'  EndTable
+
+
+
 
 
 Function SUNATagString As String * 200
-  SunaTAGString = "[NO3]" & Dark_Nitrate & "," & Light_Nitrate & "," & Dark_Nitrogen_in_Nitrate & "," & Light_Nitrogen_in_Nitrate & "," & Dark_Bromide & "," & Light_Bromide
+  SunaTAGString = "[NO3]" & SUNA_Nitrate & "," & SUNA_Nitrogen & "," & SUNA_Bromide & "," & SUNA_RMSE
+  ' SunaTAGString = "[NO3]" & Dark_Nitrate & "," & Light_Nitrate & "," & Dark_Nitrogen_in_Nitrate & "," & Light_Nitrogen_in_Nitrate & "," & Dark_Bromide & "," & Light_Bromide
 EndFunction
 
 '### Sampling ###
 Sub StartSUNA  
   If With_SUNA Then
-    SUNALight() = ""
-    SUNADark() = ""
+    SUNA() = ""
+    ' SUNALight() = ""
+    ' SUNADark() = ""
     
     Call logging("Starting SUNA")
 
     SerialOpen(SerialSUNA,19200,3,20,250)
     SerialOut(SerialSUNA,"$","CMD?",1,400)
-    SerialOut(SerialSUNA,"measure 1"&CHR(13),CHR(10),1,50)
+    ' SerialOut(SerialSUNA,"measure 1"&CHR(13),CHR(10),1,50) '  The sensor gets "n" light data frames. If "n" is zero, the sensor gets one dark data frame. Should it be zero ?
     
-    Call logging("Collecting SUNAaDark")
-    SerialIn(RawSUNADark,SerialSUNA,150,13,80) 'The Dark sample is nearly auto, then at least 12sec for the Light one
-    Call logging("Raw SUNADark: " & RawSUNADark)
+    ' Call logging("Collecting SUNADark")
+    ' SerialIn(RawSUNADark,SerialSUNA,150,13,80) 'The Dark sample is nearly auto, then at least 12sec for the Light one
+    ' Call logging("Raw SUNADark: " & RawSUNADark)
 
-    If RawSUNADark = "" Then
-      RawSUNADark = "NAN"
-    EndIf
+    ' If RawSUNADark = "" Then
+    '   RawSUNADark = "NAN"
+    ' EndIf
     
-    If RawSUNADark <> "NAN" Then
-      SplitStr(SUNADark(),RawSUNADark,",",8,4) ' Ignoring serial number (Option 4: strings after the first split sep)
-    Else
-      Call Failed_Sampling_Warning("Suna")
-    EndIf
+    ' If RawSUNADark <> "NAN" Then
+    '   SplitStr(SUNADark(),RawSUNADark,",",8,4) ' Ignoring serial number (Option 4: strings after the first split sep)
+    ' Else
+    '   Call Failed_Sampling_Warning("Suna")
+    ' EndIf
       
     Timer(Suna_Timer,Sec,2) 'Timer #5 Start for at least 12 sec
-    Call logging("Starting SUNALight Timer")
+    Call logging("Starting SUNA Timer")
   EndIf
 EndSub
 
@@ -80,24 +109,32 @@ EndSub
 Sub CollectSUNA ' FIXME is this correct ?
   ' &4C43 -> LC &0D0A -> CR LF
   ' Note: SUNADAark is Collected on start.
+  Dim X
   Dim NBR ' Number of Bytes Returned
   If With_SUNA Then
-    Call logging("Collecting SUNALight")
+    Call logging("Collecting SUNA")
 
     Call TimerDelay_Sec(Suna_Timer, Suna_Delay_Sec)
     
-    SerialInRecord(SerialSUNA,RawSUNALight,&H4C43,0,&H0D0A,NBR,101)
-    SerialOut(SerialSUNA,"sleep"&CHR(13),0,1,0)
-    SerialClose(SerialSUNA) 
+    For X = 1 to 3 Step 1
+      SerialInRecord(SerialSUNA,RawSUNA,&H4C43,0,&H0D0A,NBR,101)
+      SerialOut(SerialSUNA,"sleep"&CHR(13),0,1,0)
+      SerialClose(SerialSUNA) 
+      
+      Call logging("Raw SUNA (attempt " & X & "): " & RawSUNA)
     
-    Call logging("Raw SunaLight: " & RawSUNALight)
-    
-    If RawSUNALight <> "NAN" Then
-      RawSUNALight = "SATSLC"&RawSUNALight
-      SplitStr(SUNALight(),RawSUNALight,",",8,4) ' Ignoring serial number (Option 4: strings after the first split sep)
+      If RawSUNA <> "NAN" Then
+        ExitFor
+      EndIf
+      Delay(1, 2, Sec)
+    EndFor
+
+    If RawSUNA <> "NAN" Then
+      RawSUNA = "SATSLC"&RawSUNA
+      SplitStr(SUNA(),RawSUNA,",",8,4) ' Ignoring serial number (Option 4: strings after the first split sep)
+      ExitFor
     Else
       Call Failed_Sampling_Warning("Suna")
-    EndIf
 
     UpdateSUNATable = true
 
