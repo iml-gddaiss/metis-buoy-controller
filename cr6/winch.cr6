@@ -152,7 +152,7 @@ Sub StartWinch
         Winch_Longitude = Mid(GPS_Lon,1,3) & Mid(GPS_Lon,4,6)
     EndIf
 
-    start_command = "W"&Winch_Date&Winch_Time&&Winch_Latitude&Winch_Longitude
+    start_command = "W" & Winch_Date & Winch_Time & Winch_Latitude & Winch_Longitude
     
     Call logging("Winch Start Command: " & start_command)
     
