@@ -15,6 +15,10 @@ Public Magnetic_Variation As Float = ""
 Dim Latitude_Decimal As Float = ""
 Dim Longitude_Decimal As Float = ""
 
+' Use to store instant query of the gps value by GetGPSPosition(). Not saved as data.
+Dim latitude_tmp As String
+Dim longitude_tmp As String
+
 
 '### Units ###
 Units SOG = Kn
@@ -132,14 +136,12 @@ Sub SampleGPS
     EndIf
 EndSub
 
-
-
-Sub GetGPSPosition(_latitude_ As String, _longitude_ As String,)
+Sub GetGPSPosition
     Dim _rawgps_ as String * 100
     Dim _GPS_HVS_(13) As String
 
-    _latitude_ = ""
-    _longitude_ = ""
+    latitude_tmp = ""
+    longitude_tmp = ""
 
     If With_GPS
         Call logging("Collecting GPS for Winch Manual Override")
@@ -152,8 +154,8 @@ Sub GetGPSPosition(_latitude_ As String, _longitude_ As String,)
 
         SplitStr(_GPS_HVS_,_rawgps_,",",13,5)
 
-        _latitude_ = Mid(_GPS_HVS_(4),1,2) & Mid(_GPS_HVS_(4),3,6)
-        _longitude_ = Mid(_GPS_HVS_(5),1,3) & Mid(_GPS_HVS_(5),4,6)
+        latitude_tmp = _GPS_HVS_(4)
+        longitude_tmp = _GPS_HVS_(5)
     Else
         Call logging("Could not get position, With_GPS is False.")
     EndIf

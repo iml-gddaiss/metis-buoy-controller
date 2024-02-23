@@ -1,5 +1,5 @@
 'Winch related code
-Const SuccesfulWinchMessage = "Winch was sampled successfully" ' TODO CHANGE TO THE CORRECT VALUE
+Const SuccesfulWinchMessage = "CTD in the dock" ' TODO CHANGE TO THE CORRECT VALUE
 Const WinchMaxFileLength = 100000 ' Maximum number of lines of a file (Safety)  TODO CHANGE TO THE CORRECT VALUE
 Public WinchString As String * 30
 ' The actual maximum size of the file in bytes would be WinchMaxFileLength * Length(WinchString) of the winch file in bytes.
@@ -136,10 +136,14 @@ Sub StartWinch
     Call logging("Startig Winch Mission")    
     
     SplitStr(Winch_DateTime, Public.TimeStamp(4), " ", 2, 5)
+    Winch_Date = Replace(Winch_Date, "-", "")
+    Winch_Time = Replace(Mid(Winch_Time, 1, 8), ":", "")
     
     If Start_Winch_Override Then
         'Updating GPS Values for Winch TimeStamp
-        Call GetGpsPosition(Winch_Latitude, Winch_Longitude)
+        Call GetGpsPosition
+        Winch_Latitude = Mid(latitude_tmp,1,2) & Mid(latitude_tmp,3,6)
+        Winch_Longitude = Mid(longitude_tmp,1,3) & Mid(longitude_tmp,4,6)
     Else
         ' The next scheduled winch time is only changed when its a scheduled winch.
         Winch_Last_Sample = Public.TimeStamp(1)
@@ -148,7 +152,7 @@ Sub StartWinch
         Winch_Longitude = Mid(GPS_Lon,1,3) & Mid(GPS_Lon,4,6)
     EndIf
 
-    start_command = "W"&Replace(Winch_Date, "-", "")&Replace(Winch_Time, ":", "")&Winch_Latitude&Winch_Longitude
+    start_command = "W"&Winch_Date&Winch_Time&&Winch_Latitude&Winch_Longitude
     
     Call logging("Winch Start Command: " & start_command)
     
@@ -210,19 +214,19 @@ EndSub
 
 ' ####################### Collecting Data ##############################
 
-Sub InitWinchFile
-    WinchFileName = "WDATA_"& Buoy_Name &"_"& Replace(Winch_Date, "-", "") &"_"& Replace(Winch_Time, ":", "")
-    WinchFileHandle = FileOpen("CRD:"&WinchFileName&".txt","a",-1)
+' Sub InitWinchFile
+'     WinchFileName = "WDATA_"& Buoy_Name &"_"& Replace(Winch_Date, "-", "") &"_"& Replace(Winch_Time, ":", "")
+'     WinchFileHandle = FileOpen("CRD:"&WinchFileName&".txt","a",-1)
 
-    FileWrite(WinchFileHandle,Winch_Time&" "&Winch_Date&CHR(10),0)
-    FileWrite(WinchFileHandle,Buoy_Name&CHR(10),0)     
-    FileWrite(WinchFileHandle,Winch_Latitude&","&Winch_Longitude&CHR(10),0)    
-    FileWrite(WinchFileHandle,"D"&CHR(10),0)
+    ' FileWrite(WinchFileHandle,Winch_Time&" "&Winch_Date&CHR(10),0)
+    ' FileWrite(WinchFileHandle,Buoy_Name&CHR(10),0)     
+    ' FileWrite(WinchFileHandle,Winch_Latitude&","&Winch_Longitude&CHR(10),0)    
+    ' FileWrite(WinchFileHandle,"D"&CHR(10),0)
 
-    FileClose(WinchFileHandle)
+'     FileClose(WinchFileHandle)
     
-    Call logging("Winch File Created -> " &WinchFileName)
-EndSub
+'     Call logging("Winch File Created -> " &WinchFileName)
+' EndSub
 
 
 Sub DownloadWinchData
@@ -237,6 +241,7 @@ Sub DownloadWinchData
     SerialFlush(SerialWinch)
     SerialOut(SerialWinch,"read " & Winch_Internal_File&CHR(13)&CHR(10),0,1,0)
     
+    WinchFileName = "WDATA_"& Buoy_Name &"_"& Winch_Date & Winch_Time
     WinchFileHandle = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
         
     For X = 1 To WinchMaxFileLength Step 1
@@ -245,6 +250,7 @@ Sub DownloadWinchData
         
         If WinchString = SuccesfulWinchMessage Then
             Winch_Sampling_Failed = False
+            ExitFor
         ElseIf WinchString = "" Then
             ExitFor
         EndIf
@@ -255,7 +261,7 @@ Sub DownloadWinchData
     SerialClose(SerialWinch)
     FileClose(WinchFileHandle)
 
-    Call logging("Winch Data Download Done.")
+    Call logging("Winch Data Downloaded -> " &WinchFileName)
 
     Call logging("Winch Last Line: " & WinchString)
 
@@ -278,9 +284,7 @@ Sub CollectWinch
     If WinchStatus = "Completed" Then
         Call logging("Collecting Winch")
         WinchStatus = "Standby"
-        
-        Call InitWinchFile
-        
+                
         Call DownloadWinchData
     EndIf
 EndSub
