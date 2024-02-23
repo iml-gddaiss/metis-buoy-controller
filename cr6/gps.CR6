@@ -152,7 +152,7 @@ Sub GetGPSPosition
         SerialIn(_rawgps_,SerialGPS,150,10,80)
         SerialClose(SerialGPS)
         
-        Call logging("Last Raw GPS (" &X& "): " & _rawgps_)
+        Call logging("Raw GPS: " & _rawgps_)
 
         SplitStr(_GPS_HVS_,_rawgps_,",",13,5)
 
