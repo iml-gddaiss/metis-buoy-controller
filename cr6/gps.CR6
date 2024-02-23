@@ -146,11 +146,13 @@ Sub GetGPSPosition
     If With_GPS
         Call logging("Collecting GPS for Winch Manual Override")
         
+        Call StartGPS
         SerialFlush(SerialGPS) ' To clear buffer (continuous feed)
         SerialIn(_rawgps_,SerialGPS,150,10,80) '(to make sure it didn't cut mid transmission.)
         SerialIn(_rawgps_,SerialGPS,150,10,80)
-
         SerialClose(SerialGPS)
+        
+        Call logging("Last Raw GPS (" &X& "): " & _rawgps_)
 
         SplitStr(_GPS_HVS_,_rawgps_,",",13,5)
 
