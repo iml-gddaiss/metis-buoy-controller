@@ -265,8 +265,9 @@ DataTable (FileRaw,1,-1) ' This need to be declared after the instrument script 
   Sample (1,RawSBE37,String)
   Sample (1,RawTriplet,String)
   Sample (1,RawSeafet,String)
-  Sample (1,RawSUNADark,String)
-  Sample (1,RawSUNALight,String)
+  Sample (1,RawSUNA,String)
+  ' Sample (1,RawSUNADark,String)
+  ' Sample (1,RawSUNALight,String)
   Sample (1,RawPCO2_Water,String)
   Sample (1,RawPCO2_Air,String)
   Sample (1,WinchMessage,String)
@@ -318,8 +319,9 @@ Sub ResetRawStrings
   RawSBE37 = ""
   RawTriplet = ""
   RawSeafet = ""
-  RawSUNADark = ""
-  RawSUNALight = ""
+  RawSUNA = ""
+  ' RawSUNADark = ""
+  ' RawSUNALight = ""
 
   Call ResetPCO2RawStrings
 EndSub
@@ -438,8 +440,9 @@ BeginProg
   CallTable FileHyperOCR
   CallTable FileSBE37
   CallTable FileSeafet
-  CallTable FileSUNA_Light
-  CallTable FileSUNA_Dark
+  ' CallTable FileSUNA_Light
+  ' CallTable FileSUNA_Dark
+  CallTable FileSUNA
   CallTable FilePAR
   CallTable FileWXT536
   CallTable FileWMT700
