@@ -127,14 +127,14 @@ Sub CollectSUNA ' FIXME is this correct ?
         ExitFor
       EndIf
       Delay(1, 2, Sec)
-    EndFor
+    Next
 
     If RawSUNA <> "NAN" Then
       RawSUNA = "SATSLC"&RawSUNA
       SplitStr(SUNA(),RawSUNA,",",8,4) ' Ignoring serial number (Option 4: strings after the first split sep)
-      ExitFor
     Else
       Call Failed_Sampling_Warning("Suna")
+    EndIf
 
     UpdateSUNATable = true
 
