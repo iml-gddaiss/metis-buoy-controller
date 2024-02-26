@@ -17,7 +17,7 @@ Public PositionDeviation As Long
 
 Public Battery_Low_Warning As Boolean = False
 Public Water_Infiltration_Warning As Boolean = False
-Public Winch_Failed_Warning As Boolean = False
+Public Winch_Error_Warning As Boolean = False
 Public Winch_Download_TimedOut_Warning As Boolean = False
 
 Dim SaveLog as Boolean = False ' Save log on Failed instrument sampling.
@@ -67,14 +67,14 @@ Sub Set_Buoy_Adrift_Alarm
 EndSub
 
 
-Sub Set_Winch_Failed_Warning
+Sub Set_Winch_Error_Warning
 ' Failed Winch Warning will only send one email when set. The alarm need
 ' be turned off by the user and set again for a new email to be sent.
-    If Not Winch_Failed_Warning Then
+    If Not Winch_Error_Warning Then
         Call Email_Init(0, "Winch Failed")
         Call SendEmail
 
-        Winch_Failed_Warning = True
+        Winch_Error_Warning = True
     EndIf
 EndSub
 

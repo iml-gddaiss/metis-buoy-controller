@@ -84,8 +84,9 @@ Sub StartSUNA
 
     SerialOpen(SerialSUNA,19200,3,20,250)
     SerialOut(SerialSUNA,"$","CMD?",1,400)
-    ' SerialOut(SerialSUNA,"measure 1"&CHR(13),CHR(10),1,50) '  The sensor gets "n" light data frames. If "n" is zero, the sensor gets one dark data frame. Should it be zero ?
-    
+    SerialOut(SerialSUNA,"measure 1"&CHR(13),CHR(10),1,50) '  The sensor gets "n" light data frames. If "n" is zero, the sensor gets one dark data frame. Should it be zero ?
+    SerialIn(RawSUNA,SerialSUNA,150,13,80) 'The Dark sample is nearly auto, then at least 12sec for the Light one
+    RawSUNA = ""
     ' Call logging("Collecting SUNADark")
     ' SerialIn(RawSUNADark,SerialSUNA,150,13,80) 'The Dark sample is nearly auto, then at least 12sec for the Light one
     ' Call logging("Raw SUNADark: " & RawSUNADark)

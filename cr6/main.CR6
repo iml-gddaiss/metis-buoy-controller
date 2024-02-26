@@ -65,7 +65,7 @@
 '  o `Water_Infiltration_Warning`
 '    TODO
 '
-'   o `Winch_Failed_Warning`
+'   o `Winch_Error_Warning`
 '     TODO
 '
 '  o `Winch_Download_TimedOut_Warning`
