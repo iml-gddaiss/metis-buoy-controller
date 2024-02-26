@@ -191,7 +191,7 @@ Sub StartWinch
     SerialOut(SerialWinch, winch_start_command& CHR(13),"",1,0) ' Winch expect a carriage return (char(13)) at the end of a command.
     SerialIn(WinchString,SerialWinch,100,10,100) ' Winch returns a newline (char(10)) upon receiving a command (or char(13))
     
-    Call loggging("Debug: Winch first message: " & WinchString)
+    Call logging("Debug: Winch first message: " & WinchString)
     
     SerialIn(WinchString,SerialWinch,100,10,100) ' Winch ends its message with a newline (char(10)).
     If InStr(1,WinchString,"txt",2) Then
@@ -291,7 +291,7 @@ Sub DownloadWinchData
     Call logging(WinchString)
     SerialIn(WinchString,SerialWinch,300,10,60)
     
-    If WinchString == "---" Then
+    If WinchString = "---" Then
         Do While  x < WinchMaxFileLength
             ' WinchString = "" ' Probably not nescesary
             x+=1
@@ -302,12 +302,13 @@ Sub DownloadWinchData
                 Winch_Sampling_Failed = False
             EndIf
             
-            If WinchString = "" or WinchSintrg = "---" Then 'End of file reached'
+            If WinchString = "" or WinchString = "---" Then 'End of file reached'
                 ExitDo
             EndIf
             
             FileWrite(WinchFileHandle,WinchString,0)
         Loop
+    EndIf
 
     SerialClose(SerialWinch)
     FileClose(WinchFileHandle)
