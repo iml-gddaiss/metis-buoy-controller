@@ -164,16 +164,13 @@ Sub CheckWinchStatus
 EndSub
 
 Sub StartWinch
+    Dim X
     If Buoy_Adrift_Alert Then
         Call logging("Buoy Adrift Alert is ON. Winch Disabled.")
         ExitSub
     EndIf
     
     Call logging("Startig Winch Mission")    
-    
-    SplitStr(Winch_DateTime, Public.TimeStamp(4), " ", 2, 5)
-    Winch_Date = Replace(Winch_Date, "-", "")
-    Winch_Time = Replace(Mid(Winch_Time, 1, 8), ":", "")
     
     If Start_Winch_Override Then
         'Updating GPS Values for Winch TimeStamp
@@ -188,22 +185,28 @@ Sub StartWinch
     Call logging("Winch Start Command: " & winch_start_command)
     
     SerialOpen(SerialWinch,115200,3,20,100)
-    
+    SerialOut(SerialWinch, CHR(13),CHR(10),1, 0)  ' Wakeup the winch.
     ' Winch expect a carriage return (char(13)) at the end of a command.
-    ' Winch returns a newline (char(10)) upon receiving a command (or char(13))
-    SerialOut(SerialWinch, winch_start_command& CHR(13),CHR(10),1,0) 
+    
+    SerialOut(SerialWinch, winch_start_command & CHR(13), "",1,0) ' will echo
 
-    SerialIn(WinchString,SerialWinch,100,10,100) ' Winch ends its message with a newline (char(10)).
-    Call logging("Debug: Winch first message: " & WinchString)
-    If InStr(1,WinchString,"txt",2) Then
-        Winch_Internal_File = WinchString
-        Call logging("Winch Mission was Started. Winch File: " &  Winch_Internal_File)
-        WinchStatus = "Sampling"
-        WinchMessage = "Mission Started"
-    Else
-        WinchMessage = "Wrong string received from Winch"
-        Call logging("WINCH FAILED. Winch Start Confirmation not received.")
-        Call logging("Winch Sent: " & WinchString)
+    For X = 1 to 10
+        SerialIn(WinchString,SerialWinch,200,10,200)
+        Call logging("WinchString Attempt " & X & ": " & WinchString)
+        If InStr(1, WinchString,"txt",2)  <> 0 Then
+            Winch_Internal_File = WinchString
+            Call logging("Winch Mission was Started. Winch File: " &  Winch_Internal_File)
+            WinchStatus = "Sampling"
+            WinchMessage = "Mission Started"
+            ExitFor
+        ElseIf InStr(1, WinchString,"Invalid command.",2) <> 0 Then
+            Call logging("Invalid Winch Command.")
+            ExitFor
+        EndIf
+    Next
+
+    If X == 10 Then
+        Call logging("WINCH FAILED. No answer from Winch.")
     EndIf
     
     Call logging("Winch Status: " & WinchStatus)
