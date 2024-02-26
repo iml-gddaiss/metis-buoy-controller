@@ -106,11 +106,11 @@ Function make_winch_start_command(_latitude_ as String, _longitude_ as String) a
     ' Variables format
     ' _latitude_ : DDMM.mmmmm
     '  _longitude_ : DDDMM.mmmm
-    SplitStr(Winch_DateTime, Public.TimeStamp(4), " ", 2, 5) ' -> yyyymmdd 
-    Winch_Date = Replace(Winch_Date, "-", "")                ' -> HHMMSS
-    Winch_Time = Replace(Mid(Winch_Time, 1, 8), ":", "")     ' -> DDMMmmm
-    Winch_Latitude = Mid(Replace(_latitude_, ".", ""), 1, 7) ' -> DDDMMmmm
-    Winch_Longitude = Replace(_longitude_, ".", "")
+    SplitStr(Winch_DateTime, Public.TimeStamp(4), " ", 2, 5)
+    Winch_Date = Replace(Winch_Date, "-", "")                  ' -> yyyymmdd 
+    Winch_Time = Replace(Mid(Winch_Time, 1, 8), ":", "")       ' -> HHMMSS 
+    Winch_Latitude = Mid(Replace(_latitude_, ".", ""), 1, 7)   ' -> DDMMmmm
+    Winch_Longitude = Mid(Replace(_longitude_, ".", ""), 1, 8) ' -> DDDMMmmm
     return "w" & Winch_Date & Winch_Time & Winch_Latitude & Winch_Longitude
 EndFunction
 
@@ -188,12 +188,13 @@ Sub StartWinch
     Call logging("Winch Start Command: " & winch_start_command)
     
     SerialOpen(SerialWinch,115200,3,20,100)
-    SerialOut(SerialWinch, winch_start_command& CHR(13),"",1,0) ' Winch expect a carriage return (char(13)) at the end of a command.
-    SerialIn(WinchString,SerialWinch,100,10,100) ' Winch returns a newline (char(10)) upon receiving a command (or char(13))
     
-    Call logging("Debug: Winch first message: " & WinchString)
-    
+    ' Winch expect a carriage return (char(13)) at the end of a command.
+    ' Winch returns a newline (char(10)) upon receiving a command (or char(13))
+    SerialOut(SerialWinch, winch_start_command& CHR(13),CHR(10),1,0) 
+
     SerialIn(WinchString,SerialWinch,100,10,100) ' Winch ends its message with a newline (char(10)).
+    Call logging("Debug: Winch first message: " & WinchString)
     If InStr(1,WinchString,"txt",2) Then
         Winch_Internal_File = WinchString
         Call logging("Winch Mission was Started. Winch File: " &  Winch_Internal_File)
@@ -298,7 +299,7 @@ Sub DownloadWinchData
             SerialIn(WinchString,SerialWinch,300,10,60)
         
             If WinchString = SuccesfulWinchMessage Then
-                FileWrite(WinchFileHandle,WinchString,0)
+                FileWrite(WinchFileHandle,WinchString,0) ' -> yyyymmdd 
                 Winch_Sampling_Failed = False
             EndIf
             
