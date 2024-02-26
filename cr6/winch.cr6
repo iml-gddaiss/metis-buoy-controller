@@ -1,4 +1,23 @@
-'Winch related code
+' Winch related code
+'
+' Winch Communication
+' Start a Winch: 
+'    Command: Format: w<Date><Time><Latitude><Longitude>\r
+'       `wyyyymmddHHMMSSDDMMmmmDDDMMmmm\r`
+'    Returns:
+'       `\n` + `<winch_file>.txt\n`
+' Download Winch file:
+'   Command:
+'        `Read <winch_file>.txt\r`
+'   Returns: All line ends with a new line \n)
+'    ```
+'   Reading file '<winch_file>.txt'
+'    ---
+'    <data>
+'    <SuccesfullWinchMessage> 
+'    ---
+'    ```
+
 Const SuccesfulWinchMessage = "CTD in the dock" ' TODO CHANGE TO THE CORRECT VALUE
 Const WinchMaxFileLength = 100000 ' Maximum number of lines of a file (Safety)  TODO CHANGE TO THE CORRECT VALUE
 Public WinchString As String * 30
@@ -30,6 +49,8 @@ Dim WinchFileHandle As Long
 
 
 Public Winch_Last_Sample AS Long = ""
+Public winch_start_command as String * 30
+' These could be Dims.
 Public Winch_DateTime(2) As String : Alias Winch_DateTime = Winch_Date, Winch_Time  
 Public Winch_Latitude As String
 Public Winch_Longitude As String
@@ -79,6 +100,22 @@ Sub WinchPowerCheck(VBatt1, VBatt2)
     EndIf
 EndSub
 
+Function make_winch_start_command(_latitude_ as String, _longitude_ as String) as String * 30
+    ' Winch Start String: wyyyymmddHHMMSSDDMMmmmDDDMMmmm
+    '                     w<Date><Time><Latitude><Longitude>
+    ' Variables format
+    ' _latitude_ : DDMM.mmmmm
+    '  _longitude_ : DDDMM.mmmm
+    SplitStr(Winch_DateTime, Public.TimeStamp(4), " ", 2, 5) ' -> yyyymmdd 
+    Winch_Date = Replace(Winch_Date, "-", "")                ' -> HHMMSS
+    Winch_Time = Replace(Mid(Winch_Time, 1, 8), ":", "")     ' -> DDMMmmm
+    Winch_Latitude = Mid(Replace(_latitude_, ".", ""), 1, 7) ' -> DDDMMmmm
+    Winch_Longitude = Replace(_longitude_, ".", "")
+    return "w" & Winch_Date & Winch_Time & Winch_Latitude & Winch_Longitude
+EndFunction
+
+
+
 Sub WinchConditionsCheck
     WinchMissingConditions = 0
     
@@ -127,7 +164,6 @@ Sub CheckWinchStatus
 EndSub
 
 Sub StartWinch
-    Dim start_command as String * 30
     If Buoy_Adrift_Alert Then
         Call logging("Buoy Adrift Alert is ON. Winch Disabled.")
         ExitSub
@@ -141,34 +177,32 @@ Sub StartWinch
     
     If Start_Winch_Override Then
         'Updating GPS Values for Winch TimeStamp
-        Call GetGpsPosition
-        Winch_Latitude = Mid(latitude_tmp,1,2) & Mid(latitude_tmp,3,6)
-        Winch_Longitude = Mid(longitude_tmp,1,3) & Mid(longitude_tmp,4,6)
+        Call GetGpsPosition ' sets public var: `latitude_tmp`, `longitude_tmp`.
+        winch_start_command = make_winch_start_command(latitude_tmp, longitude_tmp)
     Else
         ' The next scheduled winch time is only changed when its a scheduled winch.
         Winch_Last_Sample = Public.TimeStamp(1)
-
-        Winch_Latitude = Mid(GPS_Lat,1,2) & Mid(GPS_Lat,3,6)
-        Winch_Longitude = Mid(GPS_Lon,1,3) & Mid(GPS_Lon,4,6)
+        winch_start_command = make_winch_start_command(GPS_Lat, GPS_Lon)
     EndIf
-
-    start_command = "W" & Winch_Date & Winch_Time & Winch_Latitude & Winch_Longitude
     
-    Call logging("Winch Start Command: " & start_command)
+    Call logging("Winch Start Command: " & winch_start_command)
     
     SerialOpen(SerialWinch,115200,3,20,100)
-    SerialOut(SerialWinch,start_command&CHR(13)&CHR(10),"",1,0)
+    SerialOut(SerialWinch, winch_start_command& CHR(13),"",1,0) ' Winch expect a carriage return (char(13)) at the end of a command.
+    SerialIn(WinchString,SerialWinch,100,10,100) ' Winch returns a newline (char(10)) upon receiving a command (or char(13))
     
-    SerialIn(WinchString,SerialWinch,100,10,100)
+    Call loggging("Debug: Winch first message: " & WinchString)
     
-    If WinchString <> "" Then 'If [S] is received from CTD -> winch has started
+    SerialIn(WinchString,SerialWinch,100,10,100) ' Winch ends its message with a newline (char(10)).
+    If InStr(1,WinchString,"txt",2) Then
         Winch_Internal_File = WinchString
         Call logging("Winch Mission was Started. Winch File: " &  Winch_Internal_File)
         WinchStatus = "Sampling"
         WinchMessage = "Mission Started"
-    Else 'No string from CTD
-        WinchMessage = "No String received from Winch"
+    Else
+        WinchMessage = "Wrong string received from Winch"
         Call logging("WINCH FAILED. Winch Start Confirmation not received.")
+        Call logging("Winch Sent: " & WinchString)
     EndIf
     
     Call logging("Winch Status: " & WinchStatus)
@@ -243,20 +277,37 @@ Sub DownloadWinchData
     
     WinchFileName = "WDATA_"& Buoy_Name &"_"& Winch_Date & Winch_Time
     WinchFileHandle = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
+    
+    ' Returns:
+    '   ```
+    '   Reading file '<winch_file>.txt'
+    '    ---
+    '    <data>
+    '    <SuccesfullWinchMessage> 
+    '    ---
+    '    ```
+    ' 
+    SerialIn(WinchString,SerialWinch,300,10,60) '`Reading file '<winch_file>.txt\n`'
+    Call logging(WinchString)
+    SerialIn(WinchString,SerialWinch,300,10,60)
+    
+    If WinchString == "---" Then
+        Do While  x < WinchMaxFileLength
+            ' WinchString = "" ' Probably not nescesary
+            x+=1
+            SerialIn(WinchString,SerialWinch,300,10,60)
         
-    For X = 1 To WinchMaxFileLength Step 1
-        WinchString = ""
-        SerialIn(WinchString,SerialWinch,300,10,60)
-        
-        If WinchString = SuccesfulWinchMessage Then
-            Winch_Sampling_Failed = False
-            ExitFor
-        ElseIf WinchString = "" Then
-            ExitFor
-        EndIf
-
-        FileWrite(WinchFileHandle,WinchString,0)
-    Next
+            If WinchString = SuccesfulWinchMessage Then
+                FileWrite(WinchFileHandle,WinchString,0)
+                Winch_Sampling_Failed = False
+            EndIf
+            
+            If WinchString = "" or WinchSintrg = "---" Then 'End of file reached'
+                ExitDo
+            EndIf
+            
+            FileWrite(WinchFileHandle,WinchString,0)
+        Loop
 
     SerialClose(SerialWinch)
     FileClose(WinchFileHandle)

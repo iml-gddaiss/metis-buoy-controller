@@ -157,7 +157,7 @@ Sub GetGPSPosition
         SplitStr(_GPS_HVS_,_rawgps_,",",13,5)
 
         latitude_tmp = _GPS_HVS_(4)
-        longitude_tmp = _GPS_HVS_(5)
+        longitude_tmp = _GPS_HVS_(6)
     Else
         Call logging("Could not get position, With_GPS is False.")
     EndIf
