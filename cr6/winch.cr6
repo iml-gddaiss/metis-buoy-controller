@@ -338,7 +338,7 @@ Sub DownloadWinchData
         Call logging("Winch Sampling Failed")
     EndIf
 
-    If X = WinchMaxFileLength hen
+    If X = WinchMaxFileLength Then
         Call Set_Winch_Download_TimedOut_Warning
         Call logging("Winch Download Timed Out")
         WinchString = ""
