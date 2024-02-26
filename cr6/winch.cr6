@@ -185,7 +185,10 @@ Sub StartWinch
     Call logging("Winch Start Command: " & winch_start_command)
     
     SerialOpen(SerialWinch,115200,3,20,100)
-    SerialOut(SerialWinch, CHR(13),CHR(10),1, 0)  ' Wakeup the winch.
+    SerialFlush(SerialWinch)
+    Delay(1,500,mSec)
+    
+    ' SerialOut(SerialWinch, CHR(13),CHR(10),1, 0)  ' Wakeup the winch.
     ' Winch expect a carriage return (char(13)) at the end of a command.
     
     SerialOut(SerialWinch, winch_start_command & CHR(13), "",1,0) ' will echo
@@ -205,7 +208,7 @@ Sub StartWinch
         EndIf
     Next
 
-    If X == 10 Then
+    If X = 10 Then
         Call logging("WINCH FAILED. No answer from Winch.")
     EndIf
     
@@ -270,47 +273,56 @@ EndSub
 Sub DownloadWinchData
     Dim X
     Dim Winch_Sampling_Failed As Boolean = True
+    Dim winch_download_command as String * 50
 
     Call logging("Downloadig Winch Data")
 
     Winch_Sampling_Failed = True
 
-    SerialOpen(SerialWinch,115200,3,20,100) 'Should it be started earlier ??
-    SerialFlush(SerialWinch)
-    SerialOut(SerialWinch,"read " & Winch_Internal_File&CHR(13)&CHR(10),0,1,0)
-    
+    ' Init winch file.
     WinchFileName = "WDATA_"& Buoy_Name &"_"& Winch_Date & Winch_Time
     WinchFileHandle = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
+
+    SerialOpen(SerialWinch,115200,3,20,100) 'Should it be started earlier ??
+    SerialFlush(SerialWinch)
+    Delay(1,500,mSec)
     
-    ' Returns:
-    '   ```
-    '   Reading file '<winch_file>.txt'
-    '    ---
-    '    <data>
-    '    <SuccesfullWinchMessage> 
-    '    ---
-    '    ```
-    ' 
-    SerialIn(WinchString,SerialWinch,300,10,60) '`Reading file '<winch_file>.txt\n`'
-    Call logging(WinchString)
-    SerialIn(WinchString,SerialWinch,300,10,60)
+    winch_download_command = "read " & Winch_Internal_File
+    Call logging("Winch Download Command: " &  winch_download_command)
+
+    SerialOut(SerialWinch,winch_download_command & CHR(13), "",1,0)
     
-    If WinchString = "---" Then
-        Do While  x < WinchMaxFileLength
-            ' WinchString = "" ' Probably not nescesary
-            x+=1
+    
+    For X = 1 to 10 ' Look for the file start delimiter (---)
+        SerialIn(WinchString,SerialWinch,200,10,200)
+        Call logging("WinchString Attempt " & X & ": " & WinchString)
+        
+        If InStr(1,WinchString,"---",2)  <> 0 Then
+            ExitFor
+        EndIf
+    Next
+
+    If X <> 10 Then ' iF the delimiter was found.
+        X = 0 ' reusing the counter.
+        Do While  X < WinchMaxFileLength ' failsafe.
+            X+=1
             SerialIn(WinchString,SerialWinch,300,10,60)
         
             If WinchString = SuccesfulWinchMessage Then
-                FileWrite(WinchFileHandle,WinchString,0) ' -> yyyymmdd 
+                FileWrite(WinchFileHandle,WinchString,0)
                 Winch_Sampling_Failed = False
             EndIf
             
-            If WinchString = "" or WinchString = "---" Then 'End of file reached'
+            If WinchString = "---" Then 'End of file reached'
                 ExitDo
             EndIf
-            
-            FileWrite(WinchFileHandle,WinchString,0)
+
+            If WinchString <> "" Then
+                Call logging("(debug) Data String:" & WinchString)
+                FileWrite(WinchFileHandle,WinchString,0)
+            Else
+                Call logging("(debug) Empty String Received on Download")
+            EndIf
         Loop
     EndIf
 
@@ -326,7 +338,7 @@ Sub DownloadWinchData
         Call logging("Winch Sampling Failed")
     EndIf
 
-    If WinchString <> "" Then
+    If X = WinchMaxFileLength hen
         Call Set_Winch_Download_TimedOut_Warning
         Call logging("Winch Download Timed Out")
         WinchString = ""
