@@ -186,16 +186,16 @@ Sub StartWinch
     
     SerialOpen(SerialWinch,115200,3,20,100)
     SerialFlush(SerialWinch)
-    SerialOut(SerialWinch, CHR(13), 0,1,0)
+    SerialOut(SerialWinch, CHR(13), 0,1,0.01)
     Delay(1,500,mSec)
     
     ' SerialOut(SerialWinch, CHR(13),CHR(10),1, 0)  ' Wakeup the winch.
     ' Winch expect a carriage return (char(13)) at the end of a command.
 
-    SerialOut(SerialWinch, winch_start_command & CHR(13), 0,1,0) ' will echo
+    SerialOut(SerialWinch, winch_start_command & CHR(13), 0,1,0.01) ' will echo
 
     For X = 1 to 10
-        SerialIn(WinchString,SerialWinch,200,10,200)
+        SerialIn(WinchString,SerialWinch,1000,10,200)
         Call logging("WinchString Attempt " & X & ": " & WinchString)
         If InStr(1, WinchString,"txt",2)  <> 0 Then
             Winch_Internal_File = Mid(WinchString, 1, Len(WinchString) - 4)
@@ -287,18 +287,18 @@ Sub DownloadWinchData
     WinchFileHandle = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
 
     SerialOpen(SerialWinch,115200,3,20,100) 
-    SerialFlush(SerialWinch)
     SerialOut(SerialWinch, CHR(13), 0,1,0)
+    SerialFlush(SerialWinch)
     Delay(1,500,mSec)
     
     winch_download_command = "read " & Winch_Internal_File
     Call logging("Winch Download Command: " &  winch_download_command)
 
-    SerialOut(SerialWinch,winch_download_command & CHR(13), "",1,0)
+    SerialOut(SerialWinch,winch_download_command & CHR(13), "",1,0.01)
     
     
     For X = 1 to 10 ' Look for the file start delimiter (---)
-        SerialIn(WinchString,SerialWinch,500,10,200)
+        SerialIn(WinchString,SerialWinch,1000,10,200)
         Call logging("WinchString Attempt " & X & ": " & WinchString)
         
         If InStr(1,WinchString,"---",2)  <> 0 Then
@@ -311,9 +311,9 @@ Sub DownloadWinchData
         X = 0
         Do While  X < WinchMaxFileLength ' failsafe.
             X+=1
-            SerialIn(WinchString,SerialWinch,500,10,60)
+            SerialIn(WinchString,SerialWinch,1000,10,60)
         
-            If WinchString = SuccesfulWinchMessage Then
+            If InStr(1, WinchString, SuccesfulWinchMessage, 2) <> 0 Then
                 Winch_Sampling_Failed = False
             ElseIf WinchString = "---" Then 'End of file reached'
                 ExitDo

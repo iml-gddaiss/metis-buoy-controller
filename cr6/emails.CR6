@@ -41,12 +41,12 @@ Sub SendEmail
         Call logging("Alert Not Sent, Emails are Disabled.")
     Else
         Call logging("Sending Email: " & email_subject)
-        email_tx_success = EmailRelay(email_address&","&sms_address, email_subject, email_message, email_relay_server_response, email_attachment)
+        email_tx_success = EmailRelay(email_address&","&sms_address, email_subject, email_message, email_relay_server_response, email_attachment,,,,,500) '5 s timeout
         
         'If EmailRelay was not successful, lets try one more time.
         If email_tx_success <> -1 Then
             '2nd attempt
-            email_tx_success = EmailRelay(email_address&","&sms_address, email_subject, email_message, email_relay_server_response, email_attachment)
+            email_tx_success = EmailRelay(email_address&","&sms_address, email_subject, email_message, email_relay_server_response, email_attachment,,,,,500) '5 s timeout
         EndIf
 
         'Human readable error messages
