@@ -1,6 +1,6 @@
 ' Alerts
 ' + Buoy lon/lat outside range -> Buoy off chain. Drifting | Persistent until snoozed. Send Position and SOG/COG
-' + Battery Low, Water Infiltration, Winch Failed/TimedOut  -> Send once until the flag is reset. (Breaker tripped)
+' + Battery Low, Water Infiltration, Winch Mission Error, Winch Download Error  -> Send once until the flag is reset. (Breaker tripped)
 ' + Instrument Failed sampling. Each time. 
 
 Const EarthRadius = 6371e3
@@ -18,7 +18,7 @@ Public PositionDeviation As Long
 Public Battery_Low_Warning As Boolean = False
 Public Water_Infiltration_Warning As Boolean = False
 Public Winch_Error_Warning As Boolean = False
-Public Winch_Download_TimedOut_Warning As Boolean = False
+Public Winch_Download_Error_Warning As Boolean = False
 
 Dim SaveLog as Boolean = False ' Save log on Failed instrument sampling.
 
@@ -67,11 +67,11 @@ Sub Set_Buoy_Adrift_Alarm
 EndSub
 
 
-Sub Set_Winch_Error_Warning
-' Failed Winch Warning will only send one email when set. The alarm need
+Sub Set_Winch_MIssion_Error_Warning
+' Winch Missing Error Warning will only send one email when set. The alarm need
 ' be turned off by the user and set again for a new email to be sent.
     If Not Winch_Error_Warning Then
-        Call Email_Init(0, "Winch Failed")
+        Call Email_Init(0, "Winch Mission Error")
         Call SendEmail
 
         Winch_Error_Warning = True
@@ -79,14 +79,14 @@ Sub Set_Winch_Error_Warning
 EndSub
 
 
-Sub Set_Winch_Download_TimedOut_Warning
-' Failed Winch Warning will only send one email when set. The alarm need
+Sub Set_Winch_Download_Error_Warning
+' Winch Download Error Warning will only send one email when set. The alarm need
 ' be turned off by the user and set again for a new email to be sent.
-    If Not Winch_Download_TimedOut_Warning Then
-        Call Email_Init(0, "Winch TimedOut")
+    If Not Winch_Download_Error_Warning Then
+        Call Email_Init(0, "Winch Download Error")
         Call SendEmail
 
-        Winch_Download_TimedOut_Warning = True
+        Winch_Download_Error_Warning = True
     EndIf
 EndSub
 

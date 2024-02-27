@@ -55,6 +55,12 @@ Public Winch_DateTime(2) As String : Alias Winch_DateTime = Winch_Date, Winch_Ti
 Public Winch_Latitude As String
 Public Winch_Longitude As String
 
+
+
+Function WinchTagString as String * 36
+    WinchTAGString = "[WNCH]" + WinchMessage
+EndFunction
+
 ' ####################### Start Conditions ############################## 
 Sub WinchAirCheck(Air_Temp)
     If Air_Temp < Min_Air_Temp_for_Winch Then
@@ -100,22 +106,6 @@ Sub WinchPowerCheck(VBatt1, VBatt2)
     EndIf
 EndSub
 
-Function make_winch_start_command(_latitude_ as String, _longitude_ as String) as String * 30
-    ' Winch Start String: wyyyymmddHHMMSSDDMMmmmDDDMMmmm
-    '                     w<Date><Time><Latitude><Longitude>
-    ' Variables format
-    ' _latitude_ : DDMM.mmmmm
-    '  _longitude_ : DDDMM.mmmm
-    SplitStr(Winch_DateTime, Public.TimeStamp(4), " ", 2, 5)
-    Winch_Date = Replace(Winch_Date, "-", "")                  ' -> yyyymmdd 
-    Winch_Time = Replace(Mid(Winch_Time, 1, 8), ":", "")       ' -> HHMMSS 
-    Winch_Latitude = Mid(Replace(_latitude_, ".", ""), 1, 7)   ' -> DDMMmmm
-    Winch_Longitude = Mid(Replace(_longitude_, ".", ""), 1, 8) ' -> DDDMMmmm
-    return "w" & Winch_Date & Winch_Time & Winch_Latitude & Winch_Longitude
-EndFunction
-
-
-
 Sub WinchConditionsCheck
     WinchMissingConditions = 0
     
@@ -143,12 +133,10 @@ Sub WinchConditionsCheck
     EndIf
 EndSub
 
-' ####################### Winch Mission Start ############################## 
 Sub CheckWinchStatus 
-    SerialOpen(SerialWinch,115200,3,20,100) 
-    SerialFlush(SerialWinch)
-    Delay(1,500,mSec)
-    SerialIn(WinchString,SerialWinch,100,10,60)
+    Call StartWinch
+    
+    SerialIn(WinchString,SerialWinch,100,10,200)
 
     If WinchString = "" Then
         If WinchStatus = "Sampling"
@@ -161,19 +149,53 @@ Sub CheckWinchStatus
         WinchMessage = "Mission in Progress"
     EndIf
     Call logging("Winch Status: " & WinchStatus)
+
+    SerialClose(SerialWinch)
 EndSub
+
+' ####################### Winch Mission Start ############################## 
+Function make_winch_start_command(_latitude_ as String, _longitude_ as String) as String * 30
+    ' Winch Start String: wyyyymmddHHMMSSDDMMmmmDDDMMmmm
+    '                     w<Date><Time><Latitude><Longitude>
+    ' Variables format
+    ' _latitude_ : DDMM.mmmmm
+    '  _longitude_ : DDDMM.mmmm
+    SplitStr(Winch_DateTime, Public.TimeStamp(4), " ", 2, 5)
+    Winch_Date = Replace(Winch_Date, "-", "")                  ' -> yyyymmdd 
+    Winch_Time = Replace(Mid(Winch_Time, 1, 8), ":", "")       ' -> HHMMSS 
+    Winch_Latitude = Mid(Replace(_latitude_, ".", ""), 1, 7)   ' -> DDMMmmm
+    Winch_Longitude = Mid(Replace(_longitude_, ".", ""), 1, 8) ' -> DDDMMmmm
+    return "w" & Winch_Date & Winch_Time & Winch_Latitude & Winch_Longitude
+EndFunction
 
 Sub StartWinch
     Dim X
+    
+    Call logging("Starting Winch Serial.")
+    SerialOpen(SerialWinch,115200,3,50,100) ' tx delay increase from 20 to 50
+    SerialOut(SerialWinch, CHR(13), 0,0,0)
+    Delay(1,500,mSec)
+
+    X=0
+    Call logging("Clearing Winch (output) buffer.")
+    While SerialInChk(SerialWinch) > 0 And X < 20 'Some debuging here fixme.
+        SerialIn(WinchString,SerialWinch, 100,10,200)
+        Call logging("(X=" & X & "): " & WinchString)
+        X+=1
+    Wend
+EndSub
+
+Sub StartWinchMission
+    Dim X
+    
     If Buoy_Adrift_Alert Then
         Call logging("Buoy Adrift Alert is ON. Winch Disabled.")
         ExitSub
     EndIf
     
-    Call logging("Startig Winch Mission")    
+    Call logging("Starting Winch Mission")    
     
     If Start_Winch_Override Then
-        'Updating GPS Values for Winch TimeStamp
         Call GetGpsPosition ' sets public var: `latitude_tmp`, `longitude_tmp`.
         winch_start_command = make_winch_start_command(latitude_tmp, longitude_tmp)
     Else
@@ -184,36 +206,31 @@ Sub StartWinch
     
     Call logging("Winch Start Command: " & winch_start_command)
     
-    SerialOpen(SerialWinch,115200,3,20,100)
-    SerialFlush(SerialWinch)
-    SerialOut(SerialWinch, CHR(13), 0,1,0.01)
-    Delay(1,500,mSec)
-    
-    ' SerialOut(SerialWinch, CHR(13),CHR(10),1, 0)  ' Wakeup the winch.
-    ' Winch expect a carriage return (char(13)) at the end of a command.
-
-    SerialOut(SerialWinch, winch_start_command & CHR(13), 0,1,0.01) ' will echo
+    Call StartWinch
+    SerialOut(SerialWinch, winch_start_command & CHR(13) & CHR(10), "", 1, 10) ' will echo
 
     For X = 1 to 10
-        SerialIn(WinchString,SerialWinch,1000,10,200)
+        SerialIn(WinchString,SerialWinch,100,10,200)
         Call logging("WinchString Attempt " & X & ": " & WinchString)
+        
         If InStr(1, WinchString,"txt",2)  <> 0 Then
             Winch_Internal_File = Mid(WinchString, 1, Len(WinchString) - 4)
             Call logging("Winch Mission was Started. Winch File: " &  Winch_Internal_File)
             WinchStatus = "Sampling"
             WinchMessage = "Mission Started"
             ExitFor
-        ElseIf InStr(1, WinchString,"Invalid command.",2) <> 0 Then
-            Call logging("Invalid Winch Command.")
-            ExitFor
+        ' ElseIf InStr(1, WinchString, "Invalid command.",2) <> 0 Then
+        '     ExitFor
         EndIf
     Next
 
-    If X = 10 Then
-        Call logging("WINCH FAILED. No answer from Winch.")
-    EndIf
-    
+    SerialClose(SerialWinch)
+        
     Call logging("Winch Status: " & WinchStatus)
+    
+    If WinchStatus <> "Sampling" Then
+        Call logging("Warning: Failed to Start Winch.")
+        WinchMessage = "Failed to Start"
 EndSub
 
 Sub WinchRoutine
@@ -226,7 +243,7 @@ Sub WinchRoutine
                 ' Skipped if Start_Winch_Override is True.
                 ' minus 60sec to not skip a scan planned at Winch_Interval hour (got 3599s and didn't sampled)
                 WinchMessage = "Interval not reach"
-                TAGString &= "[WNCH]" + WinchMessage
+                TAGString &= WinchTAGString()
                 Call logging("Winch: " & WinchMessage)
                 ExitSub
             EndIf
@@ -238,7 +255,7 @@ Sub WinchRoutine
                 Call WinchConditionsCheck
 
                 If WinchMissingConditions = 0 Then
-                    Call StartWinch
+                    Call StartWinchMission
                 Else
                     Call logging("Winch Number of Missing Conditions: " & WinchMissingConditions)
                 EndIf  
@@ -246,7 +263,7 @@ Sub WinchRoutine
             
             If NOT Start_Winch_Override Then
                 ' Skipped if Start_Winch_Override is True.
-                TAGString &= "[WNCH]" + WinchMessage
+                TAGString &= WinchTAGString()
             EndIf
         Else
             Call logging("Winch Routine Skipped due to low salinity.")
@@ -256,49 +273,32 @@ EndSub
 
 ' ####################### Collecting Data ##############################
 
-' Sub InitWinchFile
-'     WinchFileName = "WDATA_"& Buoy_Name &"_"& Replace(Winch_Date, "-", "") &"_"& Replace(Winch_Time, ":", "")
-'     WinchFileHandle = FileOpen("CRD:"&WinchFileName&".txt","a",-1)
-
-    ' FileWrite(WinchFileHandle,Winch_Time&" "&Winch_Date&CHR(10),0)
-    ' FileWrite(WinchFileHandle,Buoy_Name&CHR(10),0)     
-    ' FileWrite(WinchFileHandle,Winch_Latitude&","&Winch_Longitude&CHR(10),0)    
-    ' FileWrite(WinchFileHandle,"D"&CHR(10),0)
-
-'     FileClose(WinchFileHandle)
-    
-'     Call logging("Winch File Created -> " &WinchFileName)
-' EndSub
-
 
 Sub DownloadWinchData
     Dim X as Long
     Dim Start_Delimiter_Found as Boolean = False
-    Dim Winch_Sampling_Failed As Boolean = True
+    Dim Raise_Winch_Mission_Error As Boolean = True
     Dim winch_download_command as String * 50
 
     Call logging("Downloadig Winch Data")
 
     Start_Delimiter_Found = False
-    Winch_Sampling_Failed = True
+    Raise_Winch_Mission_Error = True
 
     ' Init winch file.
     WinchFileName = "WDATA_"& Buoy_Name &"_"& Winch_Date & Winch_Time
     WinchFileHandle = FileOpen("CRD:WDATA_"&WinchFileName&".txt","a",-1)
 
-    SerialOpen(SerialWinch,115200,3,20,100) 
-    SerialOut(SerialWinch, CHR(13), 0,1,0)
-    SerialFlush(SerialWinch)
-    Delay(1,500,mSec)
+    Call StartWinch
     
     winch_download_command = "read " & Winch_Internal_File
     Call logging("Winch Download Command: " &  winch_download_command)
 
-    SerialOut(SerialWinch,winch_download_command & CHR(13), "",1,0.01)
+    SerialOut(SerialWinch,winch_download_command & CHR(13) & CHR(10), "", 1, 10) ' will echo
     
     
     For X = 1 to 10 ' Look for the file start delimiter (---)
-        SerialIn(WinchString,SerialWinch,1000,10,200)
+        SerialIn(WinchString,SerialWinch,100,10,200)
         Call logging("WinchString Attempt " & X & ": " & WinchString)
         
         If InStr(1,WinchString,"---",2)  <> 0 Then
@@ -311,30 +311,35 @@ Sub DownloadWinchData
         X = 0
         Do While  X < WinchMaxFileLength ' failsafe.
             X+=1
-            SerialIn(WinchString,SerialWinch,1000,10,60)
+            SerialIn(WinchString,SerialWinch,100,CHR(10),200) 'we want the new line CHR(10) to be included
         
             If InStr(1, WinchString, SuccesfulWinchMessage, 2) <> 0 Then
-                Winch_Sampling_Failed = False
+                Raise_Winch_Mission_Error = False
             ElseIf WinchString = "---" Then 'End of file reached'
                 ExitDo
             ElseIf WinchString = "" Then
                 Call logging("Empty String Received on Download")
-                Call Set_Winch_Download_TimedOut_Warning
-                Call logging("Winch Download Timed Out")
+                Call Set_Winch_Download_Error_Warning
                 ExitDo
             EndIf
 
             FileWrite(WinchFileHandle,WinchString,0)            
         Loop
+
+        If X = WinchMaxFileLength Then
+            Call logging("Error: WinchMaxFileLength ("&WinchMaxFileLength&") Reached on Download.")
+            Call Set_Winch_Download_Error_Warning
+        EndIf
     EndIf
 
     SerialClose(SerialWinch)
+
     FileClose(WinchFileHandle)
 
     Call logging("Winch Data Downloaded -> " &WinchFileName)
 
-    If Winch_Sampling_Failed Then
-        Call Set_Winch_Error_Warning
+    If Raise_Winch_Mission_Error Then
+        Call Set_Winch_MIssion_Error_Warning
         Call logging("An Error occured during the winch mission.")
     EndIf
 EndSub

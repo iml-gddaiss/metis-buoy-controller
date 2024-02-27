@@ -65,10 +65,10 @@
 '  o `Water_Infiltration_Warning`
 '    TODO
 '
-'   o `Winch_Error_Warning`
+'   o `Winch_Mission_Error_Warning`
 '     TODO
 '
-'  o `Winch_Download_TimedOut_Warning`
+'  o `Winch_Download_Error_Warning`
 '     TODO
 '
 ' Instruments have no public warning variable. If an instrument fails to sample, a warning email 
