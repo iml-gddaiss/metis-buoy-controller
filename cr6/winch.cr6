@@ -231,6 +231,7 @@ Sub StartWinchMission
     If WinchStatus <> "Sampling" Then
         Call logging("Warning: Failed to Start Winch.")
         WinchMessage = "Failed to Start"
+    EndIf
 EndSub
 
 Sub WinchRoutine
