@@ -172,12 +172,14 @@ Sub StartWinch
     Dim X
     
     Call logging("Starting Winch Serial.")
-    SerialOpen(SerialWinch,115200,3,10,100) ' tx delay increase from 20 to 50
-    Delay(1,500,mSec)
-
+    SerialOpen(SerialWinch,115200,3,10,100)
+    Delay(1,100,mSec)
+    SerialOut(SerialWinch, CHR(13), 0, 1, 10) ' will echo
+    Delay(1,100,mSec)
+    
     X=0
     Call logging("Clearing Winch (output) buffer.")
-    While SerialInChk(SerialWinch) > 0 And X < 20 'Some debuging here fixme.
+    While SerialInChk(SerialWinch) > 0 And X < 20
         SerialIn(WinchString,SerialWinch, 100,10,200)
         Call logging("(X=" & X & "): " & WinchString)
         X+=1
@@ -186,7 +188,6 @@ EndSub
 
 Sub StartWinchMission
     Dim X
-    Dim NBR
     
     If Buoy_Adrift_Alert Then
         Call logging("Buoy Adrift Alert is ON. Winch Disabled.")
@@ -207,20 +208,20 @@ Sub StartWinchMission
     Call logging("Winch Start Command: " & winch_start_command)
     
     Call StartWinch
-    SerialOut(SerialWinch, winch_start_command & CHR(13) & CHR(10), "", 1, 10) ' will echo
+    SerialOut(SerialWinch, winch_start_command & CHR(13), "", 0, 10)
+
     For X = 1 to 10
         SerialIn(WinchString,SerialWinch,100,10,200)
-        'SerialInRecord(SerialWinch, SerialString, 0, 0, &H0D0A,NBR,100) # to try
         Call logging("WinchString Attempt " & X & ": " & WinchString)
         
-        If InStr(1, WinchString,"txt",2)  <> 0 Then
-            Winch_Internal_File = Mid(WinchString, 1, Len(WinchString) - 4)
+        If InStr(1, WinchString,".txt"&CHR(13),2)  <> 0 Then ' "RKXXX.txt.\r"
+            Winch_Internal_File = Mid(WinchString, 1, Len(WinchString) - 5) ' ".txt\r"
             Call logging("Winch Mission was Started. Winch File: " &  Winch_Internal_File)
             WinchStatus = "Sampling"
             WinchMessage = "Mission Started"
-            'ExitFor
+            ExitFor
         ' ElseIf InStr(1, WinchString, "Invalid command.",2) <> 0 Then
-        '     ExitFor
+        '      ExitFor
         EndIf
     Next
 
@@ -278,7 +279,7 @@ EndSub
 Sub DownloadWinchData
     Dim X as Long
     Dim Start_Delimiter_Found as Boolean = False
-    Dim Raise_Winch_Mission_Error As Boolean = True
+    Dim Raise_Winch_Mission_Error As Boolean = False
     Dim winch_download_command as String * 50
 
     Call logging("Downloadig Winch Data")
@@ -295,7 +296,7 @@ Sub DownloadWinchData
     winch_download_command = "read " & Winch_Internal_File
     Call logging("Winch Download Command: " &  winch_download_command)
 
-    SerialOut(SerialWinch,winch_download_command & CHR(13) & CHR(10), "", 1, 10) ' will echo
+    SerialOut(SerialWinch,winch_download_command & CHR(13), "", 0, 10)
     
     
     For X = 1 to 10 ' Look for the file start delimiter (---)
@@ -309,6 +310,7 @@ Sub DownloadWinchData
     Next
     
     If Start_Delimiter_Found Then ' iF the delimiter was found.
+        Raise_Winch_Mission_Error = True ' Flag is set to false once the SuccefulWInchMessage is received. Or the file is not downloaded properly. In which case a Download error is raised.
         X = 0
         Do While  X < WinchMaxFileLength ' failsafe.
             X+=1
@@ -319,6 +321,7 @@ Sub DownloadWinchData
             ElseIf WinchString = "---" Then 'End of file reached'
                 ExitDo
             ElseIf WinchString = "" Then
+                Raise_Winch_Mission_Error = False
                 Call logging("Empty String Received on Download")
                 Call Set_Winch_Download_Error_Warning
                 ExitDo
