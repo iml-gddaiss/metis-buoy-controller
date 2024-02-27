@@ -172,8 +172,7 @@ Sub StartWinch
     Dim X
     
     Call logging("Starting Winch Serial.")
-    SerialOpen(SerialWinch,115200,3,50,100) ' tx delay increase from 20 to 50
-    SerialOut(SerialWinch, CHR(13), 0,0,0)
+    SerialOpen(SerialWinch,115200,3,10,100) ' tx delay increase from 20 to 50
     Delay(1,500,mSec)
 
     X=0
@@ -187,6 +186,7 @@ EndSub
 
 Sub StartWinchMission
     Dim X
+    Dim NBR
     
     If Buoy_Adrift_Alert Then
         Call logging("Buoy Adrift Alert is ON. Winch Disabled.")
@@ -203,14 +203,14 @@ Sub StartWinchMission
         Winch_Last_Sample = Public.TimeStamp(1)
         winch_start_command = make_winch_start_command(GPS_Lat, GPS_Lon)
     EndIf
-    
+
     Call logging("Winch Start Command: " & winch_start_command)
     
     Call StartWinch
     SerialOut(SerialWinch, winch_start_command & CHR(13) & CHR(10), "", 1, 10) ' will echo
-
     For X = 1 to 10
         SerialIn(WinchString,SerialWinch,100,10,200)
+        'SerialInRecord(SerialWinch, SerialString, 0, 0, &H0D0A,NBR,100) # to try
         Call logging("WinchString Attempt " & X & ": " & WinchString)
         
         If InStr(1, WinchString,"txt",2)  <> 0 Then
@@ -218,7 +218,7 @@ Sub StartWinchMission
             Call logging("Winch Mission was Started. Winch File: " &  Winch_Internal_File)
             WinchStatus = "Sampling"
             WinchMessage = "Mission Started"
-            ExitFor
+            'ExitFor
         ' ElseIf InStr(1, WinchString, "Invalid command.",2) <> 0 Then
         '     ExitFor
         EndIf
