@@ -30,7 +30,7 @@
 '  o `slow_sequences.CR6`
 '    - `Manual_Tower_Switch` 
 '    - `Manual_Well_Switch`
-'    - `Start_Winch_Override`
+'    - `Start_Winch_Mission_Override`
 '    - `Send_Break_to_ADCP`
 '    - `Deploy_ADCP_Switch`
 '    - `Shutdown_ADCP_Switch`
@@ -457,6 +457,8 @@ BeginProg
 
   Call ResetTablesUpdateFlag
 
+  Call CheckWinchStatus
+  
   TAGString &= EndTagString()
   CallTable FileTAGS
 
@@ -485,7 +487,8 @@ BeginProg
       Call TowerSwitchSequence
       Call WellSwitchSequence
       
-      Call WinchStartSequence
+      Call WinchOpenSerialSequence
+      Call WinchStartMissionSequence
       
       Call ADCPBreakSequence
       Call ADCPDeploySequence

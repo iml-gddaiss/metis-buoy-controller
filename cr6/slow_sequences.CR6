@@ -1,7 +1,8 @@
 Public Manual_Tower_Switch As Boolean = false
 Public Manual_WellPump_Switch As Boolean = false
 
-Public Start_Winch_Override As Boolean  = false
+Public Open_Winch_Serial_Override As Boolean = false
+Public Start_Winch_Mission_Override As Boolean  = false
 
 Public Send_Break_to_ADCP As Boolean = false
 
@@ -11,6 +12,8 @@ Public Shutdown_ADCP_Switch As Boolean = false
 Public Send_test_email As Boolean = false
 
 Public Reset_Instrument_Warnings_Switch As Boolean = False
+
+Dim Winch_Serial_IsOpened as Boolean = False
 
 Sub TowerSwitchSequence
     If Manual_Tower_Switch AND NOT Tower_IsPowered Then
@@ -55,16 +58,32 @@ EndSub
 Sub ADCPShutdownSequence
     If Shutdown_ADCP_Switch = true Then
         Call ShutdownADCP
-    Shutdown_ADCP_Switch = false
+        Shutdown_ADCP_Switch = false
     EndIf
 EndSub
 
-Sub WinchStartSequence
-    If Start_Winch_Override Then
+Sub WinchOpenSerialSequence
+    
+    If WinchStatus <> "Standby" Then
+        ExitSub
+    EndIf
+
+    If Open_Winch_Serial_Override Then
+        If Not Winch_Serial_IsOpened Then
+            Call StartWinch
+        EndIf
+    ElseIf Winch_Serial_IsOpened Then
+        SerialClose(SerialWinch)
+    EndIf
+EndSub
+
+
+Sub WinchStartMissionSequence
+    If Start_Winch_Mission_Override Then
         Call logging("Winch Manual Override")
         Call WinchRoutine
 
-        Start_Winch_Override = false
+        Start_Winch_Mission_Override = false
     EndIf
 EndSub
 
