@@ -190,14 +190,14 @@ Sub StartWinchMission
     Call logging("Winch Mission Start Command: " & winch_start_command)
     
     Call StartWinch ' Open Winch Serial 
-    SerialOut(SerialWinch, winch_start_command & CHR(13), "", 0, 10)
+    SerialOut(SerialWinch, winch_start_command & CHR(13), winch_start_command & CHR(13) & CHR(10),  1, 10)
 
     For X = 1 to 10
         SerialIn(WinchString,SerialWinch,100,10,200)
-        Call logging("WinchString Attempt " & X & ": " & WinchString)
-        
+        WinchString = Mid(WinchString, 1, Len(WinchString) - 1) ' removing the '\r' 
+        Call logging("WinchString (" & X & "): " & WinchString)
         If InStr(1, WinchString,".txt"&CHR(13),2)  <> 0 Then ' "RKXXX.txt\r"
-            Winch_Internal_File = Mid(WinchString, 1, Len(WinchString) - 5) ' ".txt\r"
+            Winch_Internal_File = Mid(WinchString, 1, Len(WinchString) - 4) ' ".txt\r"
             WinchStatus = "Sampling"
             ExitFor
         EndIf
@@ -277,14 +277,14 @@ Sub DownloadWinchFile
     ' Send Winch Download Command
     winch_download_command = "read " & Winch_Internal_File
     Call logging("Winch Download Command: " &  winch_download_command)
-    SerialOut(SerialWinch,winch_download_command & CHR(13), "", 0, 10)
+    SerialOut(SerialWinch,winch_download_command & CHR(13), winch_download_command & CHR(13) & CHR(10), 1, 10)
     
     ' Look for the file start delimiter (---)
     Start_Delimiter_Found = False
     For X = 1 to 10
         SerialIn(WinchString,SerialWinch,100,10,200)
-        Call logging("WinchString Attempt " & X & ": " & WinchString)
-        
+        WinchString = Mid(WinchString, 1, Len(WinchString) - 1) ' removing the '\r' 
+        Call logging("WinchString (" & X & "): " & WinchString)
         If InStr(1,WinchString,"---",2)  <> 0 Then ' Start of file delimiter
             Start_Delimiter_Found = True
             ExitFor

@@ -486,8 +486,7 @@ BeginProg
 
       Call TowerSwitchSequence
       Call WellSwitchSequence
-      
-      Call WinchOpenSerialSequence
+    
       Call WinchStartMissionSequence
       
       Call ADCPBreakSequence
