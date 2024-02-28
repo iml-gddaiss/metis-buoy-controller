@@ -196,7 +196,7 @@ Sub StartWinchMission
         SerialIn(WinchString,SerialWinch,100,10,200)
         WinchString = Mid(WinchString, 1, Len(WinchString) - 1) ' removing the '\r' 
         Call logging("WinchString (" & X & "): " & WinchString)
-        If InStr(1, WinchString,".txt"&CHR(13),2)  <> 0 Then ' "RKXXX.txt\r"
+        If InStr(1, WinchString,".txt",2)  <> 0 Then ' "RKXXX.txt\r"
             Winch_Internal_File = Mid(WinchString, 1, Len(WinchString) - 4) ' ".txt\r"
             WinchStatus = "Sampling"
             ExitFor
