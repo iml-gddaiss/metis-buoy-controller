@@ -1,11 +1,11 @@
 ConstTable (Buoy_Config,0)
-    Const Buoy_Name = "PMZA-RIKI"
+    Const Buoy_Name = "PMZA-RIKI-Test"
 
     Const Buoy_Configuration = "As Follow" 
     
     Const Latitude_0 As Float =   48.4749 ' Degree-Decimal North 
     Const Longitude_0 As Float = -68.5111 ' Degree-Decimal East
-    Const Allowed_Position_Deviation_m As Float = 500 ' Meters. Distance from Latitude_0,Longitude_0
+    Const Allowed_Position_Deviation_m As Float = 50000 ' Meters. Distance from Latitude_0,Longitude_0
     
     ' ### Sampling Interval ####
     Const Buoy_Interval_Min As Long = 30

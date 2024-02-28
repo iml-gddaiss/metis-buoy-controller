@@ -12,8 +12,6 @@ Public Send_test_email As Boolean = false
 
 Public Reset_Instrument_Warnings_Switch As Boolean = False
 
-Dim Winch_Serial_IsOpened as Boolean = False
-
 Sub TowerSwitchSequence
     If Manual_Tower_Switch AND NOT Tower_IsPowered Then
         SW12(SW12_1,1)
