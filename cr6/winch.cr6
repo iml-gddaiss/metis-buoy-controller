@@ -259,6 +259,40 @@ EndSub
 
 ' ####################### Collecting Data ##############################
 
+Sub CheckWinchStatus
+    ' Makes the WinchTagString from the current WinchMessage
+    If With_Winch Then
+        Call logging("Winch Status Check")
+        If WinchStatus = "Sampling" Then
+            ' Winch Serial should be still open.
+            SerialFlush(SerialWinch)
+            SerialIn(WinchString,SerialWinch,100,10,200)
+            If WinchString = "" Then
+                WinchStatus = "Completed"
+                WinchMessage = "Mission Completed"
+            Else
+                Call logging("WinchString: " & WinchString)
+            EndIf
+        EndIf
+        Call logging("Winch Status: " & WinchStatus)
+        TAGString &= WinchTAGString()
+    EndIf
+EndSub
+
+Sub CollectWinch
+    If With_Winch Then
+        Call logging("Entering Winch Collection")
+        If WinchStatus = "Completed" Then
+            Call DownloadWinchFile
+            WinchStatus = "Standby"
+            SerialClose(SerialWinch)
+        Else
+            Call logging("Nothing to download.")
+        EndIf
+    EndIf
+    'Call logging("Winch Status: " & WinchStatus)
+EndSub
+
 
 Sub DownloadWinchFile
     Dim X as Long
@@ -328,35 +362,4 @@ Sub DownloadWinchFile
         Call Set_Winch_MIssion_Error_Warning
         Call logging("An Error occured during the winch mission.")
     EndIf
-EndSub
-
-Sub CheckWinchStatus
-    ' Makes the WinchTagString from the current WinchMessage
-    If With_Winch Then
-        Call logging("Winch Status Check")
-        If WinchStatus = "Sampling" Then
-            ' Winch Serial should be still open.
-            SerialIn(WinchString,SerialWinch,100,10,200)
-            If WinchString = "" Then
-                WinchStatus = "Completed"
-                WinchMessage = "Mission Completed"
-            EndIf
-        EndIf
-        Call logging("Winch Status: " & WinchStatus)
-        TAGString &= WinchTAGString()
-    EndIf
-EndSub
-
-Sub CollectWinch
-    If With_Winch Then
-        Call logging("Entering Winch Collection")
-        If WinchStatus = "Completed" Then
-            Call DownloadWinchFile
-            WinchStatus = "Standby"
-            SerialClose(SerialWinch)
-        Else
-            Call logging("Nothing to download.")
-        EndIf
-    EndIf
-    'Call logging("Winch Status: " & WinchStatus)
 EndSub
