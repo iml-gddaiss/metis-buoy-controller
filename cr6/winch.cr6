@@ -187,11 +187,11 @@ Sub StartWinchMission
         winch_start_command = make_winch_start_command(GPS_Lat, GPS_Lon)
     EndIf
 
-    Call logging("Winch Mission Start Command: " & winch_start_command)
     
     Call StartWinch ' Open Winch Serial 
     SerialOut(SerialWinch, winch_start_command & CHR(13), winch_start_command & CHR(13) & CHR(10),  1, 10)
-
+    Call logging("Winch Mission Start Command Sent: " & winch_start_command)
+    
     For X = 1 to 10
         SerialIn(WinchString,SerialWinch,100,10,200)
         WinchString = Mid(WinchString, 1, Len(WinchString) - 1) ' removing the '\r' 
@@ -333,7 +333,7 @@ EndSub
 Sub CheckWinchStatus
     ' Makes the WinchTagString from the current WinchMessage
     If With_Winch Then
-        Call logging("Winch Statis Check")
+        Call logging("Winch Status Check")
         If WinchStatus = "Sampling" Then
             ' Winch Serial should be still open.
             SerialIn(WinchString,SerialWinch,100,10,200)
