@@ -69,7 +69,6 @@ Units SUNA_Bromide = mg/L
 
 
 Function SUNATagString As String * 200
-   Round ( Number, Decimal )
   SunaTAGString = "[NO3]" & Round(SUNA_Nitrate, 2) & "," & Round(SUNA_Nitrogen,4) & "," & SUNA_Bromide & "," & Round(SUNA_RMSE,6)
   ' SunaTAGString = "[NO3]" & Dark_Nitrate & "," & Light_Nitrate & "," & Dark_Nitrogen_in_Nitrate & "," & Light_Nitrogen_in_Nitrate & "," & Dark_Bromide & "," & Light_Bromide
 EndFunction
