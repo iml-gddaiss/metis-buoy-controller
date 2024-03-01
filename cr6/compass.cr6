@@ -9,6 +9,10 @@ Units Heading = °
 Units Pitch = °
 Units Roll = °
 
+Public Pitch_STD as Float = ""
+Public Roll_STD as Float = ""
+Units Pitch_STD = °
+Units Roll_STD = °
 
 Dim UpdateCompassTable As Boolean = false
 
@@ -19,6 +23,8 @@ DataTable (FileCompass,UpdateCompassTable,-1)
   Sample (1,Heading, IEEE4)
   Sample (1,Pitch, IEEE4)
   Sample (1,Roll, IEEE4)
+  Sample (1,Pitch_STD, IEEE4)
+  Sample (1,Roll_STD, IEEE4)
 EndTable
 
 'min length for a string is 4 (I think)
@@ -32,16 +38,28 @@ Function HexaSign(RawSign As String) as String * 4
 EndFunction
 
 
+
 Sub CollectCompass
   ' Roll and Pitch are not circularly average.
   Dim NBR ' Number of Bytes Returned  
   Dim X, Y
   Dim HeadingBuff As Float ' Doesn't need to be Reset.
 
- 
   Compass_Angles_Sum() = 0 'Need to be reste for summation
 
-  SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",3,50) ' What is this for ? (Maybe its to wake up the compass)
+  Dim _roll_ as Float = ""
+  Dim _pitch_ as Float = "" 
+
+  Dim RollSTDArray(Compass_Sample_Size) as Float = 0
+  Dim PitchSTDArray(Compass_Sample_Size) as Float = 0
+
+  RollSTDArray() = 0  ' probably not necessary but.
+  PitchSTDArray() = 0 ' probably not necessary but.
+
+  Pitch_STD = 0
+  Roll_STD = 0
+ 
+    SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",3,50) ' What is this for ? (Maybe its to wake up the compass)
   For Y = 1 To Compass_Sample_Size Step 1
     SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",1,50)  ' Command = h^D^A^D^I (68 04 01 04 09)
     SerialInRecord(SerialTower,raw_compass,&H68,13,0,NBR,101)   ' First byte sent is address 68 ' &68 -> $
@@ -64,8 +82,14 @@ Sub CollectCompass
     ' maybe use a variable to Dump it in ?
     Call logging("Compass sample ("&Y&"): R=" & HexaSign(Compass(1)) & Compass(2) &"."& Compass(3) & ", P=" & HexaSign(Compass(4)) & Compass(5) &"."& Compass(6) & ", H=" & Compass(7) & Compass(8) & "." & Compass(9)) 'FIXME
 
-    RollSum = RollSum + CTYPE( HexaSign(Compass(1)) & Compass(2) &"."& Compass(3), float)
-    PitchSum = PitchSum + CTYPE( HexaSign(Compass(4)) & Compass(5) &"."& Compass(6), float)
+    _roll_ = CTYPE( HexaSign(Compass(1)) & Compass(2) &"."& Compass(3), float)
+    _pitch_ = CTYPE( HexaSign(Compass(4)) & Compass(5) &"."& Compass(6), float)
+    
+    RollSTDArray(Y)() = _roll_
+    PitchSTDArray(Y)() = _pitch_
+
+    RollSum = RollSum + _roll_
+    PitchSum = PitchSum + _pitch_
     
     HeadingBuff = CTYPE(Compass(7) & Compass(8) & "." & Compass(9), float)
     Heading_x_Sum = Heading_x_Sum + COS(HeadingBuff)
@@ -74,11 +98,22 @@ Sub CollectCompass
     Delay(1,400,mSec)
   Next
 
-  
   ' Does Roll and Pitches need to be circularly averaged.
   Roll = Round(RollSum / Compass_Sample_Size, 2) ' Goes from -85 to 85 so this should be fine.
   Pitch = Round(PitchSum / Compass_Sample_Size, 2) ' Goes from -85 to 85 so this should be fine.
   Heading = ATN2(Heading_y_Sum, Heading_x_Sum)
+
+  RollSTDArray() = (RollSTDArray() - Roll)^2
+  PitchSTDArray() = (PitchSTDArray() - Pitch)^2
+
+  For Y = 1 to Compass_Sample_Size 
+    Roll_STD = Roll_STD + RollSTDArray(Y)
+    Pitch_STD = Pitch_STD + PitchSTDArray(Y)
+  Next
+
+  Roll_STD = SQRT(Roll_STD / Compass_Sample_Size)
+  Pitch_STD = SQRT(Pitch_STD / Compass_Sample_Size)
+
 EndSub
 
 Sub ApplyMagneticCorrection
