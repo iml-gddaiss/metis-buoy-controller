@@ -111,8 +111,8 @@ Sub CollectCompass
     Pitch_STD = Pitch_STD + PitchSTDArray(Y)
   Next
 
-  Roll_STD = SQRT(Roll_STD / Compass_Sample_Size)
-  Pitch_STD = SQRT(Pitch_STD / Compass_Sample_Size)
+  Roll_STD = SQR(Roll_STD / Compass_Sample_Size)
+  Pitch_STD = SQR(Pitch_STD / Compass_Sample_Size)
 
 EndSub
 
