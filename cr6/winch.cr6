@@ -239,7 +239,7 @@ Sub WinchRoutine
         
         If WinchMissingConditions <> 0 Then
             Call logging("Winch Number of Missing Conditions: " & WinchMissingConditions)
-            WinchMessage = "Missing Condition " & WinchMissingConditions
+            'WinchMessage made in WinchConditionsCheck Only the last failed Condition.
             ExitSub
         EndIf
 
