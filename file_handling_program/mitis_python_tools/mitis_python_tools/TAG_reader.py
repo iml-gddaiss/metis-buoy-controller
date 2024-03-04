@@ -1,7 +1,7 @@
 """
 Tag String Structure
 
-[INIT]Buoy_Name,Date,Time,Latitude,Longitude,Heading,Pitch,Roll,COG,SOG,Magnetic_Variation,Water_Detection_Main
+[INIT]Buoy_Name,Date,Time,Latitude,Longitude,Heading,Pitch,Roll,Pitch_Std,Roll_StdCOG,SOG,Magnetic_Variation,Water_Detection_Main
 [POWR]VBatt1,ABatt1,VBatt2,ABatt2,VSolar,ASolar,AMain,ATurbine,AWinch,PM_RH,Relay_State
 [ECO1]Scattering,Chlorophyll,FDOM
 [CTD]Temperature,Conductivity,Salinity,Density
@@ -38,8 +38,8 @@ INSTRUMENTS_TAG = ['INIT', 'POWR', 'ECO1', 'CTD', 'PH', 'NO3', 'WIND', 'ATMS', '
 DATA_TAG_REGEX = re.compile(rf"\[({'|'.join(INSTRUMENTS_TAG)})]((?:(?!\[).)*)", re.DOTALL)
 
 TAG_VARIABLES = {
-    'init': ['buoy_name', 'date', 'time', 'latitude', 'longitude', 'heading', 'pitch', 'roll', 'cog', 'sog',
-             'magnetic_declination', 'water_detection'],
+    'init': ['buoy_name', 'date', 'time', 'latitude', 'longitude', 'heading', 'pitch', 'roll', 'pitch_std', 'roll_std',
+             'cog', 'sog', 'magnetic_declination', 'water_detection'],
     'powr': ['volt_batt_1', 'amp_batt_1', 'volt_batt_2', 'amp_batt_2', 'volt_solar', 'amp_solar', 'amp_main',
              'amp_turbine', 'amp_winch', 'pm_rh', 'relay_state'],
     'eco1': ['scattering', 'chlorophyll', 'fdom'],

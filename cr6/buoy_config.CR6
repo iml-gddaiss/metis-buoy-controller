@@ -85,12 +85,11 @@ Const Battery_Low_Voltage_Threshold As Float = 10 'volt ? FIXME  (value < thresh
 Const Water_Detection_Main_Threshold As Float = 3000 ' TODO FIXME   (value > threshold)
 
 ' ### Which thresholds ###
-Const Min_Air_Temp_for_Winch = 1
-Const Max_Wave_H13_for_Winch = 2
-Const Min_Wave_Period_for_Winch = 6
-Const Max_Flow_for_Winch = 1
-Const Max_Buoy_Speed_for_Winch = 1
-Const Min_Voltage_for_Winch = 12.2
+Const Min_Air_Temp_for_Winch = 1 ' Celcius
+Const Max_Wave_H13_for_Winch = 2 ' metre
+Const Min_Wave_Period_for_Winch = 6 ' Seconds
+Const Max_Buoy_Speed_for_Winch = 1 ' Knots
+Const Min_Voltage_for_Winch = 12.2 ' Volts
 
 
 ' #####################################################################

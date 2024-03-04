@@ -29,7 +29,6 @@
 ' Const Min_Air_Temp_for_Winch = 1
 ' Const Max_Wave_H13_for_Winch = 2
 ' Const Min_Wave_Period_for_Winch = 6
-' Const Max_Flow_for_Winch = 1
 ' Const Max_Buoy_Speed_for_Winch = 1
 ' Const Min_Voltage_for_Winch = 12.2
 

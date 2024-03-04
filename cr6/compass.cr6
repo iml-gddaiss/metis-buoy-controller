@@ -48,7 +48,8 @@ Sub CollectCompass
   RollStdArray() = "" ' Probably to necessary
   PitchStdArray() = "" ' Probably to necessary
   Compass_Angles_Sum() = 0 'Need to be reste for summation
- 
+
+   
   SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",3,50) ' What is this for ? (Maybe its to wake up the compass)
   For Y = 1 To Compass_Sample_Size Step 1
     SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",1,50)  ' Command = h^D^A^D^I (68 04 01 04 09)
@@ -61,7 +62,8 @@ Sub CollectCompass
         Call logging("Compass value not received.")
         Call Failed_Sampling_Warning("Compass")
         ExitSub
-      EndIf        
+      EndIf
+    EndIf        
 
     For X = 4 To 12                                   ' Setting each HEX byte in Compass Array
       Compass(X-3) = Hex(ASCII(raw_compass(1,1,X)))   ' Received message looks like 68 0D 01 84 00 11 22 10 33 44 05 66 77 99
