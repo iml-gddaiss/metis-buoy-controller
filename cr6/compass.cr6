@@ -40,21 +40,14 @@ Sub CollectCompass
   Dim NBR ' Number of Bytes Returned  
   Dim X, Y
   Dim Compass_Buffers(3) as Float = {"", "", ""} : Alias Compass_Buffers = HeadingBuff, PitchBuff, RollBuff
-  'Dim HeadingBuff As Float ' Doesn't need to be Reset. FIXME Remove
-  Dim StdArrays(2, Compass_Sample_Size) as Float = {0, 0}: Alias StdArrays = RollStdArry, PitchStdArray
+  Dim RollStdArray(Compass_Sample_Size) as Float = 0
+  Dim PitchStdArray(Compass_Sample_Size) as Float = 0
   Dim Compass_Angles_Sum(6) As Float : Alias Compass_Angles_Sum = PitchSum, RollSum, Heading_x_Sum, Heading_y_Sum, PitchStdSum, RollStdSum
   
   Compass_Buffers() = "" ' Probably to necessary
-  StdArrays() = 0 ' probably not nescessary
-
+  RollStdArray() = "" ' Probably to necessary
+  PitchStdArray() = "" ' Probably to necessary
   Compass_Angles_Sum() = 0 'Need to be reste for summation
-
-  'Dim RollSTDArray(Compass_Sample_Size) as Float = 0  FIXME Remove
-  'Dim PitchSTDArray(Compass_Sample_Size) as Float = 0  FIXME Remove
-
-  
-  'RollSTDArray() = 0  ' probably not necessary but.  FIXME Remove
-  'PitchSTDArray() = 0 ' probably not necessary but.  FIXME Remove
  
   SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",3,50) ' What is this for ? (Maybe its to wake up the compass)
   For Y = 1 To Compass_Sample_Size Step 1
