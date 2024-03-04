@@ -191,6 +191,8 @@
 ' [PCO2] CO2_Air, CO2_Water, Gas_Pressure_Air, Gas_Pressure_Water, Air_Humidity
 ' [WNCH]messages
 '     messages:
+'         Buoy Adrift
+'         Low Salinity
 '         Air temperature is too low
 '         Waves are too high
 '         Wave period is too short
@@ -200,7 +202,7 @@
 '         No Mission in Progress
 '         Mission in Progress
 '         Mission Started
-'         No String received from CTD
+'         Failed to Start
 '         Interval not reach
 ' [END]
 '#####################################################################################

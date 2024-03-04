@@ -4,6 +4,7 @@ Dim raw_compass As String * 100 ' Doesn't need to be Reset. (Not saved in a Tabl
 Dim Compass(9) As String        ' Doesn't need to be Reset.
 Dim Compass_Angles_Sum(5) As Float : Alias Compass_Angles_Sum = RollSum, PitchSum, Heading_x_Sum, Heading_y_Sum
 
+
 Public Compass_Angles(3) As Float = {"", "", ""} : Alias Compass_Angles = Heading, Pitch, Roll
 Units Heading = °
 Units Pitch = °
@@ -63,12 +64,15 @@ Sub CollectCompass
   For Y = 1 To Compass_Sample_Size Step 1
     SerialOut(SerialTower,"h"&CHR(04)&CHR(01)&CHR(04)&CHR(09),"h",1,50)  ' Command = h^D^A^D^I (68 04 01 04 09)
     SerialInRecord(SerialTower,raw_compass,&H68,13,0,NBR,101)   ' First byte sent is address 68 ' &68 -> $
-    If raw_compass = "NAN" Then
-      Compass_Angles() = ""
-      Call logging("Compass Returned: NAN.")
-      Call Failed_Sampling_Warning("Compass")
-      ExitSub
-    EndIf        
+  
+    If raw_compass = "NAN" Then ' 2 Trys per scan. If the WMT700 sends a ready string, this will discard it. 
+      SerialInRecord(SerialTower,raw_compass,&H68,13,0,NBR,101)   ' First byte sent is address 68 ' &68 -> $ 
+      If raw_compass = "NAN" Then
+        Compass_Angles() = ""
+        Call logging("Compass value not received.")
+        Call Failed_Sampling_Warning("Compass")
+        ExitSub
+      EndIf        
 
     For X = 4 To 12                                   ' Setting each HEX byte in Compass Array
       Compass(X-3) = Hex(ASCII(raw_compass(1,1,X)))   ' Received message looks like 68 0D 01 84 00 11 22 10 33 44 05 66 77 99
@@ -113,7 +117,6 @@ Sub CollectCompass
 
   Roll_STD = SQR(Roll_STD / Compass_Sample_Size)
   Pitch_STD = SQR(Pitch_STD / Compass_Sample_Size)
-
 EndSub
 
 Sub ApplyMagneticCorrection
