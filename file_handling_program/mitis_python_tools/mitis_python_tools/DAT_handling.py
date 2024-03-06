@@ -199,7 +199,8 @@ def _write_DAT(dest_file: str, dat_string: str):
     :param dat_string: Dat data string.
     """
     with open(dest_file, 'a') as f:
-        f.write(dat_string + '\n')
+        f.write(dat_string)
+
 
 def _write_SD(dest_file: str, sd_string: str):
     """Append data to the end of dest_file.
