@@ -28,7 +28,15 @@ def _write_winch_file(input_file: str, output_file: str):
     # Create the output file
     with open(output_file, 'w') as output_file:
         with open(input_file, 'r') as input_file:
+            header = []
             line = input_file.readline()
-            # Extract the header lines
-            if line.startswith("**") or line.count(",") == 5:
-                output_file.write(line)
+            while line.startswith("**"):
+                header.append(line)
+
+            output_file.writelines(header)
+
+            output_file.write("D\n")
+
+            for line in input_file:
+                if line.startswith("**") or line.count(",") == 5:
+                    output_file.write("[S]"+line)
