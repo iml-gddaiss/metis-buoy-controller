@@ -135,11 +135,12 @@ class FilePointer:
             self._update(0)
 
 
-def process_SD(input_file: str, target_directory: str, sd_padding: bool, pointer: FilePointer):
+def process_DAT(input_file: str, target_directory: str, move_dir: str, sd_padding: bool, pointer: FilePointer):
     """Append SD String to the target_directory/SD_file.
 
     :param: filename : str
     :param: target_directory : str
+    :param: move_dir : str
     :param: sd_padding : If True, SD string's values will be padded.
     :param: pointers_file : str
 
@@ -148,18 +149,34 @@ def process_SD(input_file: str, target_directory: str, sd_padding: bool, pointer
 
     if data:
         station_name = data[0]['init']['buoy_name']
-        station_directory = Path(target_directory).joinpath(station_name)
-        Path(station_directory).mkdir(parents=True, exist_ok=True)
+        SD_path = Path(target_directory).joinpath(station_name)
+        Path(SD_path).mkdir(parents=True, exist_ok=True)
+
+        # Move the input file to the WINCH folder
+        move_path = Path(move_dir).joinpath(station_name)
+        Path(move_path).mkdir(parents=True, exist_ok=True)
 
         for d in data:
+            DAT_target_file = move_path.joinpath(Path(input_file).name)
+            _write_DAT(dest_file=DAT_target_file, dat_string=d)
+
             SD_data_string = _make_SD_string(data=d, sd_padding=sd_padding)
             SD_filename = f"{station_name}_SD_{d['init']['date'].replace('-', '')}.dat"
-            SD_target_file = station_directory.joinpath(SD_filename)
+            SD_target_file = SD_path.joinpath(SD_filename)
 
             _write_SD(dest_file=SD_target_file, sd_string=SD_data_string)
 
             pointer.increment()
 
+
+def _write_DAT(dest_file: str, dat_string: str):
+    """Append data to the end of dest_file.
+
+    :param dest_file: Dat file to append to.
+    :param dat_string: Dat data string.
+    """
+    with open(dest_file, 'a') as f:
+        f.write(dat_string + '\n')
 
 def _write_SD(dest_file: str, sd_string: str):
     """Append data to the end of dest_file.

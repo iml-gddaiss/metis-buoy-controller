@@ -2,7 +2,7 @@ import os
 import json
 from pathlib import Path
 
-from mitis_python_tools.SD_handling import process_SD, FilePointer
+from mitis_python_tools.DAT_handling import process_DAT, FilePointer
 from mitis_python_tools.WINCH_handling import process_winch
 
 CONFIG_FILE = Path("config.json")
@@ -13,7 +13,7 @@ with open(CONFIG_FILE) as f:
 
 SOURCE_DIR = config['source_dir']
 TARGET_DIR = config['target_dir']
-WINCH_DIR = config['winch_dir']
+MOVE_DIR = config['move_dir']
 SD_PADDING = config['sd_padding']
 
 POINTERS_DIR.mkdir(parents=True, exist_ok=True)
@@ -25,12 +25,12 @@ def main():
             process_winch(
                 input_file=Path(SOURCE_DIR).joinpath(filename),
                 target_dir=TARGET_DIR,
-                winch_dir=WINCH_DIR
+                move_dir=MOVE_DIR
             )
 
         elif filename.endswith('.dat'):
             pointer = FilePointer(filename=POINTERS_DIR.joinpath(Path(filename).with_suffix('.json')))
-            process_SD(
+            process_DAT(
                 input_file=Path(SOURCE_DIR).joinpath(filename),
                 target_directory=TARGET_DIR,
                 sd_padding=SD_PADDING,
