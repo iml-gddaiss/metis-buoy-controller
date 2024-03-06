@@ -68,12 +68,12 @@ def read_TAG_file(filename: str, pointer_location: int = 0) -> List[Dict[str, di
             next(f)
 
         for line in f:
-            unpacked_data.append(_unpack_data_from_tag_string(line))
+            unpacked_data.append(unpack_data_from_tag_string(line))
 
     return unpacked_data
 
 
-def _unpack_data_from_tag_string(data: str) -> Dict[str, dict[str, str]]:
+def unpack_data_from_tag_string(data: str) -> Dict[str, dict[str, str]]:
     """Unpack Mitis Tag Data
     Returns Data as a dictionary of {TAG:DATA}
     """

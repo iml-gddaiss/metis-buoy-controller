@@ -32,7 +32,8 @@ def main():
             pointer = FilePointer(filename=POINTERS_DIR.joinpath(Path(filename).with_suffix('.json')))
             process_DAT(
                 input_file=Path(SOURCE_DIR).joinpath(filename),
-                target_directory=TARGET_DIR,
+                target_dir=TARGET_DIR,
+                move_dir=MOVE_DIR,
                 sd_padding=SD_PADDING,
                 pointer=pointer
                 )

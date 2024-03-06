@@ -55,7 +55,7 @@ import math
 from typing import Dict, List
 from pathlib import Path
 
-from mitis_python_tools.TAG_reader import read_TAG_file
+from mitis_python_tools.TAG_reader import unpack_data_from_tag_string
 _KNOTS_TO_MPS = 0.5144444444  # mps/knots
 _KNOTS_TO_KPH = 1.852  # kph/knots
 _MMPS_TO_MPS = 1 / 1000  # mms/ms
@@ -135,38 +135,62 @@ class FilePointer:
             self._update(0)
 
 
-def process_DAT(input_file: str, target_directory: str, move_dir: str, sd_padding: bool, pointer: FilePointer):
+def process_DAT(input_file: str, target_dir: str, move_dir: str, sd_padding: bool, pointer: FilePointer):
     """Append SD String to the target_directory/SD_file.
 
     :param: filename : str
-    :param: target_directory : str
+    :param: target_dir : str
     :param: move_dir : str
     :param: sd_padding : If True, SD string's values will be padded.
     :param: pointers_file : str
 
     """
-    data = read_TAG_file(filename=input_file, pointer_location=pointer.value)
+    data = get_new_TAG_data(filename=input_file, pointer_location=pointer.value)
 
     if data:
         station_name = data[0]['init']['buoy_name']
-        SD_path = Path(target_directory).joinpath(station_name)
+
+        # `sd` directory
+        SD_path = Path(target_dir).joinpath(station_name)
         Path(SD_path).mkdir(parents=True, exist_ok=True)
 
-        # Move the input file to the WINCH folder
+        # `move` directory
         move_path = Path(move_dir).joinpath(station_name)
         Path(move_path).mkdir(parents=True, exist_ok=True)
 
-        for d in data:
+        for line in data:
+            # Copy the new line to the `move` files.
             DAT_target_file = move_path.joinpath(Path(input_file).name)
-            _write_DAT(dest_file=DAT_target_file, dat_string=d)
+            _write_DAT(dest_file=DAT_target_file, dat_string=line)
 
-            SD_data_string = _make_SD_string(data=d, sd_padding=sd_padding)
-            SD_filename = f"{station_name}_SD_{d['init']['date'].replace('-', '')}.dat"
+            # Unpacked TAG data and write to 'SD' file.
+            unpacked_data = unpack_data_from_tag_string(data=line)
+
+            SD_data_string = _make_SD_string(data=unpacked_data, sd_padding=sd_padding)
+            SD_filename = f"{station_name}_SD_{line['init']['date'].replace('-', '')}.dat"
             SD_target_file = SD_path.joinpath(SD_filename)
 
             _write_SD(dest_file=SD_target_file, sd_string=SD_data_string)
 
             pointer.increment()
+
+
+def get_new_TAG_data(filename: str, pointer_location: int = 0) -> List[str]:
+    """
+    :param pointer_location: Line at which to start unpacking data.
+    :param filename: Path to file
+
+    """
+
+    lines = []
+    with open(filename, 'r') as f:
+        for _ in range(pointer_location):
+            next(f)
+
+        for line in f:
+            lines.append(line)
+
+    return lines
 
 
 def _write_DAT(dest_file: str, dat_string: str):
