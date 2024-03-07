@@ -203,8 +203,8 @@ def unpack_old_tag_file(input_file: str, magnetic_declination: float) -> dict:
                 _d['bromide'] = SUNA[5]
                 _d['rmse'] = "NAN"
 
-            elif line[1:4] == "WNCH":
-                line = line[5:]
+            elif line[1:5] == "WNCH":
+                line = line[6:]
                 data["wnch"]["message"] = line
     return data
 
