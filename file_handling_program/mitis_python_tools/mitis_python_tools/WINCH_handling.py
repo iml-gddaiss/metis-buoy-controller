@@ -32,6 +32,7 @@ def _write_winch_file(input_file: str, output_file: str):
             line = input_file.readline()
             while line.startswith("**"):
                 header.append(line)
+                line = input_file.readline()
 
             output_file.writelines(header)
 

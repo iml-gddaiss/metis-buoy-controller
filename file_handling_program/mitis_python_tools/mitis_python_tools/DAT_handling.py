@@ -304,7 +304,7 @@ def _make_SD_string(data: Dict[str, List[str]], sd_padding: bool) -> str:
         _u = float(data['adcp']['u'])
         _v = float(data['adcp']['v'])
         _uv = math.sqrt(_u ** 2 + _v ** 2) * _MMPS_TO_MPS
-        _dir = math.atan2(_u, _v) % 360
+        _dir = math.degrees(math.atan2(_u, _v)) % 360
 
         sd_data[35] = f"{_uv:.1f}"
         sd_data[36] = f"{_dir:.0f}"
