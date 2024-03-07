@@ -14,7 +14,7 @@ NEW_TAG_STRUCTURE = {
     'wind': ['source', 'wind_dir_min', 'wind_dir_ave', 'wind_dir_max', 'wind_spd_min', 'wind_spd_ave', 'wind_spd_max'],
     'atms': ['air_temperature', 'air_humidity', 'air_pressure', 'par', 'rain_total', 'rain_duration', 'rain_intensity'],
     'wave': ['date', 'time', 'period', 'hm0', 'h13', 'hmax'],
-    # 'adcp': ['date', 'time', 'u', 'v', 'w', 'err'], # ADCP data are not in ENU
+    'adcp': ['date', 'time', 'u', 'v', 'w', 'err'], # ADCP data are not in ENU
     'pco2': ['co2_air', 'co2_water', 'gas_pressure_air', 'gas_pressure_water', 'air_humidity'],
     'wnch': ['message']
 }
@@ -22,21 +22,25 @@ NEW_TAG_STRUCTURE = {
 
 def convert_to_new_TAGFile(filename: str, source_dir: str, magnetic_declination: float):
     with open(filename, "w") as f:
-        for old_file in walk_old_tag_file(source_dir):
+        for old_file in  sorted(walk_old_tag_file(source_dir)):
             data = unpack_old_tag_file(old_file, magnetic_declination=magnetic_declination)
             tag_string = ""
             for key, value in data.items():
-                tag_string += "[" + key.upper() + "]" + ",".join(str(v) for v in value.values())
+                if value:
+                    tag_string += "[" + key.upper() + "]" + ",".join(str(v) for v in value.values())
             f.write(tag_string + "\n")
 
 
 def walk_old_tag_file(path: str) -> list:
     old_tag_files = []
     for p in os.listdir(path):
-        if Path(p).is_dir():
-            for f in os.listdir(p):
+        d = Path(path).joinpath(p)
+        if d.is_dir():
+            for f in os.listdir(d):
                 if f.endswith('.dat'):
-                    old_tag_files.append(Path(path).joinpath(p, f))
+                    old_tag_files.append(d.joinpath(f))
+
+    return old_tag_files
 
 
 def unpack_old_tag_file(input_file: str, magnetic_declination: float) -> dict:
@@ -167,7 +171,7 @@ def unpack_old_tag_file(input_file: str, magnetic_declination: float) -> dict:
                 # "[PCO2]" & CO2_Water & "," & CO2_Air & "," & PCO2_Gaz_Pressure_Water & "," & PCO2_Gaz_Pressure_Air & "," & PCO2_Humidity
                 line = line[6:]
                 PCO2 = line.split(",")
-                _d = data["PCO2"]
+                _d = data["pco2"]
                 _d['co2_air'] = PCO2[0]
                 _d['co2_water'] = PCO2[1]
                 _d['gas_pressure_air'] = "NAN"
@@ -184,11 +188,10 @@ def unpack_old_tag_file(input_file: str, magnetic_declination: float) -> dict:
                 _d['time'] = RDI[1]
                 u = float(RDI[3]) * sin(radians(float(RDI[2])))
                 v = float(RDI[3]) * cos(radians(float(RDI[2])))
-                _d['u'] = int(f"{u:.0f}")
-                _d['v'] = int(f"{v:.0f}")
+                _d['u'] = f"{u:.0f}"
+                _d['v'] = f"{v:.0f}"
                 _d['w'] = "NAN"
                 _d['err'] = "NAN"
-
 
             elif line[1:5] == "SUNA":
                 #"[SUNA]" & Dark_Nitrate & "," & Light_Nitrate & "," & Dark_Nitrogen_in_Nitrate & "," & Light_Nitrogen_in_Nitrate & "," & Dark_Bromide & "," & Light_Bromide
@@ -208,7 +211,7 @@ def unpack_old_tag_file(input_file: str, magnetic_declination: float) -> dict:
 
 if __name__ == "__main__":
     magnetic_declination = 0
-    source_dir = ""
-    target_file = ""
+    source_dir = "/home/jeromejguay/ImlSpace/vm-share/"
+    target_file = "/home/jeromejguay/ImlSpace/vm-share/tag_file.dat"
 
-    convert_to_new_TAGFile(filename=target_file, source_dir=source_dir,magnetic_declination=magnetic_declination)
+    convert_to_new_TAGFile(filename=target_file, source_dir=source_dir, magnetic_declination=magnetic_declination)
