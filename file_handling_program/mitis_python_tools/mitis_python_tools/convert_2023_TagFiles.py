@@ -25,9 +25,10 @@ def convert_to_new_TAGFile(filename: str, source_dir: str, magnetic_declination:
         for old_file in  sorted(walk_old_tag_file(source_dir)):
             data = unpack_old_tag_file(old_file, magnetic_declination=magnetic_declination)
             tag_string = ""
-            for key, value in data.items():
-                if value:
-                    tag_string += "[" + key.upper() + "]" + ",".join(str(v) for v in value.values())
+            for key, data in data.items():
+                if data:
+                    value = [v if ("#" not in v and v) else "NAN" for v in data.values()]
+                    tag_string += "[" + key.upper() + "]" + ",".join(str(v) for v in value)
             f.write(tag_string + "\n")
 
 
@@ -157,11 +158,14 @@ def unpack_old_tag_file(input_file: str, magnetic_declination: float) -> dict:
                 line = line[6:]
                 WAVE = line.split(",")
                 _d = data["wave"]
-                _d['date'] = WAVE[0].replace("/", "-")
-                _d['time'] = WAVE[1]
+                _d['date'] = WAVE[0].replace("/", "-")[:10]
+                _d['time'] = WAVE[1][:8]
+                if len(_d['date']) != 10 or len(_d['time']) != 8 or "#" in _d['date'] or "#" in _d['time']:
+                    _d['date'] = "NA"
+                    _d['time'] = "NA"
                 _d['period'] = WAVE[2]
                 _d['hm0'] = WAVE[3]
-                _d['h13'] = WAVE[5]
+                _d['h13'] = WAVE[4]
                 _d['hmax'] = WAVE[5]
 
             elif line[1:5] == "PCO2":
@@ -172,8 +176,8 @@ def unpack_old_tag_file(input_file: str, magnetic_declination: float) -> dict:
                 line = line[6:]
                 PCO2 = line.split(",")
                 _d = data["pco2"]
-                _d['co2_air'] = PCO2[0]
-                _d['co2_water'] = PCO2[1]
+                _d['co2_air'] = PCO2[1]
+                _d['co2_water'] = PCO2[0]
                 _d['gas_pressure_air'] = "NAN"
                 _d['gas_pressure_water'] = PCO2[2]
                 _d['air_humidity'] = PCO2[3]
@@ -184,8 +188,11 @@ def unpack_old_tag_file(input_file: str, magnetic_declination: float) -> dict:
                 line = line[5:]
                 RDI = line.split(",")
                 _d = data["adcp"]
-                _d['date'] = RDI[0].replace("/", "-")
-                _d['time'] = RDI[1]
+                _d['date'] = RDI[0].replace("/", "-")[:10]
+                _d['time'] = RDI[1][:8]
+                if len(_d['date']) != 10 or len(_d['time']) != 8 or "#" in _d['date'] or "#" in _d['time']:
+                    _d['date'] = "NA"
+                    _d['time'] = "NA"
                 u = float(RDI[3]) * sin(radians(float(RDI[2])))
                 v = float(RDI[3]) * cos(radians(float(RDI[2])))
                 _d['u'] = f"{u:.0f}"
