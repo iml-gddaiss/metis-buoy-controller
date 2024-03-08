@@ -66,15 +66,13 @@ def unpack_old_tag_file(input_file: str, raw_tag_file: str, magnetic_declination
     with (open(input_file, 'r') as f):
         # for line in f:
         for data_sequence in DATA_TAG_REGEX.finditer(f.read()):
-            tag = data_sequence.group(1)
-            data = data_sequence.group(2)
-
-            line = f"[{tag}]{data}"
+            line = f"[{data_sequence.group(1)}]{data_sequence.group(2)}"
             # Remove the first characters if the file is modified (because of the BOM garbage)
             if line[0] != "[":
                 line = line[3:]
 
             line = line.strip("\n")
+
             if line[1:5] == "INIT":
                 line = line[6:]
                 INIT = line.split(",")
@@ -214,6 +212,8 @@ def unpack_old_tag_file(input_file: str, raw_tag_file: str, magnetic_declination
                 # not in u,v,w,err format.
                 line = line[5:]
                 RDI = line.split(",")
+                if len(RDI) < 4:
+                    continue
                 _d = data["adcp"]
                 _d['date'] = RDI[0].replace("/", "-")[:10]
                 _d['time'] = RDI[1][:8]
