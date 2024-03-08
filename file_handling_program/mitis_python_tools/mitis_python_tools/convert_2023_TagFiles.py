@@ -58,12 +58,22 @@ def walk_old_tag_file(path: str) -> list:
 
 
 def unpack_old_tag_file(input_file: str, raw_tag_file: str, magnetic_declination: float) -> dict:
+    INSTRUMENTS_TAG = ["INIT", "POWR", "TRP1", "CTD", "PHPRO", "PH", "WIND", "W700", "W536", "ATMS", "WAVE", "PCO2", "RDI", "SUNA", "WNCH"]
+    DATA_TAG_REGEX = re.compile(rf"\[({'|'.join(INSTRUMENTS_TAG)})],?((?:(?!\[).)*)", re.DOTALL)
+
+    data = {key: {} for key in NEW_TAG_STRUCTURE}
+
     with (open(input_file, 'r') as f):
-        data = {key: {} for key in NEW_TAG_STRUCTURE}
-        for line in f:
+        # for line in f:
+        for data_sequence in DATA_TAG_REGEX.finditer(f.read()):
+            tag = data_sequence.group(1)
+            data = data_sequence.group(2)
+
+            line = f"[{tag}]{data}"
             # Remove the first characters if the file is modified (because of the BOM garbage)
             if line[0] != "[":
                 line = line[3:]
+
             line = line.strip("\n")
             if line[1:5] == "INIT":
                 line = line[6:]
