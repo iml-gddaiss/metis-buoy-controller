@@ -1,3 +1,16 @@
+"""
+Usage
+-----
+magnetic_declination = 0
+source_dir = "/path/to/source/directory/"
+target_file = "/path/to/target/file.dat"
+raw_tag_file = "/path/to/raw/dat/PMZA-RIKI_Raw.dat"
+
+convert_to_new_TAGFile(filename=target_file, source_dir=source_dir, raw_tag_file=raw_tag_file, magnetic_declination=magnetic_declination)
+
+
+"""
+import re
 import os
 from math import sin, cos, radians
 from pathlib import Path
@@ -20,14 +33,14 @@ NEW_TAG_STRUCTURE = {
 }
 
 
-def convert_to_new_TAGFile(filename: str, source_dir: str, magnetic_declination: float):
+def convert_to_new_TAGFile(filename: str, source_dir: str, raw_tag_file: str, magnetic_declination: float):
     with open(filename, "w") as f:
         for old_file in  sorted(walk_old_tag_file(source_dir)):
-            data = unpack_old_tag_file(old_file, magnetic_declination=magnetic_declination)
+            data = unpack_old_tag_file(old_file, raw_tag_file, magnetic_declination=magnetic_declination)
             tag_string = ""
             for key, data in data.items():
                 if data:
-                    value = [v if ("#" not in v and v) else "NAN" for v in data.values()]
+                    value = [v if (v and "#" not in v and "nan" not in v) else "NAN" for v in data.values()]
                     tag_string += "[" + key.upper() + "]" + ",".join(str(v) for v in value)
             f.write(tag_string + "\n")
 
@@ -44,7 +57,7 @@ def walk_old_tag_file(path: str) -> list:
     return old_tag_files
 
 
-def unpack_old_tag_file(input_file: str, magnetic_declination: float) -> dict:
+def unpack_old_tag_file(input_file: str, raw_tag_file: str, magnetic_declination: float) -> dict:
     with (open(input_file, 'r') as f):
         data = {key: {} for key in NEW_TAG_STRUCTURE}
         for line in f:
@@ -68,7 +81,7 @@ def unpack_old_tag_file(input_file: str, magnetic_declination: float) -> dict:
                 _d["roll_std"] = "NAN"
                 _d["cog"] = INIT[8]
                 _d["sog"] = INIT[9]
-                _d["magnetic_declination"] = magnetic_declination
+                _d["magnetic_declination"] = str(magnetic_declination)
                 _d["water_detection"] = INIT[10]
 
             elif line[1:5] == "POWR":
@@ -173,12 +186,16 @@ def unpack_old_tag_file(input_file: str, magnetic_declination: float) -> dict:
                 # + `PCO2_gaz_pressure` is `air_humidity` not `gas_pressure_air`
                 # + `gas_pressure_air` is missing.
                 # "[PCO2]" & CO2_Water & "," & CO2_Air & "," & PCO2_Gaz_Pressure_Water & "," & PCO2_Gaz_Pressure_Air & "," & PCO2_Humidity
+                #
+                # pco2 pressure is fetch from the raw string tag files.
+                _datetime_index = f"{data['init']['date']} {data['init']['time']}"
+                _pco2_air_pressure = get_pco2_air_pressure_from_raw(raw_tag_file=raw_tag_file, datetime_index=_datetime_index)
                 line = line[6:]
                 PCO2 = line.split(",")
                 _d = data["pco2"]
                 _d['co2_air'] = PCO2[1]
                 _d['co2_water'] = PCO2[0]
-                _d['gas_pressure_air'] = "NAN"
+                _d['gas_pressure_air'] = _pco2_air_pressure
                 _d['gas_pressure_water'] = PCO2[2]
                 _d['air_humidity'] = PCO2[3]
 
@@ -216,9 +233,18 @@ def unpack_old_tag_file(input_file: str, magnetic_declination: float) -> dict:
     return data
 
 
-if __name__ == "__main__":
-    magnetic_declination = 0
-    source_dir = "/home/jeromejguay/ImlSpace/vm-share/"
-    target_file = "/home/jeromejguay/ImlSpace/vm-share/tag_file.dat"
+def get_pco2_air_pressure_from_raw(raw_tag_file: str, datetime_index: str):
+    """
+    raw string: "2023-05-23 15:30:00",...,"2023,05,26,09,21,20,51145,50256,101.80,40.00,6.90,10.00,1012,11.6 ",...
+    col 14: water
+    col 15: air
+    pco2 pressure: indx: 12
+    """
+    PATTERN = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
 
-    convert_to_new_TAGFile(filename=target_file, source_dir=source_dir, magnetic_declination=magnetic_declination)
+    with open(raw_tag_file, 'r') as f:
+        for line in f:
+            if line.startswith(f'"{datetime_index}"'):
+                col = PATTERN.findall(line)
+                return col[15].strip('"').split(',')[12]
+    return "NAN"
