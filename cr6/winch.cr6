@@ -64,15 +64,15 @@ Function WinchTagString as String * 36
 EndFunction
 
 ' ####################### Start Conditions ############################## 
-Sub WinchAirCheck(Air_Temp)
-    If Air_Temp < Min_Air_Temp_for_Winch Then
+Sub WinchAirCheck()
+    If WXT536_Air_Temperature < Min_Air_Temp_for_Winch Then
         WinchMessage = "Air temperature is too low"
         Call logging("Winch : " & WinchMessage)
         WinchMissingConditions += 1
     EndIf
 EndSub
 
-Sub WinchWaveCheck(WaveH13, WavePeriod)
+Sub WinchWaveCheck()
     If WaveH13 > Max_Wave_H13_for_Winch Then
         WinchMessage = "Waves are too high"
         Call logging("Winch : " & WinchMessage)
@@ -85,7 +85,7 @@ Sub WinchWaveCheck(WaveH13, WavePeriod)
     EndIf
 EndSub
 
-Sub WinchGPSCheck(SOG)
+Sub WinchGPSCheck()
     If SOG > Max_Buoy_Speed_for_Winch Then
         WinchMessage = "Buoy is moving too fast"
         Call logging("Winch : " & WinchMessage)
@@ -93,7 +93,7 @@ Sub WinchGPSCheck(SOG)
     EndIf
 EndSub
 
-Sub WinchPowerCheck(VBatt1, VBatt2)
+Sub WinchPowerCheck()
     OnWhichBattery = Mid(Power(11),4,1)
     If OnWhichBattery = 1 Then
         Winch_Voltage = VBatt1
@@ -119,19 +119,19 @@ Sub WinchConditionsCheck
     Call logging("Winch Condition Checks")
     
     If With_WXT536 Then
-      Call WinchAirCheck(Air_Temp)
+      Call WinchAirCheck
     EndIf
     
     If With_Wave Then
-      Call WinchWaveCheck(WaveH13, WavePeriod) 
+      Call WinchWaveCheck
     EndIf
           
     If With_GPS Then
-      Call WinchGPSCheck(SOG)
+      Call WinchGPSCheck
     EndIf
     
     If With_Power Then
-      Call WinchPowerCheck(VBatt1, VBatt2)
+      Call WinchPowerCheck
     EndIf
 EndSub
 

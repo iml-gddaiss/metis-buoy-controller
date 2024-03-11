@@ -69,7 +69,7 @@ Sub SelectWindInstrument
     Wind() = WMT700()   
     Wind_Source_Flag = 7
     Call logging("Wind Instrument -> WMT700")
-  ElseIf With_WXT536 AND XT536_Wind(6) <> "NAN" Then
+  ElseIf With_WXT536 AND WXT536_Wind(6) <> "NAN" Then
     Wind() = WXT536_Wind()
     Wind_Source_Flag = 5
     Call logging("Wind Instrument -> WXT536")
