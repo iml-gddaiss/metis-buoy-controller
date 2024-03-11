@@ -2,52 +2,52 @@
 
 '### Data Variables ###
 Dim RawWXT536_Wind As String * 80
-Dim RawWXT536_Weather As String * 45
-Dim RawWXT536_Rain As String * 75
+Dim RawWXT536_Weather As String * 80
+Dim RawWXT536_Rain As String * 80
 
-Dim WXT536_Weather(3) As Float : Alias WXT536_Weather = Air_Temp, Air_Humidity, Air_Pressure
 'The wind is Dim because it depends on the presence of WMT700
-Dim WXT536_Wind(6) As Float : Alias WXT536_Wind = Dir_Min_536, Dir_Ave_536, Dir_Max_536, Spd_Min_536, Spd_Ave_536, Spd_Max_536
-Dim WXT536_Rain(6) As Float : Alias WXT536_Rain = Rain_Total, Rain_Duration, Rain_Intensity, Hail_Total, Hail_Duration, Hail_Intensity
+Dim WXT536_Wind(6) As Float : Alias WXT536_Wind = WXT536_Dir_Min, WXT536_Dir_Ave, WXT536_Dir_Max, WXT536_Spd_Min, WXT536_Spd_Ave, WXT536_Spd_Max
+Dim WXT536_Weather(3) As Float : Alias WXT536_Weather = WXT536_Air_Temperature, WXT536_Air_Humidity, WXT536_Air_Pressure
+Dim WXT536_Rain(6) As Float : Alias WXT536_Rain = WXT536_Rain_Total, WXT536_Rain_Duration, WXT536_Rain_Intensity, WXT536_Hail_Total, WXT536_Hail_Duration, WXT536_Hail_Intensity
 
 Dim UpdateWXT536Table As Boolean = false
 
 '### Units ###
-Units Air_Temp = °C
-Units Air_Humidity = %
-Units Air_Pressure = hPa
-Units Dir_Min_536 = °
-Units Dir_Ave_536 = °
-Units Dir_Max_536 = °
-Units Spd_Min_536 = Kn
-Units Spd_Ave_536 = Kn
-Units Spd_Max_536 = Kn
-Units Rain_Total = mm
-Units Rain_Duration = sec
-Units Rain_Intensity = mm/h
-Units Hail_Total = mm
-Units Hail_Duration = sec
-Units Hail_Intensity = mm/h
+Units WXT536_Air_Temperature = °C
+Units WXT536_Air_Humidity = %
+Units WXT536_Air_Pressure = hPa
+Units WXT536_Dir_Min = °
+Units WXT536_Dir_Ave = °
+Units WXT536_Dir_Max = °
+Units WXT536_Spd_Min = Kn
+Units WXT536_Spd_Ave = Kn
+Units WXT536_Spd_Max = Kn
+Units WXT536_Rain_Total = mm
+Units WXT536_Rain_Duration = sec
+Units WXT536_Rain_Intensity = mm/h
+Units WXT536_Hail_Total = mm
+Units WXT536_Hail_Duration = sec
+Units WXT536_Hail_Intensity = mm/h
 
 
 '### Tables ###
 DataTable(FileWXT536,UpdateWXT536Table,-1)
   DataInterval (0,0,Sec,10)
-  Sample (1,Air_Temp,IEEE4)
-  Sample (1,Air_Humidity,IEEE4)
-  Sample (1,Air_Pressure,IEEE4)
-  Sample (1,Dir_Min_536,IEEE4)
-  Sample (1,Dir_Ave_536,IEEE4)
-  Sample (1,Dir_Max_536,IEEE4)
-  Sample (1,Spd_Min_536,IEEE4)
-  Sample (1,Spd_Ave_536,IEEE4)
-  Sample (1,Spd_Max_536,IEEE4)
-  Sample (1,Rain_Total,IEEE4)
-  Sample (1,Rain_Duration,IEEE4)
-  Sample (1,Rain_Intensity,IEEE4)
-  Sample (1,Hail_Total,IEEE4)
-  Sample (1,Hail_Duration,IEEE4)
-  Sample (1,Hail_Intensity,IEEE4)
+  Sample (1,WXT536_Air_Temperature,IEEE4)
+  Sample (1,WXT536_Air_Humidity,IEEE4)
+  Sample (1,WXT536_Air_Pressure,IEEE4)
+  Sample (1,WXT536_Dir_Min,IEEE4)
+  Sample (1,WXT536_Dir_Ave,IEEE4)
+  Sample (1,WXT536_Dir_Max,IEEE4)
+  Sample (1,WXT536_Spd_Min,IEEE4)
+  Sample (1,WXT536_Spd_Ave,IEEE4)
+  Sample (1,WXT536_Spd_Max,IEEE4)
+  Sample (1,WXT536_Rain_Total,IEEE4)
+  Sample (1,WXT536_Rain_Duration,IEEE4)
+  Sample (1,WXT536_Rain_Intensity,IEEE4)
+  Sample (1,WXT536_Hail_Total,IEEE4)
+  Sample (1,WXT536_Hail_Duration,IEEE4)
+  Sample (1,WXT536_Hail_Intensity,IEEE4)
 EndTable
 
 Sub StartRainTimer
@@ -85,13 +85,17 @@ Sub CollectWXT536
     WXT536_Rain () = ""
     WXT536_Weather() = ""
 
+    RawWXT536_Wind = ""
+    RawWXT536_Weather = ""
+    RawWXT536_Rain = ""
+
     For X = 1 To 3 Step 1
       SerialOut(SerialTower,CHR(13)&CHR(10),0,1,10)
+      
       If RawWXT536_Wind = "" Then
-        SerialOut(SerialTower,"2R1!",0,1,10)
+        SerialOut(SerialTower,"2R1!", "2R1,",1,50)
         SerialIn(RawWXT536_Wind,SerialTower,20,13,80)
         Call logging("Raw WXT536 Wind (attempt "&X&"): " & RawWXT536_Wind) 
-        RawWXT536_Wind = Mid(RawWXT536_Wind,5,80)
         SplitStr(WXT536_Wind(),RawWXT536_Wind,",",6,10)
         If WXT536_Wind(6) = "" Then
           RawWXT536_Wind = ""
@@ -99,10 +103,9 @@ Sub CollectWXT536
       EndIf
 
       If RawWXT536_Weather = "" Then
-        SerialOut(SerialTower,"2R2!",0,1,10)
-        SerialIn(RawWXT536_Weather,SerialTower,20,13,30)
+        SerialOut(SerialTower,"2R2!","2R2,",1,50)
+        SerialIn(RawWXT536_Weather,SerialTower,20,13,80)
         Call logging("Raw WXT536 Weather (attempt "&X&"): " & RawWXT536_Weather) 
-        RawWXT536_Weather = Mid(RawWXT536_Weather,5,30)
         SplitStr(WXT536_Weather(),RawWXT536_Weather,",",3,10)
         If WXT536_Weather(3) = "" Then
           RawWXT536_Weather = ""
@@ -110,10 +113,9 @@ Sub CollectWXT536
       EndIf
 
       If RawWXT536_Rain = "" Then
-        SerialOut(SerialTower,"2R3!",0,1,10)
+        SerialOut(SerialTower,"2R3!","2R3,",1,50)
         SerialIn(RawWXT536_Rain,SerialTower,20,13,80)
         Call logging("Raw WXT536 Rain (attempt "&X&"): " & RawWXT536_Rain) 
-        RawWXT536_Rain = Mid(RawWXT536_Rain,5,80)
         SplitStr(WXT536_Rain(),RawWXT536_Rain,",",6,10)
         If WXT536_Rain(6) = "" Then
           RawWXT536_Rain = ""

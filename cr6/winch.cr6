@@ -181,8 +181,6 @@ Sub StartWinchMission
         Call GetGpsPosition ' sets public var: `latitude_tmp`, `longitude_tmp`.
         winch_start_command = make_winch_start_command(latitude_tmp, longitude_tmp)
     Else
-        ' The next scheduled winch time is only changed when its a scheduled winch.
-        Winch_Last_Sample = Public.TimeStamp(1)
         winch_start_command = make_winch_start_command(GPS_Lat, GPS_Lon)
     EndIf
 
@@ -246,6 +244,10 @@ Sub WinchRoutine
         Call StartWinchMission
 
         If WinchStatus = "Sampling" Then
+            If Not Start_Winch_Mission_Override Then
+                ' The next scheduled winch time is only changed when its a scheduled winch.
+                Winch_Last_Sample = Public.TimeStamp(1)
+            EndIf
             WinchMessage = "Mission Started"
             Call logging("Winch Mission was Started. Winch File: " &  Winch_Internal_File)
         Else

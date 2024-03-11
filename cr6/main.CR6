@@ -185,10 +185,10 @@
 ' [NO3] SUNA_Nitrate, SUNA_Nitrogen, SUNA_Bromide, SUNA_RMSE
 ' [Wind] Source, Wind_Dir_Min, Wind_Dir_Ave, Wind_Dir_Max, Wind_Spd_Min, Wind_Spd_Ave, Wind_Spd_Max
 '                 Source: 7: wmt700,  5: wxt536
-' [ATMS] Air_Temp, Air_Humidity, Air_Pressure, PAR, Rain_Total, Rain_Duration, Rain_Intensity
+' [ATMS] WXT536_Air_Temperature, WXT536_Air_Humidity, WXT536_Air_Pressure, PAR, WXT536_Rain_Total, WXT536_Rain_Duration, WXT536_Rain_Intensity
 ' [WAVE] Wave_Date, Wave_Time, Wave_Period, Wave_Hm0, Wave_H13, Wave_Hmax
 ' [ADCP] ADCPDate, ADCPTime, EW, NS, Vert, Err
-' [PCO2] CO2_Air, CO2_Water, Gas_Pressure_Air, Gas_Pressure_Water, Air_Humidity
+' [PCO2] _CO2_Air, _CO2_Water, _CO2_Pressure_Air, _CO2_Pressure_Water, _CO2_Humidity_Air
 ' [WNCH]messages
 '     messages:
 '         Buoy Adrift

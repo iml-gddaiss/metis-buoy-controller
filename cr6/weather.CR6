@@ -17,21 +17,21 @@ Dim UpdateWeatherTable As Boolean = false
 
 DataTable (FileWeather,UpdateWeatherTable,-1)
   DataInterval (0,0,Sec,10)
-  Sample (1,Air_Temp,IEEE4)
-  Sample (1,Air_Humidity,IEEE4)
-  Sample (1,Air_Pressure,IEEE4)
+  Sample (1,WXT536_Air_Temperature,IEEE4)
+  Sample (1,WXT536_Air_Humidity,IEEE4)
+  Sample (1,WXT536_Air_Pressure,IEEE4)
   Sample (1,Wind_Dir_Min,IEEE4)
   Sample (1,Wind_Dir_Ave,IEEE4)
   Sample (1,Wind_Dir_Max,IEEE4)
   Sample (1,Wind_Spd_Min,IEEE4)
   Sample (1,Wind_Spd_Ave,IEEE4)
   Sample (1,Wind_Spd_Max,IEEE4)
-  Sample (1,Rain_Total,IEEE4)
-  Sample (1,Rain_Duration,IEEE4)
-  Sample (1,Rain_Intensity,IEEE4)
-  Sample (1,Hail_Total,IEEE4)
-  Sample (1,Hail_Duration,IEEE4)
-  Sample (1,Hail_Intensity,IEEE4)
+  Sample (1,WXT536_Rain_Total,IEEE4)
+  Sample (1,WXT536_Rain_Duration,IEEE4)
+  Sample (1,WXT536_Rain_Intensity,IEEE4)
+  Sample (1,WXT536_Hail_Total,IEEE4)
+  Sample (1,WXT536_Hail_Duration,IEEE4)
+  Sample (1,WXT536_Hail_Intensity,IEEE4)
 EndTable
 
 
@@ -41,7 +41,7 @@ EndFunction
 
 
 Function ATMSTagString as String * 200
-  ATMSTagString = "[ATMS]" & Air_Temp & "," & Air_Humidity & "," & Air_Pressure & "," & PAR & "," & Rain_Total & "," & Rain_Duration & "," & Rain_Intensity
+  ATMSTagString = "[ATMS]" & WXT536_Air_Temperature & "," & WXT536_Air_Humidity & "," & WXT536_Air_Pressure & "," & PAR & "," & WXT536_Rain_Total & "," & WXT536_Rain_Duration & "," & WXT536_Rain_Intensity
 EndFunction
 
 

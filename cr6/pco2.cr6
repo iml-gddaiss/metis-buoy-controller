@@ -78,39 +78,31 @@ EndTable
 
 
 Function PCO2TagString As String * 200
-  Dim CO2_Air As String 
-  Dim CO2_Water As String 
-  Dim Pressure_Water As String 
-  Dim Pressure_Air As String 
-  Dim Humidity_Air As String 
+  Dim _CO2_TAG_VALUES(5) As Float : Alias _CO2_TAG_VALUES = _CO2_Air, _CO2_Water, _CO2_Pressure_Air, _CO2_Pressure_Water, _CO2_Humidity_Air
 
-  CO2_Water = "NAN"
-  CO2_Air = "NAN"
-  Pressure_Water = "NAN"
-  Pressure_Air = "NAN"
-  Humidity_Air = "NAN"
+  _CO2_TAG_VALUES() = ""
   
   If PCO2W_CO2 <> "" Then
-    CO2_Water = PCO2W_CO2
+    _CO2_Water = PCO2W_CO2
   EndIf
 
   If PCO2A_CO2 <> "" Then 
-    CO2_Air = PCO2A_CO2
+    _CO2_Air = PCO2A_CO2
   Endif
 
   If PCO2A_Gas_Pressure <> "" Then 
-    Pressure_Air = PCO2A_Gas_Pressure
+    _CO2_Pressure_Air = PCO2A_Gas_Pressure
   Endif
 
   If PCO2W_Gas_Pressure <> "" Then 
-    Pressure_Water = PCO2W_Gas_Pressure
+    _CO2_Pressure_Water = PCO2W_Gas_Pressure
   Endif
 
   If PCO2A_Humidity <> "" Then 
-    Air_Humidity = PCO2A_Humidity
+    _CO2_Humidity_Air = PCO2A_Humidity
   Endif
     
-  PCO2TagString = "[PCO2]" & CO2_Air & "," & CO2_Water & "," & Pressure_Air & "," & Pressure_Water & "," & Air_Humidity
+  PCO2TagString = "[PCO2]" & _CO2_Air & "," & _CO2_Water & "," & _CO2_Pressure_Air & "," & _CO2_Pressure_Water & "," & _CO2_Humidity_Air
 EndFunction
 
 

@@ -1,27 +1,27 @@
 'wmt700 related code
 '### Data Variables ###
 Dim RawWMT700 As String * 80
-Dim WMT700(6) As Float : Alias WMT700 = Dir_Min_700, Dir_Ave_700, Dir_Max_700, Spd_Min_700, Spd_Ave_700, Spd_Max_700
+Dim WMT700(6) As Float : Alias WMT700 = WMT700_Dir_Min, WMT700_Dir_Ave, WMT700_Dir_Max, WMT700_Spd_Min, WMT700_Spd_Ave, WMT700_Spd_Max
 
 Dim UpdateWMT700Table As Boolean = false
 
 '### Units ###
-Units Dir_Min_700 = °
-Units Dir_Ave_700 = °
-Units Dir_Max_700 = °
-Units Spd_Min_700 = Kn
-Units Spd_Ave_700 = Kn
-Units Spd_Max_700 = Kn
+Units WMT700_Dir_Min = °
+Units WMT700_Dir_Ave = °
+Units WMT700_Dir_Max = °
+Units WMT700_Spd_Min = Kn
+Units WMT700_Spd_Ave = Kn
+Units WMT700_Spd_Max = Kn
 
 '### Tables ###
 DataTable (FileWMT700,UpdateWMT700Table,-1)
 	DataInterval (0,0,Sec,10)
-  Sample (1,Dir_Min_700,IEEE4)
-  Sample (1,Dir_Ave_700,IEEE4)
-  Sample (1,Dir_Max_700,IEEE4)
-  Sample (1,Spd_Min_700,IEEE4)
-  Sample (1,Spd_Ave_700,IEEE4)
-  Sample (1,Spd_Max_700,IEEE4)
+  Sample (1,WMT700_Dir_Min,IEEE4)
+  Sample (1,WMT700_Dir_Ave,IEEE4)
+  Sample (1,WMT700_Dir_Max,IEEE4)
+  Sample (1,WMT700_Spd_Min,IEEE4)
+  Sample (1,WMT700_Spd_Ave,IEEE4)
+  Sample (1,WMT700_Spd_Max,IEEE4)
 EndTable
 
 
