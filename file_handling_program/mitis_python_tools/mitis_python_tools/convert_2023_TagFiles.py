@@ -41,10 +41,10 @@ NEW_TAG_STRUCTURE = {
 }
 
 
-def convert_to_new_TAGFile(filename: str, source_dir: str, raw_tag_file: str, magnetic_declination: float):
+def convert_to_new_TAGFile(filename: str, source_dir: str, raw_string_file: str, raw_adcp_file: str, magnetic_declination: float):
     with open(filename, "w") as f:
         for old_file in  sorted(walk_old_tag_file(source_dir)):
-            data = unpack_old_tag_file(old_file, raw_tag_file, magnetic_declination=magnetic_declination)
+            data = unpack_old_tag_file(old_file, raw_string_file=raw_string_file, raw_adcp_file=raw_adcp_file, magnetic_declination=magnetic_declination)
             tag_string = ""
             for key, data in data.items():
                 if data:
