@@ -1,10 +1,18 @@
 """
+Descriptions
+------------
+- Convert 2023 TAG files to 2024 Tag File
+- Use `<>_Raw.dat` to get Co2 Air Pressure
+- Uses `<>_FileADCP.dat` to get `u,v,w` data.
+
+
 Usage
 -----
 magnetic_declination = 0
 source_dir = "/path/to/source/directory/"
 target_file = "/path/to/target/file.dat"
-raw_tag_file = "/path/to/raw/dat/PMZA-RIKI_Raw.dat"
+raw_string_file = "/path/to/raw/dat/PMZA-RIKI_Raw.dat"
+raw_adcp_file = "/path/to/raw/dat/PMZA-RIKI_FileADCP.dat"
 
 convert_to_new_TAGFile(filename=target_file, source_dir=source_dir, raw_tag_file=raw_tag_file, magnetic_declination=magnetic_declination)
 
@@ -57,7 +65,7 @@ def walk_old_tag_file(path: str) -> list:
     return old_tag_files
 
 
-def unpack_old_tag_file(input_file: str, raw_tag_file: str, magnetic_declination: float) -> dict:
+def unpack_old_tag_file(input_file: str, raw_string_file: str, raw_adcp_file: str, magnetic_declination: float) -> dict:
     INSTRUMENTS_TAG = ["INIT", "POWR", "TRP1", "CTD", "PHPRO", "PH", "WIND", "W700", "W536", "ATMS", "WAVE", "PCO2", "RDI", "SUNA", "WNCH"]
     DATA_TAG_REGEX = re.compile(rf"\[({'|'.join(INSTRUMENTS_TAG)})],?((?:(?!\[).)*)", re.DOTALL)
 
@@ -91,6 +99,8 @@ def unpack_old_tag_file(input_file: str, raw_tag_file: str, magnetic_declination
                 _d["sog"] = INIT[9]
                 _d["magnetic_declination"] = str(magnetic_declination)
                 _d["water_detection"] = INIT[10]
+
+                _datetime_index = f"{data['init']['date']} {data['init']['time']}"
 
             elif line[1:5] == "POWR":
                 line = line[6:]
@@ -196,8 +206,7 @@ def unpack_old_tag_file(input_file: str, raw_tag_file: str, magnetic_declination
                 # "[PCO2]" & CO2_Water & "," & CO2_Air & "," & PCO2_Gaz_Pressure_Water & "," & PCO2_Gaz_Pressure_Air & "," & PCO2_Humidity
                 #
                 # pco2 pressure is fetch from the raw string tag files.
-                _datetime_index = f"{data['init']['date']} {data['init']['time']}"
-                _pco2_air_pressure = get_pco2_air_pressure_from_raw(raw_tag_file=raw_tag_file, datetime_index=_datetime_index)
+                _pco2_air_pressure = get_pco2_air_pressure_from_raw(raw_string_file=raw_string_file, datetime_index=_datetime_index)
                 line = line[6:]
                 PCO2 = line.split(",")
                 _d = data["pco2"]
@@ -220,12 +229,11 @@ def unpack_old_tag_file(input_file: str, raw_tag_file: str, magnetic_declination
                 if len(_d['date']) != 10 or len(_d['time']) != 8 or "#" in _d['date'] or "#" in _d['time']:
                     _d['date'] = "NA"
                     _d['time'] = "NA"
-                u = float(RDI[3]) * sin(radians(float(RDI[2])))
-                v = float(RDI[3]) * cos(radians(float(RDI[2])))
-                _d['u'] = f"{u:.0f}"
-                _d['v'] = f"{v:.0f}"
-                _d['w'] = "NAN"
-                _d['err'] = "NAN"
+                [_u, _v, _w, _e] = get_uvw_from_adcp_raw(raw_adcp_file=raw_adcp_file, datetime_index=_datetime_index)
+                _d['u'] = str(_u)
+                _d['v'] = str(_v)
+                _d['w'] = str(_w)
+                _d['err'] = str(_e)
 
             elif line[1:5] == "SUNA":
                 #"[SUNA]" & Dark_Nitrate & "," & Light_Nitrate & "," & Dark_Nitrogen_in_Nitrate & "," & Light_Nitrogen_in_Nitrate & "," & Dark_Bromide & "," & Light_Bromide
@@ -243,18 +251,32 @@ def unpack_old_tag_file(input_file: str, raw_tag_file: str, magnetic_declination
     return data
 
 
-def get_pco2_air_pressure_from_raw(raw_tag_file: str, datetime_index: str):
+def get_pco2_air_pressure_from_raw(raw_string_file: str, datetime_index: str):
     """
     raw string: "2023-05-23 15:30:00",...,"2023,05,26,09,21,20,51145,50256,101.80,40.00,6.90,10.00,1012,11.6 ",...
     col 14: water
     col 15: air
     pco2 pressure: indx: 12
     """
-    PATTERN = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
+    pattern = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
 
-    with open(raw_tag_file, 'r') as f:
+    with open(raw_string_file, 'r') as f:
         for line in f:
             if line.startswith(f'"{datetime_index}"'):
-                col = PATTERN.findall(line)
+                col = pattern.findall(line)
                 return col[15].strip('"').split(',')[12]
     return "NAN"
+
+
+def get_uvw_from_adcp_raw(raw_adcp_file: str, datetime_index: str):
+    """
+    Return ['E/W', 'N/S', 'Vert', 'Err'] of the first bin
+    """
+    pattern = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
+
+    with open(raw_adcp_file, 'r') as f:
+        for line in f:
+            if line.startswith(f'"{datetime_index}"'):
+                col = pattern.findall(line)
+                return col[6].strip('"').split(",")[3:7]  # ['E/W', 'N/S', 'Vert', 'Err']
+    return ["NAN", "NAN", "NAN", "NAN"]
