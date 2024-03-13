@@ -35,16 +35,18 @@ NEW_TAG_STRUCTURE = {
     'wind': ['source', 'wind_dir_min', 'wind_dir_ave', 'wind_dir_max', 'wind_spd_min', 'wind_spd_ave', 'wind_spd_max'],
     'atms': ['air_temperature', 'air_humidity', 'air_pressure', 'par', 'rain_total', 'rain_duration', 'rain_intensity'],
     'wave': ['date', 'time', 'period', 'hm0', 'h13', 'hmax'],
-    'adcp': ['date', 'time', 'u', 'v', 'w', 'err'], # ADCP data are not in ENU
-    'pco2': ['co2_air', 'co2_water', 'gas_pressure_air', 'gas_pressure_water', 'air_humidity'],
+    'adcp': ['date', 'time', 'u', 'v', 'w', 'err'],  # ADCP data are not in ENU
+    'pco2': ['co2_ppm_air', 'co2_ppm_water', 'gas_pressure_air', 'gas_pressure_water', 'air_humidity'],
     'wnch': ['message']
 }
 
 
 def convert_to_new_TAGFile(filename: str, source_dir: str, raw_string_file: str, raw_adcp_file: str, magnetic_declination: float):
+    raw_data = load_pco2_air_pressure_from_raw(raw_string_file=raw_string_file)
+    adcp_data = load_uvw_from_adcp_raw(raw_adcp_file=raw_adcp_file)
     with open(filename, "w") as f:
         for old_file in  sorted(walk_old_tag_file(source_dir)):
-            data = unpack_old_tag_file(old_file, raw_string_file=raw_string_file, raw_adcp_file=raw_adcp_file, magnetic_declination=magnetic_declination)
+            data = unpack_old_tag_file(old_file, raw_data=raw_data, adcp_data=adcp_data, magnetic_declination=magnetic_declination)
             tag_string = ""
             for key, data in data.items():
                 if data:
@@ -65,7 +67,7 @@ def walk_old_tag_file(path: str) -> list:
     return old_tag_files
 
 
-def unpack_old_tag_file(input_file: str, raw_string_file: str, raw_adcp_file: str, magnetic_declination: float) -> dict:
+def unpack_old_tag_file(input_file: str, raw_data: dict, adcp_data: dict, magnetic_declination: float) -> dict:
     INSTRUMENTS_TAG = ["INIT", "POWR", "TRP1", "CTD", "PHPRO", "PH", "WIND", "W700", "W536", "ATMS", "WAVE", "PCO2", "RDI", "SUNA", "WNCH"]
     DATA_TAG_REGEX = re.compile(rf"\[({'|'.join(INSTRUMENTS_TAG)})],?((?:(?!\[).)*)", re.DOTALL)
 
@@ -100,7 +102,12 @@ def unpack_old_tag_file(input_file: str, raw_string_file: str, raw_adcp_file: st
                 _d["magnetic_declination"] = str(magnetic_declination)
                 _d["water_detection"] = INIT[10]
 
-                _datetime_index = f"{data['init']['date']} {data['init']['time']}"
+                if _d['time'] == "00:00:00":
+                    _time_index = "24:00:00"
+                else:
+                    _time_index = _d['time']
+
+                _datetime_index = f"{data['init']['date']} {_time_index}"
 
             elif line[1:5] == "POWR":
                 line = line[6:]
@@ -203,16 +210,15 @@ def unpack_old_tag_file(input_file: str, raw_string_file: str, raw_adcp_file: st
                 # Error in the buoy firmware:
                 # + `PCO2_gaz_pressure` is `air_humidity` not `gas_pressure_air`
                 # + `gas_pressure_air` is missing.
-                # "[PCO2]" & CO2_Water & "," & CO2_Air & "," & PCO2_Gaz_Pressure_Water & "," & PCO2_Gaz_Pressure_Air & "," & PCO2_Humidity
-                #
-                # pco2 pressure is fetch from the raw string tag files.
-                _pco2_air_pressure = get_pco2_air_pressure_from_raw(raw_string_file=raw_string_file, datetime_index=_datetime_index)
+                # "[PCO2]" & CO2_ppm_Water & "," & CO2_ppm_Air & "," & PCO2_Gaz_Pressure_Water & "," & PCO2_Gaz_Pressure_Air & "," & PCO2_Humidity
+
                 line = line[6:]
                 PCO2 = line.split(",")
                 _d = data["pco2"]
-                _d['co2_air'] = PCO2[1]
-                _d['co2_water'] = PCO2[0]
-                _d['gas_pressure_air'] = _pco2_air_pressure
+                _d['co2_ppm_air'] = PCO2[1]
+                _d['co2_ppm_water'] = PCO2[0]
+                # pco2 pressure is fetch from the raw string tag files.
+                _d['gas_pressure_air'] = raw_data[_datetime_index]["co2_air_gas_pressure"]
                 _d['gas_pressure_water'] = PCO2[2]
                 _d['air_humidity'] = PCO2[3]
 
@@ -229,7 +235,10 @@ def unpack_old_tag_file(input_file: str, raw_string_file: str, raw_adcp_file: st
                 if len(_d['date']) != 10 or len(_d['time']) != 8 or "#" in _d['date'] or "#" in _d['time']:
                     _d['date'] = "NA"
                     _d['time'] = "NA"
-                [_u, _v, _w, _e] = get_uvw_from_adcp_raw(raw_adcp_file=raw_adcp_file, datetime_index=_datetime_index)
+                if _datetime_index in adcp_data:
+                    [_u, _v, _w, _e] = adcp_data[_datetime_index]
+                else:
+                    [_u, _v, _w, _e] = ["NAN", "NAN", "NAN", "NAN"]
                 _d['u'] = str(_u)
                 _d['v'] = str(_v)
                 _d['w'] = str(_w)
@@ -251,7 +260,7 @@ def unpack_old_tag_file(input_file: str, raw_string_file: str, raw_adcp_file: st
     return data
 
 
-def get_pco2_air_pressure_from_raw(raw_string_file: str, datetime_index: str):
+def load_pco2_air_pressure_from_raw(raw_string_file: str) -> dict:
     """
     raw string: "2023-05-23 15:30:00",...,"2023,05,26,09,21,20,51145,50256,101.80,40.00,6.90,10.00,1012,11.6 ",...
     col 14: water
@@ -260,23 +269,27 @@ def get_pco2_air_pressure_from_raw(raw_string_file: str, datetime_index: str):
     """
     pattern = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
 
+    _data = {}
     with open(raw_string_file, 'r') as f:
         for line in f:
-            if line.startswith(f'"{datetime_index}"'):
-                col = pattern.findall(line)
-                return col[15].strip('"').split(',')[12]
-    return "NAN"
+            _var_data = {}
+            col = pattern.findall(line)
+            _co2_air_gas_pressure = col[15].strip('"').split(',')[12]
+            _data[col[0].strip('"')] = {"co2_air_gas_pressure": _co2_air_gas_pressure}
+    return _data
 
 
-def get_uvw_from_adcp_raw(raw_adcp_file: str, datetime_index: str):
+def load_uvw_from_adcp_raw(raw_adcp_file: str) -> dict:
     """
     Return ['E/W', 'N/S', 'Vert', 'Err'] of the first bin
     """
     pattern = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
 
+    _data = {}
     with open(raw_adcp_file, 'r') as f:
         for line in f:
-            if line.startswith(f'"{datetime_index}"'):
-                col = pattern.findall(line)
-                return col[6].strip('"').split(",")[3:7]  # ['E/W', 'N/S', 'Vert', 'Err']
-    return ["NAN", "NAN", "NAN", "NAN"]
+            col = pattern.findall(line)
+            _uvwe = col[6].strip('"').split(",")[3:7]  # ['E/W', 'N/S', 'Vert', 'Err']
+            _data[col[0].strip('"')] = _uvwe
+    return _data
+    
