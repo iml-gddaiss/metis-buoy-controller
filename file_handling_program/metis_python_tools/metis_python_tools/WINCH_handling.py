@@ -25,7 +25,7 @@ def process_winch(input_file: str, target_dir: str, move_dir: str):
     station_winch_directory = Path(target_dir).joinpath(station_name, WINCH_SUB_DIR)
 
     Path(station_winch_directory).mkdir(parents=True, exist_ok=True)
-    winch_target_file = Path(station_winch_directory).joinpath(Path(input_file).name)
+    winch_target_file = Path(station_winch_directory).joinpath(Path(input_file).name).with_suffix('.cnv')
     _write_winch_cnv_file(input_file, winch_target_file)
 
     # Move the input file to the WINCH folder
