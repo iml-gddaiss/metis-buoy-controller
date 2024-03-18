@@ -218,7 +218,10 @@ def unpack_old_tag_file(input_file: str, raw_data: dict, adcp_data: dict, magnet
                 _d['co2_ppm_air'] = PCO2[1]
                 _d['co2_ppm_water'] = PCO2[0]
                 # pco2 pressure is fetch from the raw string tag files.
-                _d['gas_pressure_air'] = raw_data[_datetime_index]["co2_air_gas_pressure"]
+                if _datetime_index in raw_data:
+                    _d['gas_pressure_air'] = raw_data[_datetime_index]["co2_air_gas_pressure"]
+                else:
+                    _d['gas_pressure_air'] = "NAN"
                 _d['gas_pressure_water'] = PCO2[2]
                 _d['air_humidity'] = PCO2[3]
 
@@ -274,8 +277,14 @@ def load_pco2_air_pressure_from_raw(raw_string_file: str) -> dict:
         for line in f:
             _var_data = {}
             col = pattern.findall(line)
-            _co2_air_gas_pressure = col[15].strip('"').split(',')[12]
-            _data[col[0].strip('"')] = {"co2_air_gas_pressure": _co2_air_gas_pressure}
+            _data[col[0].strip('"')] = {}
+
+            _field = col[15].strip('"')
+            if _field:
+                _co2_air_gas_pressure = _field.split(',')[12]
+            else:
+                _co2_air_gas_pressure = "NAN"
+            _data[col[0].strip('"')]["co2_air_gas_pressure"] = _co2_air_gas_pressure
     return _data
 
 

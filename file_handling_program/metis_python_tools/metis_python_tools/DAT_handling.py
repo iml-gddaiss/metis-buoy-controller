@@ -55,7 +55,7 @@ import math
 from typing import Dict, List
 from pathlib import Path
 
-from mitis_python_tools.TAG_reader import unpack_data_from_tag_strings
+from metis_python_tools.TAG_reader import unpack_data_from_tag_strings
 _KNOTS_TO_MPS = 0.5144444444  # mps/knots
 _KNOTS_TO_KPH = 1.852  # kph/knots
 _MMPS_TO_MPS = 1 / 1000  # mms/ms
@@ -232,7 +232,7 @@ def _format_lonlat(value: str):
 
 
 def _make_SD_string(data: Dict[str, List[str]], sd_padding: bool) -> str:
-    """Make SD string from unpacked Mitis Tag Data
+    """Make SD string from unpacked Metis Tag Data
     """
     sd_data = ["#"] * 40
 

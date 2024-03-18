@@ -2,8 +2,8 @@ import os
 import json
 from pathlib import Path
 
-from mitis_python_tools.DAT_handling import process_DAT, FilePointer
-from mitis_python_tools.WINCH_handling import process_winch
+from metis_python_tools.DAT_handling import process_DAT, FilePointer
+from metis_python_tools.WINCH_handling import process_winch
 
 CONFIG_FILE = Path("config.json")
 POINTERS_DIR = Path("pointers")

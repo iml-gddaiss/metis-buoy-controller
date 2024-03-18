@@ -83,7 +83,7 @@ def unpack_data_from_tag_strings(data: List[str]) -> List[Dict[str, dict[str, st
 
 
 def _unpack_data_from_tag_string(data: str) -> Dict[str, dict[str, str]]:
-    """Unpack Mitis Tag Data
+    """Unpack Metis Tag Data
     Returns Data as a dictionary of {TAG:DATA}
     """
 

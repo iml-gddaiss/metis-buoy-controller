@@ -1,7 +1,7 @@
-Install the package `mitis_python_tools` first.
+Install the package `metis_python_tools` first.
 
 ```
-> pip install -e mitis_python_tools/
+> pip install -e metis_python_tools/
 > Copy `main.py` and `config.json` file to a new directory.
 > Complete `config.json` and run the `main.py` from the new directory
 ```
