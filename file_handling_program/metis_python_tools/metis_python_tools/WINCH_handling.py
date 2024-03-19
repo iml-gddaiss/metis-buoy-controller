@@ -58,9 +58,6 @@ def _write_winch_cnv_file(input_file: str, output_file: str):
     _timestamp = "1970-01-01 00:00:00 UTC"
 
     with open(output_file, 'w') as output_file:
-        output_file.write("* Sea-Bird SBE Data File:\n")
-        output_file.write("* Viking Buoy CTD file\n")
-
         with open(input_file, 'r') as input_file:
             header = []
             line = input_file.readline()
@@ -70,7 +67,9 @@ def _write_winch_cnv_file(input_file: str, output_file: str):
                 header.append(line)
                 line = input_file.readline()
 
+            output_file.write("* Sea-Bird SBE Data File:\n")
             output_file.write(f"* System UpLoad Time = {_timestamp.strip(' UTC')}\n")
+            output_file.write("* Viking Buoy CTD file\n")
             output_file.writelines(header)
             start_time = datetime.strptime(_timestamp, "%Y-%m-%d %H:%M:%S UTC").strftime('%b %d %Y %H:%M:%S')
             output_file.write(f"# start_time = {start_time}\n")
