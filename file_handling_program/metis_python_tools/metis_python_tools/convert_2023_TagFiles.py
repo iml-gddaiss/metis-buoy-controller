@@ -42,7 +42,7 @@ NEW_TAG_STRUCTURE = {
 
 
 def convert_to_new_TAGFile(filename: str, source_dir: str, raw_string_file: str, raw_adcp_file: str, magnetic_declination: float):
-    raw_data = load_pco2_air_pressure_from_raw(raw_string_file=raw_string_file)
+    raw_data = load_pco2_water_irga_from_raw(raw_string_file=raw_string_file)
     adcp_data = load_uvw_from_adcp_raw(raw_adcp_file=raw_adcp_file)
     with open(filename, "w") as f:
         for old_file in  sorted(walk_old_tag_file(source_dir)):
