@@ -92,7 +92,7 @@ def unpack_old_tag_file(input_file: str, raw_data: dict, adcp_data: dict, magnet
                 _d["time"] = INIT[2]  # Hour
                 _d["latitude"] = INIT[3]  # Lat
                 _d["longitude"] = INIT[4]  # Lon
-                _d["heading"] = round(INIT[5],2)  # Heading
+                _d["heading"] = str(round(float(INIT[5],2)))  # Heading
                 _d["pitch"] = INIT[6]  # Pitch
                 _d["roll"] = INIT[7]  # Roll
                 _d["pitch_std"] = "NAN"
