@@ -19,23 +19,23 @@ Dim RawPCO2_Water As String * 100
 Const PCO2_Water_Tag = "W M"
 Const PCO2_Air_Tag = "A M"
 
-Dim PCO2_Water (14) As String : Alias PCO2_Water = PCO2W_Year, PCO2W_Month, PCO2W_DDay, PCO2W_Hour, PCO2W_Minute, PCO2W_Second, PCO2W_Zero, PCO2W_Current, PCO2W_CO2, PCO2W_IRGA, PCO2W_Humidity, PCO2W_Temperature, PCO2W_Gas_Pressure, PCO2W_Voltage
+Dim PCO2_Water (14) As String : Alias PCO2_Water = PCO2W_Year, PCO2W_Month, PCO2W_DDay, PCO2W_Hour, PCO2W_Minute, PCO2W_Second, PCO2W_Zero, PCO2W_Current, PCO2W_CO2, PCO2W_IRGA, PCO2W_Humidity, PCO2W_Humidity_Temperature, PCO2W_Gas_Pressure, PCO2W_Voltage
 Units PCO2W_Zero = counts
 Units PCO2W_Current = counts
 Units PCO2W_CO2 = ppm
 Units PCO2W_IRGA = °C
 Units PCO2W_Humidity = %
-Units PCO2W_Temperature = °C
+Units PCO2W_Humidity_Temperature = °C
 Units PCO2W_Gas_Pressure = mbar
 Units PCO2W_Voltage = volts
 
-Dim PCO2_Air(14) As String : Alias PCO2_Air = PCO2A_Year, PCO2A_Month, PCO2A_DDay, PCO2A_Hour, PCO2A_Minute, PCO2A_Second, PCO2A_Zero, PCO2A_Current, PCO2A_CO2, PCO2A_IRGA, PCO2A_Humidity, PCO2A_Temperature, PCO2A_Gas_Pressure, PCO2A_Voltage
+Dim PCO2_Air(14) As String : Alias PCO2_Air = PCO2A_Year, PCO2A_Month, PCO2A_DDay, PCO2A_Hour, PCO2A_Minute, PCO2A_Second, PCO2A_Zero, PCO2A_Current, PCO2A_CO2, PCO2A_IRGA, PCO2A_Humidity, PCO2A_Humidity_Sensor_Temperature, PCO2A_Gas_Pressure, PCO2A_Voltage
 Units PCO2A_Zero = counts
 Units PCO2A_Current = counts
 Units PCO2A_CO2 = ppm
 Units PCO2A_IRGA = °C
 Units PCO2A_Humidity = %
-Units PCO2A_Temperature = °C
+Units PCO2A_Humidity_Sensor_Temperature = °C
 Units PCO2A_Gas_Pressure = mbar
 Units PCO2A_Voltage = volts
 
@@ -52,7 +52,7 @@ DataTable(FilePCO2W,UpdatePCO2Tables,-1)
   Sample (1,PCO2W_CO2,IEEE4)
   Sample (1,PCO2W_IRGA,IEEE4)
   Sample (1,PCO2W_Humidity,IEEE4)
-  Sample (1,PCO2W_Temperature,IEEE4)
+  Sample (1,PCO2W_Humidity_Temperature,IEEE4)
   Sample (1,PCO2W_Gas_Pressure,IEEE4)
   Sample (1,PCO2W_Voltage,IEEE4)
   Sample (1,RawPCO2,String)
@@ -68,7 +68,7 @@ DataTable(FilePCO2A,UpdatePCO2Tables,-1)
   Sample (1,PCO2A_CO2,IEEE4)
   Sample (1,PCO2A_IRGA,IEEE4)
   Sample (1,PCO2A_Humidity,IEEE4)
-  Sample (1,PCO2A_Temperature,IEEE4)
+  Sample (1,PCO2A_Humidity_Sensor_Temperature,IEEE4)
   Sample (1,PCO2A_Gas_Pressure,IEEE4)
   Sample (1,PCO2A_Voltage,IEEE4)
   Sample (1,RawPCO2,String)
@@ -78,7 +78,7 @@ EndTable
 
 
 Function PCO2TagString As String * 200
-  Dim _CO2_TAG_VALUES(5) As Float : Alias _CO2_TAG_VALUES = _CO2_Air, _CO2_Water, _CO2_Pressure_Air, _CO2_Pressure_Water, _CO2_Humidity_Air
+  Dim _CO2_TAG_VALUES(5) As Float : Alias _CO2_TAG_VALUES = _CO2_Air, _CO2_Water, _CO2_Water_IRGA'_CO2_Pressure_Air, _CO2_Pressure_Water, _CO2_Humidity_Air
 
   _CO2_TAG_VALUES() = ""
   
@@ -90,19 +90,23 @@ Function PCO2TagString As String * 200
     _CO2_Air = PCO2A_CO2
   Endif
 
-  If PCO2A_Gas_Pressure <> "" Then 
-    _CO2_Pressure_Air = PCO2A_Gas_Pressure
-  Endif
+  If PCO2W_IRGA <> "" Then
+    _CO2_Water_IRGA = PCO2W_IRGA
+  EndIf
 
-  If PCO2W_Gas_Pressure <> "" Then 
-    _CO2_Pressure_Water = PCO2W_Gas_Pressure
-  Endif
+  ' If PCO2A_Gas_Pressure <> "" Then 
+  '   _CO2_Pressure_Air = PCO2A_Gas_Pressure
+  ' Endif
 
-  If PCO2A_Humidity <> "" Then 
-    _CO2_Humidity_Air = PCO2A_Humidity
-  Endif
+  ' If PCO2W_Gas_Pressure <> "" Then 
+  '   _CO2_Pressure_Water = PCO2W_Gas_Pressure
+  ' Endif
+
+  ' If PCO2A_Humidity <> "" Then 
+  '   _CO2_Humidity_Air = PCO2A_Humidity
+  ' Endif
     
-  PCO2TagString = "[PCO2]" & _CO2_Air & "," & _CO2_Water & "," & _CO2_Pressure_Air & "," & _CO2_Pressure_Water & "," & _CO2_Humidity_Air
+  PCO2TagString = "[PCO2]" & _CO2_Air & "," & _CO2_Water & "," & _CO2_Water_IRGA '_CO2_Pressure_Air & "," & _CO2_Pressure_Water & "," & _CO2_Humidity_Air
 EndFunction
 
 

@@ -36,7 +36,7 @@ NEW_TAG_STRUCTURE = {
     'atms': ['air_temperature', 'air_humidity', 'air_pressure', 'par', 'rain_total', 'rain_duration', 'rain_intensity'],
     'wave': ['date', 'time', 'period', 'hm0', 'h13', 'hmax'],
     'adcp': ['date', 'time', 'u', 'v', 'w', 'err'],  # ADCP data are not in ENU
-    'pco2': ['co2_ppm_air', 'co2_ppm_water', 'gas_pressure_air', 'gas_pressure_water', 'air_humidity'],
+    'pco2': ['co2_ppm_air', 'co2_ppm_water', 'co2_irga_water'], #'gas_pressure_air', 'gas_pressure_water', 'air_humidity'],
     'wnch': ['message']
 }
 
@@ -207,10 +207,7 @@ def unpack_old_tag_file(input_file: str, raw_data: dict, adcp_data: dict, magnet
                 _d['hmax'] = WAVE[5]
 
             elif line[1:5] == "PCO2":
-                # Error in the buoy firmware:
-                # + `PCO2_gaz_pressure` is `air_humidity` not `gas_pressure_air`
-                # + `gas_pressure_air` is missing.
-                # "[PCO2]" & CO2_ppm_Water & "," & CO2_ppm_Air & "," & PCO2_Gaz_Pressure_Water & "," & PCO2_Gaz_Pressure_Air & "," & PCO2_Humidity
+                # "[PCO2]" & CO2_ppm_Water & "," & CO2_ppm_Air & "," & CO2_IRGA_Water
 
                 line = line[6:]
                 PCO2 = line.split(",")
@@ -219,11 +216,9 @@ def unpack_old_tag_file(input_file: str, raw_data: dict, adcp_data: dict, magnet
                 _d['co2_ppm_water'] = PCO2[0]
                 # pco2 pressure is fetch from the raw string tag files.
                 if _datetime_index in raw_data:
-                    _d['gas_pressure_air'] = raw_data[_datetime_index]["co2_air_gas_pressure"]
+                    _d['co2_irga_water'] = raw_data[_datetime_index]["co2_water_irga"]
                 else:
-                    _d['gas_pressure_air'] = "NAN"
-                _d['gas_pressure_water'] = PCO2[2]
-                _d['air_humidity'] = PCO2[3]
+                    _d['co2_irga_water'] = "NAN"
 
             elif line[1:4] == "RDI":
                 # "[RDI]" & ADCPDate & "," & ADCPTime & "," & ADCPDir & "," & ADCPMag
@@ -263,7 +258,7 @@ def unpack_old_tag_file(input_file: str, raw_data: dict, adcp_data: dict, magnet
     return data
 
 
-def load_pco2_air_pressure_from_raw(raw_string_file: str) -> dict:
+def load_pco2_water_irga_from_raw(raw_string_file: str) -> dict:
     """
     raw string: "2023-05-23 15:30:00",...,"2023,05,26,09,21,20,51145,50256,101.80,40.00,6.90,10.00,1012,11.6 ",...
     col 14: water
@@ -279,12 +274,12 @@ def load_pco2_air_pressure_from_raw(raw_string_file: str) -> dict:
             col = pattern.findall(line)
             _data[col[0].strip('"')] = {}
 
-            _field = col[15].strip('"')
+            _field = col[14].strip('"')
             if _field:
-                _co2_air_gas_pressure = _field.split(',')[12]
+                _co2_water_irga = _field.split(',')[9]
             else:
-                _co2_air_gas_pressure = "NAN"
-            _data[col[0].strip('"')]["co2_air_gas_pressure"] = _co2_air_gas_pressure
+                _co2_water_irga = "NAN"
+            _data[col[0].strip('"')]["co2_water_irga"] = _co2_water_irga
     return _data
 
 
