@@ -26,7 +26,51 @@ DataTable(FilePower,UpdatePowerTable,-1)
 '### Sampling ###
 
 Function PowerTagString as String * 200
-  PowerTagString = "[POWR]" & VBatt1 & "," & ABatt1 & "," & VBatt2 & "," & ABatt2 & "," & VSolar & "," & ASolar & "," & AMain & "," & ATurbine & "," & AWinch & "," & PM_RH & "," & Relay_State
+  Dim _Power_TAG_VALUES(10) as Float : Alias _Power = _VBatt1, _ABatt1, _VBatt2, _ABatt2 , _VSolar, _ASolar, _AMain, _ATurbine, _AWinch, _PM_RH
+
+  _Power_TAG_VALUES() = ""
+  
+  If VBatt1 <> "" Then 
+    _VBatt1 = VBatt1
+  Endif
+
+  If ABatt1 <> "" Then 
+    _ABatt1 = ABatt1
+  Endif
+
+  If VBatt2 <> "" Then 
+    _VBatt2 = VBatt2
+  Endif
+
+  If ABatt2 <> "" Then 
+    _ABatt2 = ABatt2
+  Endif 
+
+  If VSolar <> "" Then 
+    _VSolar = VSolar
+  Endif
+
+  If ASolar <> "" Then 
+    _ASolar = ASolar
+  Endif
+
+  If AMain <> "" Then 
+    _AMain = AMain
+  Endif
+
+  If ATurbine <> "" Then 
+    _ATurbine = ATurbine
+  Endif
+
+  If AWinch <> "" Then 
+    _AWinch = AWinch
+  Endif
+
+  If PM_RH <> "" Then 
+    _PM_RH = PM_RH
+  Endif
+  
+  PowerTagString = "[POWR]" & _VBatt1 & "," & _ABatt1 & "," & _VBatt2 & "," & _ABatt2 & "," & _VSolar & "," & _ASolar & "," & _AMain & "," & _ATurbine & "," & _AWinch & "," & _PM_RH & "," & Relay_State
 EndFunction
 
 Sub CollectPowerController

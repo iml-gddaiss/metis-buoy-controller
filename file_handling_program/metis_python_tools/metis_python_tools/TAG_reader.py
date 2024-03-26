@@ -12,7 +12,7 @@ Tag String Structure
 [ATMS]Air_Temp,Air_Humidity,Air_Pressure,PAR,Rain_Total,Rain_Duration,Rain_Intensity
 [WAVE]Wave_Date,Wave_Time,Wave_Period,Wave_Hm0,Wave_H13,Wave_Hmax
 [ADCP]ADCPDate,ADCPTime,EW,NS,Vert,Err
-[PCO2]CO2_Air,CO2_Water,Pressure_Air,Pressure_Water,Air_Humidity
+[PCO2]CO2_Air,CO2_Water
 [WNCH]messages
     messages:
         Air temperature is too low
@@ -50,7 +50,7 @@ TAG_VARIABLES = {
     'atms': ['air_temperature', 'air_humidity', 'air_pressure', 'par', 'rain_total', 'rain_duration', 'rain_intensity'],
     'wave': ['date', 'time', 'period', 'hm0', 'h13', 'hmax'],
     'adcp': ['date', 'time', 'u', 'v', 'w', 'err'],
-    'pco2': ['co2_air', 'co2_water', 'gas_pressure_air', 'gas_pressure_water', 'air_humidity'],
+    'pco2': ['co2_air', 'co2_water'],
     'wnch': ['message']
 }
 
