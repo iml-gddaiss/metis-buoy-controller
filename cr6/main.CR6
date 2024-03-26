@@ -188,7 +188,7 @@
 ' [ATMS] WXT536_Air_Temperature, WXT536_Air_Humidity, WXT536_Air_Pressure, PAR, WXT536_Rain_Total, WXT536_Rain_Duration, WXT536_Rain_Intensity
 ' [WAVE] Wave_Date, Wave_Time, Wave_Period, Wave_Hm0, Wave_H13, Wave_Hmax
 ' [ADCP] ADCPDate, ADCPTime, EW, NS, Vert, Err
-' [PCO2] _CO2_Air, _CO2_Water, _CO2_Water_IRGA
+' [PCO2] _CO2_Air, _CO2_Water
 ' [WNCH]messages
 '     messages:
 '         Buoy Adrift

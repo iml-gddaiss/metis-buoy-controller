@@ -46,9 +46,9 @@ def convert_to_new_TAGFile(filename: str, source_dir: str, raw_string_file: str,
     adcp_data = load_uvw_from_adcp_raw(raw_adcp_file=raw_adcp_file)
     with open(filename, "w") as f:
         for old_file in  sorted(walk_old_tag_file(source_dir)):
-            data = unpack_old_tag_file(old_file, raw_data=raw_data, adcp_data=adcp_data, magnetic_declination=magnetic_declination)
+            unpacked_data = unpack_old_tag_file(old_file, raw_data=raw_data, adcp_data=adcp_data, magnetic_declination=magnetic_declination)
             tag_string = ""
-            for key, data in data.items():
+            for key, data in unpacked_data.items():
                 if data:
                     value = [v if (v and "#" not in v and "nan" not in v) else "NAN" for v in data.values()]
                     tag_string += "[" + key.upper() + "]" + ",".join(str(v) for v in value)
