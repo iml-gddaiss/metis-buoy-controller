@@ -36,13 +36,13 @@ NEW_TAG_STRUCTURE = {
     'atms': ['air_temperature', 'air_humidity', 'air_pressure', 'par', 'rain_total', 'rain_duration', 'rain_intensity'],
     'wave': ['date', 'time', 'period', 'hm0', 'h13', 'hmax'],
     'adcp': ['date', 'time', 'u', 'v', 'w', 'err'],  # ADCP data are not in ENU
-    'pco2': ['co2_ppm_air', 'co2_ppm_water', 'co2_irga_water'], #'gas_pressure_air', 'gas_pressure_water', 'air_humidity'],
+    'pco2': ['co2_ppm_air', 'co2_ppm_water'], #'gas_pressure_air', 'gas_pressure_water', 'air_humidity'],
     'wnch': ['message']
 }
 
 
 def convert_to_new_TAGFile(filename: str, source_dir: str, raw_string_file: str, raw_adcp_file: str, magnetic_declination: float):
-    raw_data = load_pco2_water_irga_from_raw(raw_string_file=raw_string_file)
+    raw_data = {} #load_pco2_water_irga_from_raw(raw_string_file=raw_string_file)
     adcp_data = load_uvw_from_adcp_raw(raw_adcp_file=raw_adcp_file)
     with open(filename, "w") as f:
         for old_file in  sorted(walk_old_tag_file(source_dir)):
@@ -207,18 +207,13 @@ def unpack_old_tag_file(input_file: str, raw_data: dict, adcp_data: dict, magnet
                 _d['hmax'] = WAVE[5]
 
             elif line[1:5] == "PCO2":
-                # "[PCO2]" & CO2_ppm_Water & "," & CO2_ppm_Air & "," & CO2_IRGA_Water
+                # "[PCO2]" & CO2_ppm_Water & "," & CO2_ppm_Air
 
                 line = line[6:]
                 PCO2 = line.split(",")
                 _d = data["pco2"]
                 _d['co2_ppm_air'] = PCO2[1]
                 _d['co2_ppm_water'] = PCO2[0]
-                # pco2 pressure is fetch from the raw string tag files.
-                if _datetime_index in raw_data:
-                    _d['co2_irga_water'] = raw_data[_datetime_index]["co2_water_irga"]
-                else:
-                    _d['co2_irga_water'] = "NAN"
 
             elif line[1:4] == "RDI":
                 # "[RDI]" & ADCPDate & "," & ADCPTime & "," & ADCPDir & "," & ADCPMag
