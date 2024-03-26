@@ -26,7 +26,7 @@ DataTable(FilePower,UpdatePowerTable,-1)
 '### Sampling ###
 
 Function PowerTagString as String * 200
-  Dim _Power_TAG_VALUES(10) as Float : Alias _Power = _VBatt1, _ABatt1, _VBatt2, _ABatt2 , _VSolar, _ASolar, _AMain, _ATurbine, _AWinch, _PM_RH
+  Dim _Power_TAG_VALUES(10) as Float : Alias _Power_TAG_VALUES = _VBatt1, _ABatt1, _VBatt2, _ABatt2 , _VSolar, _ASolar, _AMain, _ATurbine, _AWinch, _PM_RH
 
   _Power_TAG_VALUES() = ""
   
