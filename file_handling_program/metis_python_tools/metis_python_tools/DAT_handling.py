@@ -169,7 +169,10 @@ def process_DAT(input_file: str, target_dir: str, move_dir: str, sd_padding: boo
             SD_data_string = _make_SD_string(data=_ud, sd_padding=sd_padding)
             SD_filename = f"{station_name}_SD_{_ud['init']['date'].replace('-', '')}.dat"
             SD_target_file = SD_path.joinpath(SD_filename)
-            _write_SD(dest_file=SD_target_file, sd_string=SD_data_string)
+            try:
+                _write_SD(dest_file=SD_target_file, sd_string=SD_data_string)
+            except Exception as e:  # if anything fails increment pointer to skip bad line.
+                pass
 
             pointer.increment()
 
