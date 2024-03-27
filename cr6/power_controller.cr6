@@ -71,7 +71,7 @@ Function PowerTagString as String * 200
     _PM_RH = PM_RH
   Endif
 
-  If Relay_State "" Then 
+  If Relay_State = "" Then 
     _Relay_State = "NA"
   Else
     _Relay_State = Relay_State
