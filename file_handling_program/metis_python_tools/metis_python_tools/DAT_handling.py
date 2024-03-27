@@ -231,7 +231,7 @@ def _format_lonlat(value: str):
             _deg += + 1
             _min = 0
         return f"{_deg:0.0f} {_min:05.2f}{_hem}"
-    return ""
+    return "#"
 
 
 def _make_SD_string(data: Dict[str, List[str]], sd_padding: bool) -> str:
@@ -267,7 +267,10 @@ def _make_SD_string(data: Dict[str, List[str]], sd_padding: bool) -> str:
         sd_data[25] = f"{float(data['powr']['amp_solar']):.1f}"
         sd_data[26] = f"{float(data['powr']['amp_turbine']):.1f}"
         sd_data[27] = f"{_sum_amp:.1f}"
-        sd_data[38] = data['powr']['relay_state'][7]
+        try:
+            sd_data[38] = data['powr']['relay_state'][7]
+        except IndexError:
+            pass
 
     if "eco1" in data:
         sd_data[14] = f"{float(data['eco1']['scattering']):.7f}"
@@ -312,10 +315,8 @@ def _make_SD_string(data: Dict[str, List[str]], sd_padding: bool) -> str:
         sd_data[35] = f"{_uv:.1f}"
         sd_data[36] = f"{_dir:.0f}"
 
-    # fixme replace nan not need for try, except
-
     for index, value in enumerate(sd_data):
-        if value in ['nan', 'NA']:
+        if value in ['NAN', 'nan', 'NA', 'na', '']:
             sd_data[index] = '#'
 
     if sd_padding is True:
