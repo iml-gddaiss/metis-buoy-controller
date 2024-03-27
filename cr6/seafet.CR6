@@ -37,7 +37,26 @@ EndTable
 
 
 Function PHTagString as String * 200
-  PHTagString = "[PH]" & Ext_pH_Calc & "," & Int_pH_Calc & "," & Error_Flag & "," & Ext_pH & "," & Int_pH
+  Dim _pH_tag_values(2) As Float : Alias _pH_tag_values = _Ext_pH, _Int_pH
+  Dim _Error_Flag as String
+
+  _pH_tag_values() = ""
+
+  If Error_Flag = "" Then 
+    _Error_Flag = "NA"
+  Else
+    _Error_Flag = Error_Flag
+  EndIf
+  
+  If Ext_pH <> "" Then 
+    _Ext_pH = Ext_pH
+  Endif
+
+  If Int_pH <> "" Then 
+    _Int_pH = Int_pH
+  Endif
+  
+  PHTagString = "[PH]" & Ext_pH_Calc & "," & Int_pH_Calc & "," & _Error_Flag & "," & _Ext_pH & "," & _Int_pH
 EndFunction
 
 Sub StartSeafet

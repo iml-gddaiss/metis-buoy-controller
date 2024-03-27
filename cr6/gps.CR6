@@ -52,8 +52,8 @@ Sub CollectGPS
     UV() = 0
     GPS_HVS() = "" ' Reset Var
     
-    Latitude = "" ' Reset to missing ? -> "#°#'#" or empty
-    Longitude = ""
+    Latitude = "NA" ' Reset to missing ? -> "#°#'#" or empty
+    Longitude = "NA"
     SOG = ""
     COG = ""
     Magnetic_Variation = ""

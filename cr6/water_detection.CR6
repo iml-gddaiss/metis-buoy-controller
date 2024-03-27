@@ -1,4 +1,4 @@
-Public Water_Detection_Main
+Public Water_Detection_Main As Float
 
 Sub PowerWaterDetectionMain
  '5V to the Water Detection sensor, sample taked at the end --------------------

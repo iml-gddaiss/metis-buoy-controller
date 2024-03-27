@@ -27,6 +27,7 @@ DataTable(FilePower,UpdatePowerTable,-1)
 
 Function PowerTagString as String * 200
   Dim _Power_TAG_VALUES(10) as Float : Alias _Power_TAG_VALUES = _VBatt1, _ABatt1, _VBatt2, _ABatt2 , _VSolar, _ASolar, _AMain, _ATurbine, _AWinch, _PM_RH
+  Dim _Relay_State as String
 
   _Power_TAG_VALUES() = ""
   
@@ -69,8 +70,14 @@ Function PowerTagString as String * 200
   If PM_RH <> "" Then 
     _PM_RH = PM_RH
   Endif
+
+  If Relay_State "" Then 
+    _Relay_State = "NA"
+  Else
+    _Relay_State = Relay_State
+  EndIf
   
-  PowerTagString = "[POWR]" & _VBatt1 & "," & _ABatt1 & "," & _VBatt2 & "," & _ABatt2 & "," & _VSolar & "," & _ASolar & "," & _AMain & "," & _ATurbine & "," & _AWinch & "," & _PM_RH & "," & Relay_State
+  PowerTagString = "[POWR]" & _VBatt1 & "," & _ABatt1 & "," & _VBatt2 & "," & _ABatt2 & "," & _VSolar & "," & _ASolar & "," & _AMain & "," & _ATurbine & "," & _AWinch & "," & _PM_RH & "," & _Relay_State
 EndFunction
 
 Sub CollectPowerController
