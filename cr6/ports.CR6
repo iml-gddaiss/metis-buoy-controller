@@ -26,7 +26,7 @@ Const SerialSUNA = 41 'RS232
 
 '## Address 8 ##
 Const SerialLogging = 44 ' Doesn't Compile if a BreakSignal is sent to serial 44.
-Const SerialPower = 45 'RS485
+Const SerialPower = 45 'RS232
 Const SerialWave = 46 'RS232
 ' 47 Does Not Exist
 '## -------  ##
