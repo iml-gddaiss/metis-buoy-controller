@@ -151,54 +151,64 @@ Function make_winch_start_command(_latitude_ as String, _longitude_ as String) a
     return "w" & Winch_Date & Winch_Time & Winch_Latitude & Winch_Longitude
 EndFunction
 
-
 Sub StartWinch
-    Dim X
-    
     Call logging("Starting Winch")
-    SerialOpen(SerialWinch,115200,3,10,100)
-    Delay(1,100,mSec)
-    SerialFlush(SerialWinch)
-    SerialOut(SerialWinch, CHR(13), 0, 1, 10) ' will echo
-    Delay(1,100,mSec)
-    
-    X=0
-    While SerialInChk(SerialWinch) > 0 And X < 20
-        SerialIn(WinchString,SerialWinch, 100,10,200)
-        Call logging("(X=" & X & "): " & WinchString)
-        X+=1
-    Wend
+    SerialOpen(SerialWinch,19200,3,20,100)
+    SerialOut(SerialWinch,CHR(13),"",1,0)
 EndSub
 
+Sub OLDStartWinch
+
+
+    
+    Call logging("Winch Status: " & WinchStatus)
+EndSub
 
 Sub StartWinchMission
     Dim X
-    Dim winch_start_command as String * 30
-        
+
     Call logging("Starting Winch Mission")    
     
     If Start_Winch_Mission_Override Then
         Call GetGpsPosition ' sets public var: `latitude_tmp`, `longitude_tmp`.
-        winch_start_command = make_winch_start_command(latitude_tmp, longitude_tmp)
+        Winch_Latitude = latitude_tmp
+        Winch_Longitude = longitude_tmp
     Else
-        winch_start_command = make_winch_start_command(GPS_Lat, GPS_Lon)
+        Winch_Latitude = GPS_Lat
+        Winch_Longitude = GPS_Lon
     EndIf
 
-    
     Call StartWinch ' Open Winch Serial 
-    SerialOut(SerialWinch, winch_start_command & CHR(13), winch_start_command & CHR(13) & CHR(10),  1, 10)
-    Call logging("Winch Mission Start Command Sent: " & winch_start_command)
     
-    For X = 1 to 10
-        SerialIn(WinchString,SerialWinch,100,10,200)
-        WinchString = Mid(WinchString, 1, Len(WinchString) - 1) ' removing the '\r' 
-        Call logging("WinchString (" & X & "): " & WinchString)
-        If InStr(1, WinchString,".txt",2)  <> 0 Then ' "RKXXX.txt\r"
-            Winch_Internal_File = Mid(WinchString, 1, Len(WinchString) - 4) ' ".txt\r"
-            WinchStatus = "Sampling"
-            ExitFor
+    SerialOut(SerialWinch,"p1"&CHR(13)&CHR(10),.,2,300)
+    Delay(1,2,Sec)
+    SerialFlush(SerialWinch)
+    SerialIn(WinchString,SerialWinch,100,10,100)
+    SerialOut(SerialWinch,"p0"&CHR(13)&CHR(10),.,2,300)
+    If Mid(WinchString,1,3) = "[S]" Then 'If [S] is received from CTD -> winch has started
+        Call logging("Winch Mission was Started")
+        SerialOut(SerialWinch,"X"&CHR(13)&CHR(10),"[W]1B>Operation Complete",2,200)
+        SerialOut(SerialWinch,"R"&CHR(13)&CHR(10),"[W]09>Top Switch Activated",3,1000)
+        SerialOut(SerialWinch,"K"&CHR(13)&CHR(10),"[W]13>Lenght Manually Cleared",2,200)
+        SerialOut(SerialWinch,"Y"&Depth_for_Winch&CHR(13)&CHR(10),CHR(13),1,0)
+        
+        WinchStatus = "Sampling"
+        
+        If Start_Winch_Override Then
+            'Updating GPS Values for Winch TimeStamp
+            Call GetGpsPosition(Winch_Latitude, Winch_Longitude)
+        Else
+            ' The next winch is still scheduled isn't changed if Start_Winch_Override is True.
+            Winch_Last_Sample = Public.TimeStamp(1)
+            Winch_Latitude = Latitude
+            Winch_Longitude = Longitude
         EndIf
-    Next
+        SplitStr(Winch_DateTime, Public.TimeStamp(4), " ", 2, 5)
+        WinchMessage = "Mission Started"
+    Else 'No string from CTD
+        WinchMessage = "No String received from CTD"
+        Call logging("WINCH FAILED. Winch Start Confirmation not received.")
+    EndIf
 EndSub
 
 Sub WinchRoutine
